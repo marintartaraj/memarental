@@ -68,17 +68,17 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { to: '/', label: t('home'), icon: Home, description: 'Explore our services' },
-    { to: '/about', label: t('about'), icon: Info, description: 'Learn about us' },
-    { to: '/cars', label: t('cars'), icon: Car, description: 'Browse our fleet' },
-    { to: '/contact', label: t('contact'), icon: Phone, description: 'Get in touch' },
+    { to: '/', label: t('home'), icon: Home, description: t('navExplore') },
+    { to: '/about', label: t('about'), icon: Info, description: t('navLearnAbout') },
+    { to: '/cars', label: t('cars'), icon: Car, description: t('navBrowseFleet') },
+    { to: '/contact', label: t('contact'), icon: Phone, description: t('navGetInTouch') },
   ];
 
   const quickActions = [
-    { icon: Search, label: 'Search Cars', action: () => navigate('/cars') },
-    { icon: BookOpen, label: 'Book Now', action: () => navigate('/cars') },
-    { icon: MapPin, label: 'Locations', action: () => navigate('/contact') },
-    { icon: Clock, label: '24/7 Support', action: () => navigate('/contact') },
+    { icon: Search, label: t('quickSearchCars'), action: () => navigate('/cars') },
+    { icon: BookOpen, label: t('bookNow'), action: () => navigate('/cars') },
+    { icon: MapPin, label: t('locations'), action: () => navigate('/contact') },
+    { icon: Clock, label: t('support247'), action: () => navigate('/contact') },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -277,7 +277,7 @@ const Navbar = () => {
                 {/* Enhanced Navigation Links */}
                 <nav className="flex-1 p-6 overflow-y-auto">
                   <div className="space-y-2 mb-8">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Navigation</h3>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('navigation')}</h3>
                     {navItems.map((item, index) => (
                       <motion.div
                         key={item.to}
@@ -311,7 +311,7 @@ const Navbar = () => {
 
                   {/* Quick Actions */}
                   <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Actions</h3>
+                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('quickActions')}</h3>
                     <div className="grid grid-cols-2 gap-3">
                       {quickActions.map((action, index) => (
                         <motion.div
@@ -339,7 +339,7 @@ const Navbar = () => {
 
                   {/* Enhanced Language Switcher */}
                   <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Language</h3>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">{t('language')}</h3>
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       className="flex items-center justify-between px-4 py-4 rounded-xl bg-gray-50 hover:bg-yellow-50 transition-all duration-300"
@@ -374,7 +374,7 @@ const Navbar = () => {
                           onClick={() => setIsOpen(false)}
                         >
                           <User className="h-5 w-5" />
-                          <span>Admin Panel</span>
+                          <span>{t('adminPanel')}</span>
                           <div className="ml-auto">
                             <Shield className="h-4 w-4 text-green-500" />
                           </div>

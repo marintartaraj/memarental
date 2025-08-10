@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import Seo from '@/components/Seo';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,9 +25,11 @@ import {
   Heart,
   Award
 } from 'lucide-react';
+import HeroHeader from '@/components/HeroHeader';
 
 const CarDetailPage = () => {
   const { carId } = useParams();
+  const { t } = useLanguage();
   const [selectedImage, setSelectedImage] = useState(0);
 
   // Mock car data
@@ -141,55 +144,26 @@ const CarDetailPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{carData.brand} {carData.model} Car Rental in Tirana, Albania - {carData.year} | MEMA Rental</title>
-        <meta name="title" content={`${carData.brand} ${carData.model} Car Rental in Tirana, Albania - ${carData.year} | MEMA Rental`} />
-        <meta name="description" content={`Rent a ${carData.brand} ${carData.model} in Tirana, Albania. ${carData.description} Book now for €${carData.price}/day. Best car rental service in Tirana with competitive rates.`} />
-        <meta name="keywords" content={`${carData.brand} ${carData.model} rental Tirana, ${carData.brand} ${carData.model} car rental Albania, ${carData.brand} ${carData.model} hire Tirana, car rental ${carData.brand} ${carData.model} Albania, Tirana ${carData.brand} ${carData.model} rental, Albania car rental ${carData.brand} ${carData.model}, luxury car rental Tirana, ${carData.category} car rental Albania`} />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="robots" content="index, follow" />
-        <meta name="language" content="English" />
-        <meta name="author" content="MEMA Rental" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://memarental.com/cars/${carId}`} />
-        <meta property="og:title" content={`${carData.brand} ${carData.model} Car Rental in Tirana, Albania - ${carData.year} | MEMA Rental`} />
-        <meta property="og:description" content={`Rent a ${carData.brand} ${carData.model} in Tirana, Albania. ${carData.description} Book now for €${carData.price}/day.`} />
-        <meta property="og:image" content={carData.images[0]} />
-        <meta property="og:site_name" content="MEMA Rental" />
-        <meta property="og:locale" content="en_US" />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={`https://memarental.com/cars/${carId}`} />
-        <meta property="twitter:title" content={`${carData.brand} ${carData.model} Car Rental in Tirana, Albania - ${carData.year} | MEMA Rental`} />
-        <meta property="twitter:description" content={`Rent a ${carData.brand} ${carData.model} in Tirana, Albania. ${carData.description} Book now for €${carData.price}/day.`} />
-        <meta property="twitter:image" content={carData.images[0]} />
-        
-        {/* Additional SEO Meta Tags */}
-        <meta name="geo.region" content="AL" />
-        <meta name="geo.placename" content="Tirana" />
-        <meta name="geo.position" content="41.3275;19.8187" />
-        <meta name="ICBM" content="41.3275, 19.8187" />
-        <meta name="DC.title" content={`${carData.brand} ${carData.model} Car Rental in Tirana, Albania - ${carData.year} | MEMA Rental`} />
-        <meta name="DC.description" content={`Rent a ${carData.brand} ${carData.model} in Tirana, Albania.`} />
-        <meta name="DC.subject" content="Car Rental, Tirana, Albania, ${carData.brand}, ${carData.model}" />
-        <meta name="DC.creator" content="MEMA Rental" />
-        <meta name="DC.publisher" content="MEMA Rental" />
-        <meta name="DC.coverage" content="Tirana, Albania" />
-        <meta name="DC.language" content="en" />
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href={`https://memarental.com/cars/${carId}`} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
+      <Seo
+        title={`${carData.brand} ${carData.model} ${t('carDetailHeaderSuffix')} - ${carData.year}`}
+        description={`Rent a ${carData.brand} ${carData.model} in Tirana, Albania. ${carData.description} Book now for €${carData.price}/day. Best car rental service in Tirana with competitive rates.`}
+        path={`/cars/${carId}`}
+        image={carData.images[0]}
+        keywords={`${carData.brand} ${carData.model} rental Tirana, ${carData.brand} ${carData.model} car rental Albania, ${carData.brand} ${carData.model} hire Tirana, car rental ${carData.brand} ${carData.model} Albania, Tirana ${carData.brand} ${carData.model} rental, Albania car rental ${carData.brand} ${carData.model}, luxury car rental Tirana, ${carData.category} car rental Albania`}
+        schema={structuredData}
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <HeroHeader
+          title={`${carData.brand} ${carData.model} - ${carData.year}`}
+          subtitle={t('carDetailHeroSubtitle')}
+          stats={[
+            { icon: Star, label: `${carData.rating} ${t('rating')}` },
+            { icon: Users, label: `${carData.seats} ${t('seats')}` },
+            { icon: Fuel, label: carData.fuel },
+            { icon: Clock, label: carData.pickupTime },
+          ]}
+        />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
           <motion.div 
@@ -201,7 +175,7 @@ const CarDetailPage = () => {
             <Button asChild variant="ghost" className="flex items-center space-x-2">
               <Link to="/cars">
                 <ArrowLeft className="h-4 w-4" />
-                <span>Back to Cars</span>
+                <span>{t('backToCars')}</span>
               </Link>
             </Button>
           </motion.div>
@@ -267,13 +241,13 @@ const CarDetailPage = () => {
               {/* Header */}
               <div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-2">
-                  {carData.brand} {carData.model} - Car Rental in Tirana
+                  {carData.brand} {carData.model} {t('carDetailHeaderSuffix')}
                 </h1>
                 <p className="text-lg text-gray-600 mb-4">
                   {carData.year} • {carData.location}, Albania
                 </p>
                 <div className="text-3xl sm:text-4xl font-bold text-yellow-600 mb-4">
-                  €{carData.price}/day
+                  €{carData.price}/{t('perDay')}
                 </div>
               </div>
 
@@ -293,13 +267,13 @@ const CarDetailPage = () => {
                 </div>
                 <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
                   <Shield className="h-5 w-5 text-yellow-500" />
-                  <span className="text-sm font-medium">Insured</span>
+                  <span className="text-sm font-medium">{t('insured')}</span>
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Description</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('description')}</h3>
                 <p className="text-gray-600 leading-relaxed">
                   {carData.description} Perfect for exploring Albania with comfort and style. Available for rent in Tirana city center and airport pickup.
                 </p>
@@ -307,7 +281,7 @@ const CarDetailPage = () => {
 
               {/* Features */}
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Features</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('features')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {carData.features.map((feature, index) => (
                     <div key={index} className="flex items-center space-x-2">
@@ -320,7 +294,7 @@ const CarDetailPage = () => {
 
               {/* Specifications */}
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Specifications</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('specifications')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(carData.specifications).map(([key, value]) => (
                     <div key={key} className="flex justify-between p-3 bg-gray-50 rounded-lg">
@@ -338,7 +312,7 @@ const CarDetailPage = () => {
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center space-x-2 mb-2">
                     <MapPin className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-800">Pickup Location</h4>
+                    <h4 className="font-semibold text-gray-800">{t('pickupLocation')}</h4>
                   </div>
                   <p className="text-gray-600">Tirana City Center</p>
                   <p className="text-sm text-gray-500">Rruga e Durresit 123, Tirana, Albania</p>
@@ -346,10 +320,10 @@ const CarDetailPage = () => {
                 <div className="p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-2 mb-2">
                     <Clock className="h-5 w-5 text-green-600" />
-                    <h4 className="font-semibold text-gray-800">Pickup Time</h4>
+                    <h4 className="font-semibold text-gray-800">{t('pickupTimeLabel')}</h4>
                   </div>
                   <p className="text-gray-600">{carData.pickupTime}</p>
-                  <p className="text-sm text-gray-500">Flexible scheduling</p>
+                  <p className="text-sm text-gray-500">{t('flexibleScheduling')}</p>
                 </div>
               </div>
 
@@ -357,12 +331,12 @@ const CarDetailPage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white">
                   <Link to={`/booking/${carData.id}`}>
-                    Book This Car
+                    {t('bookThisCar')}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="flex-1">
                   <Link to="/contact">
-                    Contact Us
+                    {t('contactUs')}
                   </Link>
                 </Button>
               </div>
@@ -380,7 +354,7 @@ const CarDetailPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Car className="h-6 w-6 text-yellow-600" />
-                  <span>Why Choose MEMA Rental for Car Rental in Tirana?</span>
+                  <span>{t('whyChooseMema')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>

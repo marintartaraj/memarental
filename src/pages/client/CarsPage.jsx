@@ -1,152 +1,84 @@
 
-import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import React, { useEffect, useState } from 'react';
+import Seo from '@/components/Seo';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import HeroHeader from '@/components/HeroHeader';
 import { Search, Filter, Star, Users, Fuel, Calendar, MapPin, Phone, ChevronDown, ChevronUp, X, Zap, Shield, Clock, Car, Award, TrendingUp, Heart, Eye, Mail, Navigation, CheckCircle } from 'lucide-react';
+import { supabase } from '@/lib/customSupabaseClient';
 
-const dummyCars = [
-  { 
-    id: '1', 
-    brand: 'BMW', 
-    model: '3 Series', 
-    year: 2023, 
-    price: 65, 
-    image: 'modern-white-bmw-sedan',
+const normalizeCarRecord = (record) => {
+  const dailyRate = Number(record?.daily_rate) || 0;
+  const category = dailyRate > 70 ? 'Luxury' : dailyRate > 50 ? 'Premium' : 'Economy';
+  const transmission = (record?.transmission || '').toLowerCase() === 'manual' ? 'Manual' : 'Automatic';
+  const fuelType = (record?.fuel_type || '').toLowerCase();
+  const fuel = fuelType
+    ? fuelType.charAt(0).toUpperCase() + fuelType.slice(1)
+    : 'Petrol';
+  const isAvailable = (record?.status || 'available') === 'available';
+
+  return {
+    id: record?.id,
+    brand: record?.brand || 'Unknown',
+    model: record?.model || '',
+    year: record?.year || new Date().getFullYear(),
+    price: dailyRate,
     rating: 4.8,
-    reviews: 127,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    available: true,
-    category: 'Luxury',
+    reviews: 0,
+    seats: record?.seats ?? 5,
+    fuel,
+    transmission,
+    available: isAvailable,
+    category,
     mileage: 'Unlimited',
     location: 'Tirana',
-    features: ['Bluetooth', 'GPS Navigation', 'Backup Camera', 'Heated Seats'],
+    features: ['Bluetooth', 'Air Conditioning'],
     pickupTime: '24/7',
-    popular: true,
-    discount: 10
-  },
-  { 
-    id: '2', 
-    brand: 'Mercedes-Benz', 
-    model: 'C-Class', 
-    year: 2023, 
-    price: 75, 
-    image: 'luxury-mercedes-c-class-car',
-    rating: 4.9,
-    reviews: 89,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    available: true,
-    category: 'Luxury',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    features: ['Premium Audio', 'Leather Seats', 'Parking Sensors', 'LED Headlights'],
-    pickupTime: '8:00-20:00',
-    popular: false,
-    discount: 0
-  },
-  { 
-    id: '3', 
-    brand: 'Audi', 
-    model: 'A4', 
-    year: 2022, 
-    price: 70, 
-    image: 'sleek-audi-a4-driving',
-    rating: 4.7,
-    reviews: 156,
-    seats: 5,
-    fuel: 'Diesel',
-    transmission: 'Automatic',
-    available: true,
-    category: 'Premium',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    features: ['Virtual Cockpit', 'Quattro AWD', 'Matrix LED', 'Wireless Charging'],
-    pickupTime: '24/7',
-    popular: true,
-    discount: 5
-  },
-  { 
-    id: '4', 
-    brand: 'Volkswagen', 
-    model: 'Golf', 
-    year: 2023, 
-    price: 45, 
-    image: 'compact-volkswagen-golf-car',
-    rating: 4.6,
-    reviews: 203,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Manual',
-    available: true,
-    category: 'Economy',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    features: ['Apple CarPlay', 'Android Auto', 'Cruise Control', 'Bluetooth'],
-    pickupTime: '8:00-20:00',
-    popular: false,
-    discount: 0
-  },
-  { 
-    id: '5', 
-    brand: 'Toyota', 
-    model: 'Corolla', 
-    year: 2023, 
-    price: 40, 
-    image: 'reliable-toyota-corolla-sedan',
-    rating: 4.5,
-    reviews: 178,
-    seats: 5,
-    fuel: 'Hybrid',
-    transmission: 'Automatic',
-    available: true,
-    category: 'Economy',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    features: ['Hybrid Engine', 'Safety Sense', 'Smart Key', 'Backup Camera'],
-    pickupTime: '24/7',
-    popular: true,
-    discount: 15
-  },
-  { 
-    id: '6', 
-    brand: 'Ford', 
-    model: 'Focus', 
-    year: 2022, 
-    price: 38, 
-    image: 'blue-ford-focus-hatchback',
-    rating: 4.4,
-    reviews: 134,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Manual',
-    available: true,
-    category: 'Economy',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    features: ['SYNC 3', 'Bluetooth', 'USB Ports', 'Air Conditioning'],
-    pickupTime: '8:00-20:00',
-    popular: false,
-    discount: 0
-  },
-];
+    popular: dailyRate >= 70,
+    discount: 0,
+  };
+};
 
 const CarsPage = () => {
+  const { t, tFormat } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [priceFilter, setPriceFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredCars = dummyCars.filter(car => {
+  useEffect(() => {
+    let isMounted = true;
+    const loadCars = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('cars')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!isMounted) return;
+      if (error) {
+        console.error('Failed to load cars:', error);
+        setCars([]);
+      } else {
+        setCars((data || []).map(normalizeCarRecord));
+      }
+      setLoading(false);
+    };
+    loadCars();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredCars = cars.filter(car => {
     const matchesSearch = car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          car.model.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPrice = !priceFilter || 
@@ -159,8 +91,8 @@ const CarsPage = () => {
     return matchesSearch && matchesPrice && matchesBrand && matchesCategory;
   });
 
-  const brands = [...new Set(dummyCars.map(car => car.brand))];
-  const categories = [...new Set(dummyCars.map(car => car.category))];
+  const brands = [...new Set(cars.map(car => car.brand))];
+  const categories = [...new Set(cars.map(car => car.category))];
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -168,7 +100,7 @@ const CarsPage = () => {
     "name": "Car Rental Fleet - MEMA Rental Tirana Albania",
     "description": "Browse our complete fleet of rental cars in Tirana, Albania. From economy to luxury vehicles. Best car rental service in Tirana with competitive rates.",
     "url": "https://memarental.com/cars",
-    "numberOfItems": dummyCars.length,
+    "numberOfItems": cars.length,
     "provider": {
       "@type": "Organization",
       "name": "MEMA Rental - Car Rental Tirana Albania",
@@ -196,7 +128,7 @@ const CarsPage = () => {
       "@type": "Place",
       "name": "Tirana, Albania"
     },
-    "itemListElement": dummyCars.map((car, index) => ({
+    "itemListElement": cars.map((car, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "item": {
@@ -230,111 +162,26 @@ const CarsPage = () => {
 
   return (
     <>
-      <Helmet>
-        {/* Primary Meta Tags */}
-        <title>Car Rental Fleet Tirana Albania | Best Car Hire Service in Tirana | MEMA Rental</title>
-        <meta name="title" content="Car Rental Fleet Tirana Albania | Best Car Hire Service in Tirana | MEMA Rental" />
-        <meta name="description" content="Browse our complete car rental fleet in Tirana, Albania. Rent BMW, Mercedes, Audi, Toyota, Volkswagen, and Ford vehicles from €38/day. Best car hire selection in Albania. Located in Tirana city center." />
-        <meta name="keywords" content="car rental fleet Tirana, car rental vehicles Albania, rent BMW Tirana, rent Mercedes Albania, rent Audi Tirana, rent Toyota Albania, rent Volkswagen Tirana, rent Ford Albania, luxury car rental Tirana, economy car rental Albania, SUV rental Tirana, car hire fleet Albania, Tirana car rental vehicles, Albania car rental selection, best car rental Tirana, car rental service Albania, Tirana airport car rental, Albania car hire service" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="robots" content="index, follow" />
-        <meta name="language" content="English" />
-        <meta name="author" content="MEMA Rental" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://memarental.com/cars" />
-        <meta property="og:title" content="Car Rental Fleet Tirana Albania | Best Car Hire Service in Tirana | MEMA Rental" />
-        <meta property="og:description" content="Browse our complete car rental fleet in Tirana, Albania. Rent BMW, Mercedes, Audi, Toyota, Volkswagen, and Ford vehicles from €38/day." />
-        <meta property="og:image" content="https://memarental.com/cars-fleet-image.jpg" />
-        <meta property="og:site_name" content="MEMA Rental" />
-        <meta property="og:locale" content="en_US" />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://memarental.com/cars" />
-        <meta property="twitter:title" content="Car Rental Fleet Tirana Albania | Best Car Hire Service in Tirana | MEMA Rental" />
-        <meta property="twitter:description" content="Browse our complete car rental fleet in Tirana, Albania. Rent BMW, Mercedes, Audi, Toyota, Volkswagen, and Ford vehicles from €38/day." />
-        <meta property="twitter:image" content="https://memarental.com/cars-fleet-image.jpg" />
-        
-        {/* Additional SEO Meta Tags */}
-        <meta name="geo.region" content="AL" />
-        <meta name="geo.placename" content="Tirana" />
-        <meta name="geo.position" content="41.3275;19.8187" />
-        <meta name="ICBM" content="41.3275, 19.8187" />
-        <meta name="DC.title" content="Car Rental Fleet Tirana Albania | MEMA Rental" />
-        <meta name="DC.description" content="Browse our complete car rental fleet in Tirana, Albania. Rent BMW, Mercedes, Audi, Toyota, Volkswagen, and Ford vehicles from €38/day." />
-        <meta name="DC.subject" content="Car Rental Fleet, Tirana, Albania" />
-        <meta name="DC.creator" content="MEMA Rental" />
-        <meta name="DC.publisher" content="MEMA Rental" />
-        <meta name="DC.coverage" content="Tirana, Albania" />
-        <meta name="DC.language" content="en" />
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://memarental.com/cars" />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
+      <Seo
+        title={t('seoCarsTitle')}
+        description={t('seoCarsDescription')}
+        path="/cars"
+        image="https://memarental.com/cars-fleet-image.jpg"
+        keywords="car rental fleet Tirana, car rental vehicles Albania, rent BMW Tirana, rent Mercedes Albania, rent Audi Tirana, rent Toyota Albania, rent Volkswagen Tirana, rent Ford Albania, luxury car rental Tirana, economy car rental Albania, SUV rental Tirana, car hire fleet Albania, Tirana car rental vehicles, Albania car rental selection, best car rental Tirana, car rental service Albania, Tirana airport car rental, Albania car hire service"
+        schema={structuredData}
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg"
-        >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-            <div className="text-center">
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-6"
-              >
-                Car Rental Fleet in Tirana, Albania
-              </motion.h1>
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-base sm:text-lg lg:text-xl text-white/90 max-w-4xl mx-auto px-4 leading-relaxed"
-              >
-                Browse our complete selection of rental cars in Tirana. From economy to luxury vehicles, find the perfect car for your Albanian adventure. 
-                All vehicles are well-maintained and come with comprehensive insurance. Located in the heart of Tirana city center.
-              </motion.p>
-              
-              {/* Quick Stats */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="flex flex-wrap justify-center gap-4 sm:gap-8 mt-6 sm:mt-8"
-              >
-                {[
-                  { icon: Car, label: '6+ Vehicles', value: 'Available' },
-                  { icon: Star, label: '4.8 Rating', value: 'Average' },
-                  { icon: Shield, label: '100% Insured', value: 'Coverage' },
-                  { icon: Clock, label: '24/7 Support', value: 'Available' }
-                ].map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.1 }}
-                    className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2"
-                  >
-                    <stat.icon className="h-4 w-4 text-white" />
-                    <span className="text-white text-sm font-medium">{stat.label}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
+        <HeroHeader
+          title={t('carsHeroTitle')}
+          subtitle={t('carsHeroSubtitle')}
+          stats={[
+            { icon: Car, label: t('vehiclesCount') },
+            { icon: Star, label: t('averageRating') },
+            { icon: Shield, label: t('fullyInsured') },
+            { icon: Clock, label: t('support247') },
+          ]}
+        />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Search and Filters */}
@@ -349,7 +196,7 @@ const CarsPage = () => {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search cars by brand or model for rent in Tirana..."
+                  placeholder={t('carsSearchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-12 text-base sm:text-lg border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200"
@@ -359,7 +206,7 @@ const CarsPage = () => {
               {/* Filter Toggle and View Mode */}
               <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <span className="text-sm text-gray-600">
-                  {filteredCars.length} car{filteredCars.length !== 1 ? 's' : ''} available for rent in Tirana, Albania
+                  {tFormat('carsAvailableCount', { count: filteredCars.length, plural: filteredCars.length !== 1 ? 's' : '' })}
                 </span>
                 <div className="flex items-center space-x-3">
                   {/* View Mode Toggle */}
@@ -397,7 +244,7 @@ const CarsPage = () => {
                     className="flex items-center space-x-2 border-2 hover:border-yellow-500 hover:bg-yellow-50"
                   >
                     <Filter className="h-4 w-4" />
-                    <span className="hidden sm:inline">Filters</span>
+                    <span className="hidden sm:inline">{t('filters')}</span>
                     {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </div>
@@ -415,13 +262,13 @@ const CarsPage = () => {
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('brand')}</label>
                         <Select value={brandFilter} onValueChange={setBrandFilter}>
                           <SelectTrigger className="border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
-                            <SelectValue placeholder="All brands" />
+                            <SelectValue placeholder={t('allBrands')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All brands</SelectItem>
+                            <SelectItem value="">{t('allBrands')}</SelectItem>
                             {brands.map(brand => (
                               <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                             ))}
@@ -429,13 +276,13 @@ const CarsPage = () => {
                         </Select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('category')}</label>
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                           <SelectTrigger className="border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
-                            <SelectValue placeholder="All categories" />
+                            <SelectValue placeholder={t('allCategories')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All categories</SelectItem>
+                            <SelectItem value="">{t('allCategories')}</SelectItem>
                             {categories.map(category => (
                               <SelectItem key={category} value={category}>{category}</SelectItem>
                             ))}
@@ -443,16 +290,16 @@ const CarsPage = () => {
                         </Select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('priceRangeLabel')}</label>
                         <Select value={priceFilter} onValueChange={setPriceFilter}>
                           <SelectTrigger className="border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
-                            <SelectValue placeholder="All prices" />
+                            <SelectValue placeholder={t('allPrices')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All prices</SelectItem>
-                            <SelectItem value="low">Under €50/day</SelectItem>
-                            <SelectItem value="medium">€50-€70/day</SelectItem>
-                            <SelectItem value="high">Over €70/day</SelectItem>
+                            <SelectItem value="">{t('allPrices')}</SelectItem>
+                            <SelectItem value="low">{t('under50')}</SelectItem>
+                            <SelectItem value="medium">{t('between50And70')}</SelectItem>
+                            <SelectItem value="high">{t('over70')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -468,7 +315,7 @@ const CarsPage = () => {
                           className="flex-1 border-2 hover:border-red-500 hover:text-red-600 hover:bg-red-50"
                         >
                           <X className="h-4 w-4 mr-2" />
-                          Clear
+                          {t('clear')}
                         </Button>
                       </div>
                     </div>
@@ -479,6 +326,9 @@ const CarsPage = () => {
           </motion.div>
 
           {/* Cars Grid/List */}
+          {loading && (
+            <div className="text-center text-gray-500 py-10">{t('loading') || 'Loading cars...'}</div>
+          )}
           <div className={viewMode === 'grid' 
             ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" 
             : "space-y-4"
@@ -533,7 +383,7 @@ const CarsPage = () => {
                     {/* Availability Overlay */}
                     {!car.available && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                        <span className="text-white font-semibold text-lg">Not Available</span>
+                        <span className="text-white font-semibold text-lg">{t('notAvailable')}</span>
                       </div>
                     )}
                   </Link>
@@ -541,7 +391,7 @@ const CarsPage = () => {
                   <div className={`flex-grow flex flex-col ${viewMode === 'list' ? 'w-2/3 p-6' : 'p-4'}`}>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg sm:text-xl lg:text-2xl">{car.brand} {car.model}</CardTitle>
-                      <p className="text-gray-500 text-sm">Year: {car.year} • Location: {car.location}, Albania</p>
+                      <p className="text-gray-500 text-sm">{t('year')}: {car.year} • {t('location')}: {car.location}, Albania</p>
                     </CardHeader>
                     
                     <CardContent className="flex-grow flex flex-col">
@@ -572,7 +422,7 @@ const CarsPage = () => {
                           ))}
                           {car.features.length > 2 && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                              +{car.features.length - 2} more
+                              +{car.features.length - 2} {t('more')}
                             </span>
                           )}
                         </div>
@@ -587,7 +437,7 @@ const CarsPage = () => {
                                 <p className="text-sm text-gray-500 line-through">€{Math.round(car.price * (1 + car.discount / 100))}</p>
                               )}
                             </div>
-                            <p className="text-sm text-gray-500">per day</p>
+                            <p className="text-sm text-gray-500">{t('perDay')}</p>
                           </div>
                           <div className="flex space-x-2">
                             <Button 
@@ -603,7 +453,7 @@ const CarsPage = () => {
                               disabled={!car.available}
                             >
                               <Link to={`/cars/${car.id}`}>
-                                {car.available ? 'Rent This Car' : 'Not Available'}
+                                {car.available ? t('rentThisCar') : t('notAvailable')}
                               </Link>
                             </Button>
                           </div>
@@ -617,7 +467,7 @@ const CarsPage = () => {
                           </div>
                           <div className="flex items-center space-x-1">
                             <Shield className="h-3 w-3" />
-                            <span>Insured</span>
+                            <span>{t('insured')}</span>
                           </div>
                         </div>
                       </div>
@@ -629,7 +479,7 @@ const CarsPage = () => {
           </div>
 
           {/* No Results */}
-          {filteredCars.length === 0 && (
+          {!loading && filteredCars.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -637,8 +487,8 @@ const CarsPage = () => {
             >
               <div className="text-gray-500 mb-4">
                 <Search className="h-12 w-12 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No cars found</h3>
-                <p>Try adjusting your search criteria or contact us for custom car rental requests in Tirana.</p>
+                <h3 className="text-xl font-semibold mb-2">{t('noCarsFound')}</h3>
+                <p>{t('tryAdjusting')}</p>
               </div>
               <Button
                 variant="outline"
@@ -650,7 +500,7 @@ const CarsPage = () => {
                 }}
                 className="border-2 hover:border-yellow-500"
               >
-                Clear All Filters
+                {t('clearAllFilters')}
               </Button>
             </motion.div>
           )}
@@ -663,26 +513,26 @@ const CarsPage = () => {
             className="mt-8"
           >
             <div className="bg-white rounded-2xl shadow-xl p-6 border-0">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Car Rental Information - Tirana, Albania</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">{t('infoTitle')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Car Rental Requirements in Tirana</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">{t('infoReqs')}</h3>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>Valid driver's license (minimum 1 year)</li>
-                    <li>Passport or ID card</li>
-                    <li>Credit card for deposit</li>
-                    <li>Minimum age: 21 years</li>
-                    <li>International driving permit recommended</li>
+                    <li>{t('req1')}</li>
+                    <li>{t('req2')}</li>
+                    <li>{t('req3')}</li>
+                    <li>{t('req4')}</li>
+                    <li>{t('req5')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Car Rental Services in Albania</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">{t('infoServices')}</h3>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>Free pickup and delivery in Tirana</li>
-                    <li>24/7 roadside assistance</li>
-                    <li>Comprehensive insurance coverage</li>
-                    <li>GPS navigation available</li>
-                    <li>Child seats available</li>
+                    <li>{t('serv1')}</li>
+                    <li>{t('serv2')}</li>
+                    <li>{t('serv3')}</li>
+                    <li>{t('serv4')}</li>
+                    <li>{t('serv5')}</li>
                   </ul>
                 </div>
               </div>
@@ -700,12 +550,9 @@ const CarsPage = () => {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Ready to Explore Albania?
-            </h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">{t('homeCtaTitle')}</h2>
             <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
-              Book your car rental in Tirana today and start your Albanian adventure with the best rates and service. 
-              Available for pickup in Tirana city center and airport.
+              {t('homeCtaCopy')}
             </p>
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
@@ -715,12 +562,12 @@ const CarsPage = () => {
             >
               <Button asChild size="lg" className="bg-white text-yellow-600 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Link to="/cars">
-                  Book Your Car Now
+                  {t('bookNow')}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-yellow-600 text-lg px-8 py-4">
                 <Link to="/contact">
-                  Get in Touch
+                  {t('getInTouch')}
                 </Link>
               </Button>
             </motion.div>

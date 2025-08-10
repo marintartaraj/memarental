@@ -1,6 +1,6 @@
-
-import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import React, { useEffect, useMemo, useState } from 'react';
+import Seo from '@/components/Seo';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/lib/customSupabaseClient';
+import { toast } from '@/components/ui/use-toast';
 import { 
   Calendar, 
   Clock, 
@@ -31,11 +33,16 @@ import {
   Wifi,
   Heart
 } from 'lucide-react';
+import HeroHeader from '@/components/HeroHeader';
 
 const BookingPage = () => {
   const { carId } = useParams();
+  const { t, tFormat } = useLanguage();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [car, setCar] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
   const [formData, setFormData] = useState({
     // Step 1: Dates
     pickupDate: '',
@@ -65,21 +72,54 @@ const BookingPage = () => {
     acceptTerms: false
   });
 
-  // Mock car data
-  const carData = {
-    id: carId,
-    brand: 'BMW',
-    model: '3 Series',
-    year: 2023,
-    price: 65,
-    image: 'https://images.unsplash.com/photo-1612935459247-3f90353c6c50',
-    rating: 4.8,
-    reviews: 127,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    category: 'Luxury'
-  };
+  useEffect(() => {
+    let isMounted = true;
+    const loadCar = async () => {
+      setLoading(true);
+      setFetchError(null);
+      const { data, error } = await supabase
+        .from('cars')
+        .select('*')
+        .eq('id', carId)
+        .single();
+      if (!isMounted) return;
+      if (error) {
+        console.error('Failed to load car:', error);
+        setFetchError(error.message || 'Failed to load car');
+      }
+      setCar(data || null);
+      setLoading(false);
+    };
+    loadCar();
+    return () => { isMounted = false; };
+  }, [carId]);
+
+  const carData = useMemo(() => {
+    if (!car) return null;
+    const dailyRate = Number(car?.daily_rate) || 0;
+    const category = dailyRate > 70 ? 'Luxury' : dailyRate > 50 ? 'Premium' : 'Economy';
+    const transmission = (car?.transmission || '').toLowerCase() === 'manual' ? 'Manual' : 'Automatic';
+    const fuelType = (car?.fuel_type || '').toLowerCase();
+    const fuel = fuelType ? fuelType.charAt(0).toUpperCase() + fuelType.slice(1) : 'Petrol';
+    return {
+      id: car.id,
+      brand: car.brand || 'Unknown',
+      model: car.model || '',
+      year: car.year || new Date().getFullYear(),
+      price: dailyRate,
+      image: 'https://images.unsplash.com/photo-1612935459247-3f90353c6c50',
+      rating: 4.8,
+      reviews: 0,
+      seats: car.seats ?? 5,
+      fuel,
+      transmission,
+      category,
+      status: car.status || 'available',
+      pickupTime: '24/7'
+    };
+  }, [car]);
+
+  const carUnavailable = !!carData && carData.status !== 'available';
 
   const locations = [
     'Tirana Airport',
@@ -151,13 +191,28 @@ const BookingPage = () => {
   };
 
   const handleSubmit = async () => {
-    // Simulate booking submission
-    console.log('Booking submitted:', formData);
-    // Navigate to confirmation page
+    if (!carData) return;
+    // Re-check availability just before booking
+    const { data: latestCar, error } = await supabase
+      .from('cars')
+      .select('status, daily_rate')
+      .eq('id', carData.id)
+      .single();
+    if (error) {
+      toast({ title: 'Booking failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    if (latestCar?.status !== 'available') {
+      toast({ title: 'Car not available', description: 'This car has just been booked. Please choose another car.', variant: 'destructive' });
+      return;
+    }
+
+    // Optionally, insert a booking record here if your schema allows anonymous bookings
+    // and/or update the car status to 'booked'. For now, just navigate to confirmation.
     navigate('/booking-confirmation');
   };
 
-  const structuredData = {
+  const structuredData = carData ? {
     "@context": "https://schema.org",
     "@type": "Reservation",
     "name": `Car Rental Booking - ${carData.brand} ${carData.model} in Tirana, Albania`,
@@ -205,59 +260,37 @@ const BookingPage = () => {
       "@type": "Place",
       "name": "Tirana, Albania"
     }
-  };
+  } : null;
 
   return (
     <>
-      <Helmet>
-        <title>Book Car Rental in Tirana, Albania - {carData.brand} {carData.model} | MEMA Rental</title>
-        <meta name="title" content="Book Car Rental in Tirana, Albania - {carData.brand} {carData.model} | MEMA Rental" />
-        <meta name="description" content={`Book your ${carData.brand} ${carData.model} rental in Tirana, Albania. Secure online booking with instant confirmation. Best car rental service in Tirana with competitive rates.`} />
-        <meta name="keywords" content={`book car rental Tirana, car rental booking Albania, ${carData.brand} ${carData.model} rental Tirana, car hire booking Albania, Tirana car rental booking, Albania car rental reservation, book car Tirana, car rental online booking Albania, Tirana airport car rental booking, Albania car hire reservation`} />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="robots" content="index, follow" />
-        <meta name="language" content="English" />
-        <meta name="author" content="MEMA Rental" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://memarental.com/booking/${carId}`} />
-        <meta property="og:title" content={`Book Car Rental in Tirana, Albania - ${carData.brand} ${carData.model} | MEMA Rental`} />
-        <meta property="og:description" content={`Book your ${carData.brand} ${carData.model} rental in Tirana, Albania. Secure online booking with instant confirmation.`} />
-        <meta property="og:image" content={carData.image} />
-        <meta property="og:site_name" content="MEMA Rental" />
-        <meta property="og:locale" content="en_US" />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={`https://memarental.com/booking/${carId}`} />
-        <meta property="twitter:title" content={`Book Car Rental in Tirana, Albania - ${carData.brand} ${carData.model} | MEMA Rental`} />
-        <meta property="twitter:description" content={`Book your ${carData.brand} ${carData.model} rental in Tirana, Albania. Secure online booking with instant confirmation.`} />
-        <meta property="twitter:image" content={carData.image} />
-        
-        {/* Additional SEO Meta Tags */}
-        <meta name="geo.region" content="AL" />
-        <meta name="geo.placename" content="Tirana" />
-        <meta name="geo.position" content="41.3275;19.8187" />
-        <meta name="ICBM" content="41.3275, 19.8187" />
-        <meta name="DC.title" content={`Book Car Rental in Tirana, Albania - ${carData.brand} ${carData.model} | MEMA Rental`} />
-        <meta name="DC.description" content={`Book your ${carData.brand} ${carData.model} rental in Tirana, Albania.`} />
-        <meta name="DC.subject" content="Car Rental, Booking, Tirana, Albania" />
-        <meta name="DC.creator" content="MEMA Rental" />
-        <meta name="DC.publisher" content="MEMA Rental" />
-        <meta name="DC.coverage" content="Tirana, Albania" />
-        <meta name="DC.language" content="en" />
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href={`https://memarental.com/booking/${carId}`} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
+      {carData && (
+        <Seo
+          title={tFormat('seoBookingTitle', { brand: carData.brand, model: carData.model })}
+          description={tFormat('seoBookingDesc', { brand: carData.brand, model: carData.model })}
+          path={`/booking/${carId}`}
+          image={carData.image}
+          keywords={`book car rental Tirana, car rental booking Albania, ${carData.brand} ${carData.model} rental Tirana, car hire booking Albania, Tirana car rental booking, Albania car rental reservation, book car Tirana, car rental online booking Albania, Tirana airport car rental booking, Albania car hire reservation`}
+          schema={structuredData}
+        />
+      )}
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">{t('loading') || 'Loading...'}</div>
+        ) : fetchError || !carData ? (
+          <div className="text-center py-8 text-red-600">{fetchError || 'Car not found'}</div>
+        ) : (
+          <HeroHeader
+            title={t('bookingHeroTitle')}
+            subtitle={tFormat('bookingHeroSubtitleFmt', { brand: carData.brand, model: carData.model })}
+            stats={[
+              { icon: Car, label: `${carData.brand} ${carData.model}` },
+              { icon: Star, label: `${carData.rating} ${t('rating')}` },
+              { icon: Shield, label: t('fullyInsured') },
+            ]}
+          />
+        )}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Header */}
           <motion.div 
@@ -266,14 +299,13 @@ const BookingPage = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-8"
           >
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
-              Book Your Car Rental in Tirana, Albania
-            </h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">{t('bookingHeaderTitle')}</h1>
             <p className="text-lg sm:text-xl text-gray-600">
-              Complete your booking for the {carData.brand} {carData.model} - Best car rental service in Tirana
+              {tFormat('bookingHeaderCopyFmt', { brand: carData.brand, model: carData.model })}
             </p>
           </motion.div>
 
+          {(!loading && carData) && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Booking Form */}
             <div className="lg:col-span-2">
@@ -281,10 +313,15 @@ const BookingPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Calendar className="h-6 w-6 text-yellow-600" />
-                    <span>Booking Details - Car Rental in Tirana</span>
+                    <span>{t('bookingDetails')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
+                  {carUnavailable && (
+                    <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200">
+                      {t('notAvailable') || 'This car is currently booked and not available.'}
+                    </div>
+                  )}
                   {/* Progress Steps */}
                   <div className="flex items-center justify-between mb-8">
                     {[1, 2, 3, 4].map((step) => (
@@ -316,11 +353,11 @@ const BookingPage = () => {
                     >
                       {currentStep === 1 && (
                         <div className="space-y-6">
-                          <h3 className="text-xl font-semibold text-gray-800 mb-4">Select Dates & Times</h3>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('step1Title')}</h3>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="pickupDate">Pickup Date</Label>
+                              <Label htmlFor="pickupDate">{t('pickupDate')}</Label>
                               <Input
                                 id="pickupDate"
                                 type="date"
@@ -330,7 +367,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="returnDate">Return Date</Label>
+                              <Label htmlFor="returnDate">{t('returnDate')}</Label>
                               <Input
                                 id="returnDate"
                                 type="date"
@@ -340,10 +377,10 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="pickupTime">Pickup Time</Label>
+                              <Label htmlFor="pickupTime">{t('pickupTime')}</Label>
                               <Select value={formData.pickupTime} onValueChange={(value) => handleInputChange('pickupTime', value)}>
                                 <SelectTrigger className="mt-1">
-                                  <SelectValue placeholder="Select pickup time" />
+                                  <SelectValue placeholder={t('selectPickupTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="08:00">8:00 AM</SelectItem>
@@ -360,10 +397,10 @@ const BookingPage = () => {
                               </Select>
                             </div>
                             <div>
-                              <Label htmlFor="returnTime">Return Time</Label>
+                              <Label htmlFor="returnTime">{t('returnTime')}</Label>
                               <Select value={formData.returnTime} onValueChange={(value) => handleInputChange('returnTime', value)}>
                                 <SelectTrigger className="mt-1">
-                                  <SelectValue placeholder="Select return time" />
+                                  <SelectValue placeholder={t('selectReturnTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="08:00">8:00 AM</SelectItem>
@@ -385,11 +422,11 @@ const BookingPage = () => {
 
                       {currentStep === 2 && (
                         <div className="space-y-6">
-                          <h3 className="text-xl font-semibold text-gray-800 mb-4">Personal Details</h3>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('step2Title')}</h3>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="firstName">First Name</Label>
+                              <Label htmlFor="firstName">{t('firstName')}</Label>
                               <Input
                                 id="firstName"
                                 value={formData.firstName}
@@ -398,7 +435,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="lastName">Last Name</Label>
+                              <Label htmlFor="lastName">{t('lastName')}</Label>
                               <Input
                                 id="lastName"
                                 value={formData.lastName}
@@ -417,7 +454,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="phone">Phone Number</Label>
+                              <Label htmlFor="phone">{t('phoneNumber')}</Label>
                               <Input
                                 id="phone"
                                 type="tel"
@@ -427,7 +464,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="licenseNumber">Driver's License Number</Label>
+                              <Label htmlFor="licenseNumber">{t('driversLicenseNumber')}</Label>
                               <Input
                                 id="licenseNumber"
                                 value={formData.licenseNumber}
@@ -436,7 +473,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="licenseExpiry">License Expiry Date</Label>
+                              <Label htmlFor="licenseExpiry">{t('licenseExpiry')}</Label>
                               <Input
                                 id="licenseExpiry"
                                 type="date"
@@ -451,14 +488,14 @@ const BookingPage = () => {
 
                       {currentStep === 3 && (
                         <div className="space-y-6">
-                          <h3 className="text-xl font-semibold text-gray-800 mb-4">Extras & Location</h3>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('step3Title')}</h3>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="pickupLocation">Pickup Location</Label>
+                              <Label htmlFor="pickupLocation">{t('pickupLocationLabel')}</Label>
                               <Select value={formData.pickupLocation} onValueChange={(value) => handleInputChange('pickupLocation', value)}>
                                 <SelectTrigger className="mt-1">
-                                  <SelectValue placeholder="Select pickup location" />
+                                  <SelectValue placeholder={t('selectPickupLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {locations.map((location) => (
@@ -468,10 +505,10 @@ const BookingPage = () => {
                               </Select>
                             </div>
                             <div>
-                              <Label htmlFor="returnLocation">Return Location</Label>
+                              <Label htmlFor="returnLocation">{t('returnLocationLabel')}</Label>
                               <Select value={formData.returnLocation} onValueChange={(value) => handleInputChange('returnLocation', value)}>
                                 <SelectTrigger className="mt-1">
-                                  <SelectValue placeholder="Select return location" />
+                                  <SelectValue placeholder={t('selectReturnLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {locations.map((location) => (
@@ -483,7 +520,7 @@ const BookingPage = () => {
                           </div>
 
                           <div>
-                            <Label className="text-base font-semibold">Additional Services</Label>
+                            <Label className="text-base font-semibold">{t('additionalServices')}</Label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                               {extras.map((extra) => (
                                 <div key={extra.id} className="flex items-center space-x-3 p-4 border rounded-lg">
@@ -496,19 +533,19 @@ const BookingPage = () => {
                                     <Label htmlFor={extra.id} className="font-medium">{extra.name}</Label>
                                     <p className="text-sm text-gray-600">{extra.description}</p>
                                   </div>
-                                  <span className="text-yellow-600 font-semibold">€{extra.price}/day</span>
+                                  <span className="text-yellow-600 font-semibold">€{extra.price}{t('perDayLower')}</span>
                                 </div>
                               ))}
                             </div>
                           </div>
 
                           <div>
-                            <Label htmlFor="specialRequests">Special Requests</Label>
+                            <Label htmlFor="specialRequests">{t('specialRequests')}</Label>
                             <Textarea
                               id="specialRequests"
                               value={formData.specialRequests}
                               onChange={(e) => handleInputChange('specialRequests', e.target.value)}
-                              placeholder="Any special requests or requirements..."
+                              placeholder={t('specialRequestsPlaceholder')}
                               className="mt-1 resize-none"
                               rows={3}
                             />
@@ -518,11 +555,11 @@ const BookingPage = () => {
 
                       {currentStep === 4 && (
                         <div className="space-y-6">
-                          <h3 className="text-xl font-semibold text-gray-800 mb-4">Payment Information</h3>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('step4Title')}</h3>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="cardNumber">Card Number</Label>
+                              <Label htmlFor="cardNumber">{t('cardNumber')}</Label>
                               <Input
                                 id="cardNumber"
                                 value={formData.cardNumber}
@@ -532,7 +569,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="cardholderName">Cardholder Name</Label>
+                              <Label htmlFor="cardholderName">{t('cardholderName')}</Label>
                               <Input
                                 id="cardholderName"
                                 value={formData.cardholderName}
@@ -541,7 +578,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="cardExpiry">Expiry Date</Label>
+                              <Label htmlFor="cardExpiry">{t('expiryDate')}</Label>
                               <Input
                                 id="cardExpiry"
                                 value={formData.cardExpiry}
@@ -551,7 +588,7 @@ const BookingPage = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="cardCVC">CVC</Label>
+                              <Label htmlFor="cardCVC">{t('cvc')}</Label>
                               <Input
                                 id="cardCVC"
                                 value={formData.cardCVC}
@@ -568,9 +605,7 @@ const BookingPage = () => {
                               checked={formData.acceptTerms}
                               onCheckedChange={(checked) => handleInputChange('acceptTerms', checked)}
                             />
-                            <Label htmlFor="acceptTerms" className="text-sm">
-                              I accept the terms and conditions and privacy policy
-                            </Label>
+                            <Label htmlFor="acceptTerms" className="text-sm">{t('acceptTerms')}</Label>
                           </div>
                         </div>
                       )}
@@ -584,25 +619,26 @@ const BookingPage = () => {
                           className="flex items-center space-x-2"
                         >
                           <ArrowLeft className="h-4 w-4" />
-                          <span>Back</span>
+                          <span>{t('back')}</span>
                         </Button>
                         
                         {currentStep < 4 ? (
                           <Button
                             onClick={handleNext}
                             className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600"
+                            disabled={carUnavailable}
                           >
-                            <span>Next</span>
+                            <span>{t('next')}</span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         ) : (
                           <Button
                             onClick={handleSubmit}
-                            disabled={!formData.acceptTerms}
+                            disabled={!formData.acceptTerms || carUnavailable}
                             className="flex items-center space-x-2 bg-green-500 hover:bg-green-600"
                           >
                             <CheckCircle className="h-4 w-4" />
-                            <span>Complete Booking</span>
+                            <span>{t('completeBooking')}</span>
                           </Button>
                         )}
                       </div>
@@ -618,7 +654,7 @@ const BookingPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Car className="h-6 w-6 text-yellow-600" />
-                    <span>Car Summary</span>
+                    <span>{t('carSummary')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -630,6 +666,11 @@ const BookingPage = () => {
                         alt={`${carData.brand} ${carData.model} car rental in Tirana, Albania`}
                         className="w-full h-48 object-cover"
                       />
+                      {carUnavailable && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white font-semibold">{t('notAvailable') || 'Not available'}</span>
+                        </div>
+                      )}
                       <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-current" />
                         <span className="text-sm font-semibold">{carData.rating}</span>
@@ -644,7 +685,7 @@ const BookingPage = () => {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center space-x-2">
                           <Users className="h-4 w-4 text-blue-500" />
-                          <span>{carData.seats} seats</span>
+                          <span>{carData.seats} {t('seatsLower')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Fuel className="h-4 w-4 text-green-500" />
@@ -656,26 +697,32 @@ const BookingPage = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <Shield className="h-4 w-4 text-yellow-500" />
-                          <span>Insured</span>
+                           <span>{t('insured')}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Booking Summary */}
                     <div className="border-t pt-4">
-                      <h4 className="font-semibold text-gray-800 mb-3">Booking Summary</h4>
+                      <h4 className="font-semibold text-gray-800 mb-3">{t('bookingSummary')}</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span>Rental Period:</span>
-                          <span>{calculateDays()} days</span>
+                          <span>{t('rentalPeriod')}</span>
+                          <span>{calculateDays()} {t('daysLower')}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Base Price:</span>
-                          <span>€{carData.price}/day</span>
+                          <span>{t('basePrice')}</span>
+                          <span>€{carData.price}{t('perDayLower')}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Status</span>
+                          <span className={`font-medium ${carUnavailable ? 'text-red-600' : 'text-green-600'}`}>
+                            {carUnavailable ? (t('notAvailable') || 'Booked') : (t('available') || 'Available')}
+                          </span>
                         </div>
                         {formData.extras.length > 0 && (
                           <div className="border-t pt-2">
-                            <div className="font-medium mb-2">Extras:</div>
+                            <div className="font-medium mb-2">{t('extrasLabel')}</div>
                             {formData.extras.map((extraId) => {
                               const extra = extras.find(e => e.id === extraId);
                               return extra ? (
@@ -698,7 +745,7 @@ const BookingPage = () => {
 
                     {/* Local Benefits */}
                     <div className="border-t pt-4">
-                      <h4 className="font-semibold text-gray-800 mb-3">Why Choose MEMA Rental?</h4>
+                      <h4 className="font-semibold text-gray-800 mb-3">{t('whyChooseMemaShort')}</h4>
                       <div className="space-y-3">
                         {localBenefits.map((benefit, index) => (
                           <div key={index} className="flex items-center space-x-3">
@@ -716,7 +763,7 @@ const BookingPage = () => {
 
                     {/* Contact Info */}
                     <div className="border-t pt-4">
-                      <h4 className="font-semibold text-gray-800 mb-3">Need Help?</h4>
+                      <h4 className="font-semibold text-gray-800 mb-3">{t('needHelp')}</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center space-x-2">
                           <Phone className="h-4 w-4 text-green-600" />
@@ -737,6 +784,7 @@ const BookingPage = () => {
               </Card>
             </div>
           </div>
+          )}
         </div>
       </div>
 
