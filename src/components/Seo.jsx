@@ -1,81 +1,84 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_NAME = 'MEMA Rental';
 const SITE_URL = 'https://memarental.com';
-const DEFAULT_IMAGE = `${SITE_URL}/hero-image.jpg`;
+const SITE_NAME = 'MEMA Rental';
 
-/**
- * Standardized SEO Helmet component for consistent head tags across pages
- */
-function Seo({
+const toAbsoluteUrl = (path) => {
+  if (!path) return SITE_URL;
+  if (/^https?:\/\//i.test(path)) return path;
+  const base = SITE_URL.replace(/\/$/, '');
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${clean}`;
+};
+
+export default function Seo({
   title,
   description,
-  path = '/',
-  image = DEFAULT_IMAGE,
-  type = 'website',
-  keywords,
-  schema,
-  locale = 'en_US',
-  robots = 'index, follow',
-  author = SITE_NAME,
+  image,
+  path,
+  canonical,
+  alternates = [], // [{hrefLang:'en', href:'...'}, ...]
+  schema,          // object or array of objects
+  noindex = false,
+  notranslate = false,
 }) {
-  const fullTitle = `${title} | ${SITE_NAME}`;
-  const url = `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  const url = canonical || toAbsoluteUrl(path || '/');
+  const ogImage = toAbsoluteUrl(image || '/og-image.jpg');
+  const blocks = Array.isArray(schema) ? schema : schema ? [schema] : [];
 
   return (
-    <Helmet>
-      {/* Primary Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="title" content={fullTitle} />
-      {description && <meta name="description" content={description} />}
-      {keywords && <meta name="keywords" content={keywords} />}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="robots" content={robots} />
-      <meta name="language" content="English" />
-      <meta name="author" content={author} />
+    <Helmet prioritizeSeoTags>
+      {/* Title */}
+      <title>{title ? `${title} | ${SITE_NAME}` : SITE_NAME}</title>
+      <meta name="description" content={description} />
+
+      {/* Canonical + hreflang */}
+      <link rel="canonical" href={url} />
+      {alternates.map(({ hrefLang, href }) => (
+        <link key={hrefLang} rel="alternate" hrefLang={hrefLang} href={href} />
+      ))}
+
+      {/* Mobile viewport + safe area */}
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+      {/* Robots */}
+      {noindex ? (
+        <>
+          <meta name="robots" content="noindex,nofollow,max-image-preview:large" />
+          <meta name="googlebot" content="noindex,nofollow" />
+        </>
+      ) : (
+        <>
+          <meta name="robots" content="index,follow,max-image-preview:large" />
+          <meta name="googlebot" content="index,follow" />
+        </>
+      )}
+
+      {/* Translation control */}
+      {notranslate && <meta name="google" content="notranslate" />}
 
       {/* Open Graph */}
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={url} />
-      <meta property="og:title" content={fullTitle} />
-      {description && <meta property="og:description" content={description} />}
-      <meta property="og:image" content={image} />
+      <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content={locale} />
+      <meta property="og:title" content={title || SITE_NAME} />
+      <meta property="og:description" content={description} />
+      <meta property="og:url" content={url} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:locale" content="en_US" />
 
       {/* Twitter */}
-      <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={url} />
-      <meta property="twitter:title" content={fullTitle} />
-      {description && (
-        <meta property="twitter:description" content={description} />
-      )}
-      <meta property="twitter:image" content={image} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title || SITE_NAME} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
 
-      {/* Additional SEO Meta Tags */}
-      <meta name="geo.region" content="AL" />
-      <meta name="geo.placename" content="Tirana" />
-      <meta name="geo.position" content="41.3275;19.8187" />
-      <meta name="ICBM" content="41.3275, 19.8187" />
-      <meta name="DC.title" content={fullTitle} />
-      {description && <meta name="DC.description" content={description} />}
-      <meta name="DC.subject" content="Car Rental, Tirana, Albania" />
-      <meta name="DC.creator" content={SITE_NAME} />
-      <meta name="DC.publisher" content={SITE_NAME} />
-      <meta name="DC.coverage" content="Tirana, Albania" />
-      <meta name="DC.language" content="en" />
-
-      {/* Canonical URL */}
-      <link rel="canonical" href={url} />
-
-      {/* Structured Data */}
-      {schema && (
-        <script type="application/ld+json">{JSON.stringify(schema)}</script>
-      )}
+      {/* JSON-LD blocks */}
+      {blocks.map((b, i) => (
+        <script key={i} type="application/ld+json">
+          {JSON.stringify(b)}
+        </script>
+      ))}
     </Helmet>
   );
 }
-
-export default Seo;
-
