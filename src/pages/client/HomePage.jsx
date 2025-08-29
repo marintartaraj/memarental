@@ -9,6 +9,7 @@ import { Car, Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditC
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import WhatsAppButton from "@/components/WhatsAppButton"
 
 const HomePage = () => {
   const { t } = useLanguage()
@@ -96,7 +97,7 @@ const HomePage = () => {
         <main id="main">
           {/* Hero */}
           <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+            <div className="container-mobile py-16 sm:py-20 lg:py-28 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
               <div>
                 <motion.h1
                   {...fadeUp}
@@ -117,16 +118,8 @@ const HomePage = () => {
                   transition={{ ...fadeUp.transition, delay: 0.16 }}
                   className="mt-8 flex flex-col sm:flex-row gap-3"
                 >
-                  <Button asChild size="lg" className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white">
+                  <Button asChild size="lg" className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
                     <Link to="/cars">{t("bookNow")}</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-yellow-600 text-yellow-700 hover:bg-yellow-50 bg-transparent"
-                  >
-                    <Link to="/contact">{t("getInTouch")}</Link>
                   </Button>
                 </motion.div>
 
@@ -175,25 +168,50 @@ const HomePage = () => {
                 {...fadeUp}
                 transition={{ ...fadeUp.transition, delay: 0.12 }}
                 className="relative"
-                aria-hidden="true"
               >
-                <div className="relative rounded-2xl overflow-hidden shadow-lg ring-1 ring-black/5">
-                  <img
-                    src="/placeholder.svg?height=720&width=960"
-                    width={960}
-                    height={720}
-                    alt="Modern rental car on the Albanian coast road near Tirana"
-                    className="h-auto w-full object-cover"
-                    loading="eager"
-                  />
-                </div>
+                <Card className="p-0 shadow-xl border-0 bg-white/90 backdrop-blur rounded-2xl overflow-hidden">
+                  <div className="flex flex-col">
+                    <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] bg-gray-100">
+                      <img
+                        src="/images/cars/e class1.jpeg"
+                        alt="Mercedes-Benz E-Class available for rent in Tirana, Albania"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="eager"
+                        onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
+                        decoding="async"
+                        draggable={false}
+                      />
+                    </div>
+                    <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-yellow-700 font-semibold mb-1">Featured</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">Mercedes‑Benz E‑Class</h3>
+                        <p className="text-sm text-gray-600">Executive comfort • Automatic • Diesel • Premium</p>
+                      </div>
+
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl sm:text-3xl font-bold text-yellow-700">€85</span>
+                        <span className="text-sm text-gray-600">/ {t("perDay")}</span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button asChild size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
+                          <Link to="/cars">{t("bookNow")}</Link>
+                        </Button>
+                        <Button asChild size="lg" variant="outline" className="min-h-[44px]">
+                          <Link to="/cars">See all cars</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </motion.div>
             </div>
           </section>
 
           {/* Features */}
           <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="why-us-title">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
                 <h2 id="why-us-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
                   {t("homeWhyTitle")}
@@ -201,7 +219,7 @@ const HomePage = () => {
                 <p className="mt-4 text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto">{t("homeWhyCopy")}</p>
               </motion.div>
 
-              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <ul className="grid-mobile">
                 {benefits.map((benefit, index) => (
                   <li key={benefit.title}>
                     <motion.div
@@ -228,7 +246,7 @@ const HomePage = () => {
 
           {/* Popular Destinations */}
           <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="destinations-title">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
                 <h2 id="destinations-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
                   {t("homeDestinationsTitle")}
@@ -263,28 +281,78 @@ const HomePage = () => {
 
           {/* Testimonials */}
           <section className="py-12 sm:py-16 lg:py-20 bg-gray-50" aria-labelledby="testimonials-title">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center mb-10">
                 <h2 id="testimonials-title" className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  {t("homeTestimonialsTitle") || "What travelers say"}
+                  Trusted by Travelers Worldwide
                 </h2>
                 <p className="mt-3 text-gray-700">
-                  {t("homeTestimonialsCopy") || "Real experiences from real trips across Albania."}
+                  See what our customers say about their car rental experience in Albania
                 </p>
               </motion.div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((n, i) => (
-                  <motion.div key={n} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.06 }}>
+                {[
+                  {
+                    name: "Maria K.",
+                    location: "Italy",
+                    rating: 5,
+                    text: "Perfect experience! Picked up at Tirana Airport, car was spotless and fuel-efficient. Drove to Durres and the Albanian Riviera without any issues. Staff was incredibly helpful with local tips.",
+                    date: "2 weeks ago"
+                  },
+                  {
+                    name: "Ahmed S.",
+                    location: "Germany",
+                    rating: 5,
+                    text: "Excellent service from start to finish. The SUV was perfect for our family trip to the mountains. GPS included, full insurance, and transparent pricing. Will definitely rent again!",
+                    date: "1 month ago"
+                  },
+                  {
+                    name: "Sarah L.",
+                    location: "UK",
+                    rating: 5,
+                    text: "Amazing experience exploring Albania with MEMA Rental. The car was reliable, staff spoke perfect English, and the pickup/drop-off at the airport was seamless. Highly recommend!",
+                    date: "3 weeks ago"
+                  },
+                  {
+                    name: "Nikolai P.",
+                    location: "Russia",
+                    rating: 5,
+                    text: "Great value for money! Rented a luxury car for our business trip. Professional service, clean vehicle, and excellent customer support. Made our stay in Tirana much more convenient.",
+                    date: "1 week ago"
+                  },
+                  {
+                    name: "Elena M.",
+                    location: "Greece",
+                    rating: 5,
+                    text: "Perfect for our road trip through Albania! The car was in excellent condition, fuel-efficient, and the staff provided great recommendations for our journey. Very satisfied!",
+                    date: "2 months ago"
+                  },
+                  {
+                    name: "David R.",
+                    location: "USA",
+                    rating: 5,
+                    text: "Outstanding service! Rented for 10 days to explore the country. Car was reliable, GPS worked perfectly, and the team was always available for support. Best car rental experience!",
+                    date: "1 month ago"
+                  }
+                ].map((testimonial, i) => (
+                  <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.06 }}>
                     <Card className="p-4 sm:p-6 h-full">
-                      <div className="flex items-center gap-2 text-yellow-600" aria-hidden="true">
-                        {"★★★★★"}
+                      <div className="flex items-center gap-2 text-yellow-600 mb-3" aria-hidden="true">
+                        {Array.from({ length: testimonial.rating }, (_, i) => (
+                          <span key={i}>★</span>
+                        ))}
                       </div>
-                      <p className="mt-3 text-sm text-gray-700">
-                        “Smooth pickup at Tirana Airport and great support. Car was clean and fuel-efficient. Highly
-                        recommend!”
+                      <p className="text-sm text-gray-700 mb-4 italic">
+                        "{testimonial.text}"
                       </p>
-                      <p className="mt-2 text-xs text-gray-500">Verified review</p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{testimonial.name}</p>
+                          <p className="text-xs text-gray-500">{testimonial.location}</p>
+                        </div>
+                        <p className="text-xs text-gray-400">{testimonial.date}</p>
+                      </div>
                     </Card>
                   </motion.div>
                 ))}
@@ -294,13 +362,13 @@ const HomePage = () => {
 
           {/* FAQ */}
           <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="faq-title">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center mb-10">
                 <h2 id="faq-title" className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  {t("homeFaqTitle") || "Frequently asked questions"}
+                  Frequently Asked Questions
                 </h2>
                 <p className="mt-3 text-gray-700">
-                  {t("homeFaqCopy") || "Everything you need to know about booking and driving."}
+                  Everything you need to know about renting a car in Albania
                 </p>
               </motion.div>
 
@@ -308,27 +376,54 @@ const HomePage = () => {
                 <Accordion type="single" collapsible>
                   <AccordionItem value="q1">
                     <AccordionTrigger>
-                      {t("faqDocsQuestion") || "What documents do I need to rent a car?"}
+                      What documents do I need to rent a car?
                     </AccordionTrigger>
                     <AccordionContent>
-                      {t("faqDocsAnswer") ||
-                        "A valid driver’s license, passport/ID, and a credit or debit card for the security deposit."}
+                      You'll need a valid driver's license (international license recommended for non-EU citizens), passport or national ID, and a credit or debit card for the security deposit. The driver must be at least 21 years old with at least 2 years of driving experience.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="q2">
                     <AccordionTrigger>
-                      {t("faqAirportPickupQuestion") || "Can I pick up at Tirana Airport?"}
+                      Can I pick up at Tirana Airport?
                     </AccordionTrigger>
                     <AccordionContent>
-                      {t("faqAirportPickupAnswer") ||
-                        "Yes, we offer flexible airport pickup and drop-off. Select “Tirana Airport” during checkout."}
+                      Yes! We offer convenient pickup and drop-off at Tirana International Airport (TIA). Our staff will meet you at the arrivals hall with your vehicle. Airport pickup is available 24/7, and we can also arrange delivery to your hotel or any location in Tirana.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="q3">
-                    <AccordionTrigger>{t("faqInsuranceQuestion") || "Is insurance included?"}</AccordionTrigger>
+                    <AccordionTrigger>Is insurance included?</AccordionTrigger>
                     <AccordionContent>
-                      {t("faqInsuranceAnswer") ||
-                        "All rentals include basic insurance. Full coverage options are available during booking."}
+                      All our rentals include basic third-party liability insurance. We also offer comprehensive coverage options including collision damage waiver (CDW), theft protection, and roadside assistance. You can select your preferred coverage level during booking.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="q4">
+                    <AccordionTrigger>What is the fuel policy?</AccordionTrigger>
+                    <AccordionContent>
+                      Our fuel policy is "full-to-full" - you receive the car with a full tank and return it with a full tank. If you return the car with less fuel, we'll charge the difference at current market rates plus a small service fee.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="q5">
+                    <AccordionTrigger>Can I drive to other countries?</AccordionTrigger>
+                    <AccordionContent>
+                      Yes, you can drive to neighboring countries including Greece, North Macedonia, Montenegro, and Kosovo. Please inform us in advance about your travel plans, and we'll ensure you have the necessary documentation and insurance coverage for cross-border travel.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="q6">
+                    <AccordionTrigger>What happens if I have an accident or breakdown?</AccordionTrigger>
+                    <AccordionContent>
+                      We provide 24/7 roadside assistance. In case of an accident, contact us immediately at +355-4-123-4567. We'll guide you through the process and arrange for a replacement vehicle if needed. All our vehicles are fully insured and maintained to the highest standards.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="q7">
+                    <AccordionTrigger>How far in advance should I book?</AccordionTrigger>
+                    <AccordionContent>
+                      We recommend booking at least 1-2 weeks in advance, especially during peak season (June-September) and holidays. For airport pickup or specific vehicle types, booking 2-3 weeks ahead ensures availability. Last-minute bookings are possible but subject to availability.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="q8">
+                    <AccordionTrigger>What are your cancellation policies?</AccordionTrigger>
+                    <AccordionContent>
+                      Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee. No-show or same-day cancellations are charged 50% of the rental fee. We understand emergencies happen, so please contact us as soon as possible if you need to modify your booking.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -338,7 +433,7 @@ const HomePage = () => {
 
           {/* CTA */}
           <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center text-white">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">{t("homeCtaTitle")}</h2>
                 <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">{t("homeCtaCopy")}</p>
@@ -346,17 +441,9 @@ const HomePage = () => {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl"
+                    className="bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl min-h-[44px]"
                   >
                     <Link to="/cars">{t("bookNow")}</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent"
-                  >
-                    <Link to="/contact">{t("getInTouch")}</Link>
                   </Button>
                 </div>
               </motion.div>
@@ -365,21 +452,19 @@ const HomePage = () => {
         </main>
 
         {/* Mobile sticky CTA */}
-        <div className="fixed bottom-4 inset-x-0 px-4 sm:hidden z-40">
-          <div className="mx-auto max-w-md rounded-xl shadow-lg ring-1 ring-black/5 bg-white p-3 flex gap-2">
-            <Button asChild className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white">
+        <div className="sticky-bottom-cta">
+          <div className="mx-auto max-w-md rounded-xl shadow-lg ring-1 ring-black/5 bg-white p-3">
+            <Button asChild className="w-full bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
               <Link to="/cars">{t("bookNow")}</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="flex-1 border-yellow-600 text-yellow-700 hover:bg-yellow-50 bg-transparent"
-            >
-              <Link to="/contact">{t("getInTouch")}</Link>
             </Button>
           </div>
         </div>
 
+        {/* WhatsApp Button */}
+        <WhatsAppButton 
+          phoneNumber="+355-4-123-4567"
+          message="Hello! I'm interested in renting a car from MEMA Rental. Can you help me with availability and pricing?"
+        />
 
       </div>
     </>

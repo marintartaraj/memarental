@@ -7,10 +7,10 @@ const Footer = () => {
   const { t } = useLanguage();
   return (
     <footer className="bg-gray-800 text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container-mobile py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-2" aria-label="MEMA Rental Home">
               <Car className="h-8 w-8 text-yellow-500" />
               <span className="text-2xl font-bold">MEMA <span className="text-yellow-500">Rental</span></span>
             </Link>
@@ -41,9 +41,9 @@ const Footer = () => {
           <div>
             <p className="font-semibold text-lg mb-4">{t('followUs')}</p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors"><Facebook size={24} /></a>
-              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors"><Twitter size={24} /></a>
-              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors"><Instagram size={24} /></a>
+              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors" aria-label="Facebook"><Facebook size={24} /></a>
+              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors" aria-label="Twitter"><Twitter size={24} /></a>
+              <a href="#" className="text-gray-400 hover:text-yellow-500 transition-colors" aria-label="Instagram"><Instagram size={24} /></a>
             </div>
           </div>
         </div>

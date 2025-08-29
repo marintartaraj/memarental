@@ -33,7 +33,7 @@ import {
   Wifi,
   Heart
 } from 'lucide-react';
-import HeroHeader from '@/components/HeroHeader';
+// Removed HeroHeader per request
 
 const BookingPage = () => {
   const { carId } = useParams();
@@ -280,30 +280,22 @@ const BookingPage = () => {
           <div className="text-center py-8 text-gray-500">{t('loading') || 'Loading...'}</div>
         ) : fetchError || !carData ? (
           <div className="text-center py-8 text-red-600">{fetchError || 'Car not found'}</div>
-        ) : (
-          <HeroHeader
-            title={t('bookingHeroTitle')}
-            subtitle={tFormat('bookingHeroSubtitleFmt', { brand: carData.brand, model: carData.model })}
-            stats={[
-              { icon: Car, label: `${carData.brand} ${carData.model}` },
-              { icon: Star, label: `${carData.rating} ${t('rating')}` },
-              { icon: Shield, label: t('fullyInsured') },
-            ]}
-          />
-        )}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        ) : null}
+        <div className="container-mobile py-6 sm:py-8">
           {/* Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">{t('bookingHeaderTitle')}</h1>
-            <p className="text-lg sm:text-xl text-gray-600">
-              {tFormat('bookingHeaderCopyFmt', { brand: carData.brand, model: carData.model })}
-            </p>
-          </motion.div>
+          {carData && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-8"
+            >
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">{t('bookingHeaderTitle')}</h1>
+              <p className="text-lg sm:text-xl text-gray-600">
+                {tFormat('bookingHeaderCopyFmt', { brand: carData.brand, model: carData.model })}
+              </p>
+            </motion.div>
+          )}
 
           {(!loading && carData) && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

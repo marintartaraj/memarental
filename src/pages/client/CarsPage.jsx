@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
-import HeroHeader from "@/components/HeroHeader"
 import {
   Search,
   Filter,
@@ -28,6 +27,7 @@ import {
   Heart,
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
+import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
 
 // Normalize car records for consistent UI
 const normalizeCarRecord = (record) => {
@@ -37,6 +37,29 @@ const normalizeCarRecord = (record) => {
   const fuelType = (record?.fuel_type || "").toLowerCase()
   const fuel = fuelType ? fuelType.charAt(0).toUpperCase() + fuelType.slice(1) : "Petrol"
   const isAvailable = (record?.status || "available") === "available"
+  
+  // Generate fallback image based on brand using actual photos
+  const getFallbackImage = (brand) => {
+    const brandLower = brand?.toLowerCase() || 'car'
+    if (brandLower.includes('mercedes')) {
+      return "/images/cars/c-class1.jpeg"
+    } else if (brandLower.includes('volkswagen')) {
+      return "/images/cars/jetta1.jpeg"
+    } else if (brandLower.includes('toyota')) {
+      return "/images/cars/yaris1.jpeg"
+    } else if (brandLower.includes('hyundai')) {
+      return "/images/cars/santa fe1.jpeg"
+    } else if (brandLower.includes('volvo')) {
+      return "/images/cars/xc601.jpeg"
+    } else {
+      return "/images/cars/placeholder-car.jpg"
+    }
+  }
+
+  // Prefer local images from public/images/cars for the Cars page
+  const brandImages = getAvailableCarImages()[record?.brand] || []
+  const localBrandImage = brandImages[0]
+  
   return {
     id: record?.id,
     brand: record?.brand || "Unknown",
@@ -57,9 +80,10 @@ const normalizeCarRecord = (record) => {
     popular: dailyRate >= 70,
     discount: Number(record?.discount) || 0,
     created_at: record?.created_at,
-    image_url:
-      record?.image_url ||
-      "https://images.unsplash.com/photo-1612935459247-3f90353c6c50?auto=format&fit=crop&w=1200&q=80",
+    engine: record?.engine || "",
+    luggage: record?.luggage || 2,
+    // Force usage of local images in the Cars page grid
+    image_url: localBrandImage || getFallbackImage(record?.brand),
   }
 }
 
@@ -109,15 +133,34 @@ const CarsPage = () => {
     let isMounted = true
     const loadCars = async () => {
       setLoading(true)
-      const { data, error } = await supabase.from("cars").select("*").order("created_at", { ascending: false })
-      if (!isMounted) return
-      if (error) {
-        console.error("Failed to load cars:", error)
-        setCars([])
-      } else {
+      try {
+        // Try ordering by created_at (preferred). If the column doesn't exist, retry ordering by id.
+        let { data, error } = await supabase
+          .from("cars")
+          .select("*")
+          .order("created_at", { ascending: false })
+
+        // If created_at is missing (undefined column), fall back to ordering by id
+        if (error && (error.code === "42703" || /column .*created_at.* does not exist/i.test(error.message))) {
+          const retry = await supabase
+            .from("cars")
+            .select("*")
+            .order("id", { ascending: false })
+          data = retry.data
+          error = retry.error
+        }
+
+        if (!isMounted) return
+        if (error) {
+          throw error
+        }
         setCars((data || []).map(normalizeCarRecord))
+      } catch (err) {
+        console.error("Failed to load cars:", err)
+        if (isMounted) setCars([])
+      } finally {
+        if (isMounted) setLoading(false)
       }
-      setLoading(false)
     }
     loadCars()
     return () => {
@@ -262,18 +305,9 @@ const CarsPage = () => {
       />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <HeroHeader
-          title={t("carsHeroTitle")}
-          subtitle={t("carsHeroSubtitle")}
-          stats={[
-            { icon: Car, label: t("vehiclesCount") },
-            { icon: Star, label: t("averageRating") },
-            { icon: Shield, label: t("fullyInsured") },
-            { icon: Clock, label: t("support247") },
-          ]}
-        />
+        {/* Removed top hero header section */}
 
-        <nav aria-label="Breadcrumb" className="container mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+        <nav aria-label="Breadcrumb" className="container-mobile pt-2">
           <ol className="flex items-center gap-2 text-sm text-gray-600">
             <li>
               <Link to="/" className="hover:underline">
@@ -289,7 +323,7 @@ const CarsPage = () => {
           </ol>
         </nav>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="container-mobile py-6 sm:py-8">
           {/* Search and Controls */}
           <motion.section
             {...fadeUp}
@@ -314,7 +348,7 @@ const CarsPage = () => {
                   setPage(1)
                   setSearchTerm(e.target.value)
                 }}
-                className="pl-10 h-12 text-base sm:text-lg border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200"
+                className="pl-10 h-12 text-base sm:text-lg border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]"
                 autoComplete="off"
                 enterKeyHint="search"
               />
@@ -342,7 +376,7 @@ const CarsPage = () => {
                       setPage(1)
                     }}
                   >
-                    <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
+                    <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
                       <SelectValue placeholder={t("sortBy") || "Sort by"} />
                     </SelectTrigger>
                     <SelectContent>
@@ -362,7 +396,7 @@ const CarsPage = () => {
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
-                    className="h-8 px-3"
+                    className="h-8 px-3 min-h-[44px]"
                   >
                     <span className="sr-only">{t("gridView") || "Grid view"}</span>
                     <div className="grid grid-cols-2 gap-1 w-4 h-4" aria-hidden="true">
@@ -378,7 +412,7 @@ const CarsPage = () => {
                     variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("list")}
-                    className="h-8 px-3"
+                    className="h-8 px-3 min-h-[44px]"
                   >
                     <span className="sr-only">{t("listView") || "List view"}</span>
                     <div className="flex flex-col gap-1 w-4 h-4" aria-hidden="true">
@@ -395,7 +429,7 @@ const CarsPage = () => {
                   onClick={() => setShowFilters((s) => !s)}
                   aria-expanded={showFilters}
                   aria-controls="filter-panel"
-                  className="flex items-center gap-2 border-2 hover:border-yellow-500 hover:bg-yellow-50"
+                  className="flex items-center gap-2 border-2 hover:border-yellow-500 hover:bg-yellow-50 min-h-[44px]"
                 >
                   <Filter className="h-4 w-4" />
                   <span className="hidden sm:inline">{t("filters")}</span>
@@ -486,7 +520,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
                           <SelectValue placeholder={t("allBrands")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -509,7 +543,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
                           <SelectValue placeholder={t("allCategories")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -532,7 +566,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
                           <SelectValue placeholder={t("allPrices")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -615,14 +649,17 @@ const CarsPage = () => {
                         >
                           <div className="relative overflow-hidden">
                             <img
-                              src={car.image_url || "/placeholder.svg"}
+                              src={car.image_url || "/images/cars/placeholder-car.jpg"}
                               width={960}
                               height={560}
                               alt={`${car.brand} ${car.model} car rental in ${car.location}, Albania - MEMA Rental`}
-                              className={`${viewMode === "list" ? "h-full" : "h-48 sm:h-56"} w-full object-cover transition-transform duration-500 group-hover:scale-105`}
+                              className={`${viewMode === "list" ? "h-full" : "aspect-card"} w-full object-cover transition-transform duration-500 group-hover:scale-105`}
                               loading="lazy"
                               decoding="async"
                               draggable={false}
+                              onError={(e) => {
+                                e.target.src = "/images/cars/placeholder-car.jpg";
+                              }}
                             />
                             <div
                               className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
@@ -677,23 +714,25 @@ const CarsPage = () => {
 
                           <CardContent className="flex-grow flex flex-col">
                             {/* Car Features */}
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                              <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                                <Users className="h-4 w-4 text-blue-500" aria-hidden="true" />
-                                <span className="sr-only">{t("seats") || "Seats"}: </span>
-                                <span aria-label={`${car.seats} ${t("seats") || "seats"}`}>{car.seats}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                                <Fuel className="h-4 w-4 text-green-600" aria-hidden="true" />
-                                <span className="sr-only">{t("fuel") || "Fuel"}: </span>
-                                <span>{car.fuel}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                                <Calendar className="h-4 w-4 text-purple-500" aria-hidden="true" />
-                                <span className="sr-only">{t("transmission") || "Transmission"}: </span>
-                                <span>{car.transmission}</span>
-                              </div>
+                                                      <div className="grid grid-cols-2 gap-2 mb-4">
+                            <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                              <Users className="h-4 w-4 text-blue-500" aria-hidden="true" />
+                              <span className="sr-only">{t("seats") || "Seats"}: </span>
+                              <span aria-label={`${car.seats} ${t("seats") || "seats"}`}>{car.seats}</span>
                             </div>
+                            <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                              <Fuel className="h-4 w-4 text-green-600" aria-hidden="true" />
+                              <span className="sr-only">{t("fuel") || "Fuel"}: </span>
+                              <span>{car.fuel}</span>
+                            </div>
+                            {car.engine && (
+                              <div className="flex items-center gap-1 text-sm text-gray-700 bg-gray-50 p-2 rounded col-span-2">
+                                <Zap className="h-4 w-4 text-orange-500" aria-hidden="true" />
+                                <span className="sr-only">Engine: </span>
+                                <span className="truncate">{car.engine}</span>
+                              </div>
+                            )}
+                          </div>
 
                             {/* Features Preview */}
                             <div className="mb-4">
@@ -731,7 +770,7 @@ const CarsPage = () => {
                                 <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
                                   <Button
                                     asChild
-                                    className="w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 sm:px-6 shadow-lg hover:shadow-xl transition-colors duration-200"
+                                    className="w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 sm:px-6 shadow-lg hover:shadow-xl transition-colors duration-200 min-h-[44px]"
                                     disabled={!car.available}
                                   >
                                     <Link to={`/cars/${car.id}`}>
@@ -742,7 +781,7 @@ const CarsPage = () => {
                                     variant="outline"
                                     size="sm"
                                     aria-label={t("saveToFavorites") || "Save to favorites"}
-                                    className="w-full sm:w-auto border-2 hover:border-yellow-500 hover:text-yellow-700 bg-transparent"
+                                    className="w-full sm:w-auto border-2 hover:border-yellow-500 hover:text-yellow-700 bg-transparent min-h-[44px]"
                                   >
                                     <Heart className="h-4 w-4" />
                                   </Button>

@@ -10,12 +10,63 @@ module.exports = {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: {
+				DEFAULT: '1rem',
+				sm: '1.5rem',
+				lg: '2rem',
+				xl: '2rem',
+				'2xl': '2rem',
+			},
 			screens: {
 				'2xl': '1400px',
 			},
 		},
 		extend: {
+			// Fluid typography with clamp()
+			fontSize: {
+				'xs': ['clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', { lineHeight: '1.4' }],
+				'sm': ['clamp(0.875rem, 0.8rem + 0.375vw, 1rem)', { lineHeight: '1.5' }],
+				'base': ['clamp(1rem, 0.9rem + 0.5vw, 1.125rem)', { lineHeight: '1.6' }],
+				'lg': ['clamp(1.125rem, 1rem + 0.625vw, 1.25rem)', { lineHeight: '1.5' }],
+				'xl': ['clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem)', { lineHeight: '1.4' }],
+				'2xl': ['clamp(1.5rem, 1.3rem + 1vw, 2rem)', { lineHeight: '1.3' }],
+				'3xl': ['clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem)', { lineHeight: '1.2' }],
+				'4xl': ['clamp(2.25rem, 1.9rem + 1.75vw, 3rem)', { lineHeight: '1.1' }],
+				'5xl': ['clamp(3rem, 2.5rem + 2.5vw, 4rem)', { lineHeight: '1' }],
+				'6xl': ['clamp(3.75rem, 3rem + 3.75vw, 5rem)', { lineHeight: '0.9' }],
+			},
+			// Mobile-first spacing scale
+			spacing: {
+				'18': '4.5rem',
+				'88': '22rem',
+				'128': '32rem',
+			},
+			// Mobile-optimized min-height utilities
+			minHeight: {
+				'screen': '100vh',
+				'screen-small': '100svh',
+				'44': '11rem', // 44px minimum touch target
+			},
+			// Mobile-optimized aspect ratios
+			aspectRatio: {
+				'auto': 'auto',
+				'square': '1 / 1',
+				'video': '16 / 9',
+				'photo': '4 / 3',
+				'card': '3 / 2',
+			},
+			// Mobile-optimized shadows
+			boxShadow: {
+				'mobile': '0 2px 8px rgba(0, 0, 0, 0.1)',
+				'mobile-lg': '0 4px 12px rgba(0, 0, 0, 0.15)',
+				'mobile-xl': '0 8px 24px rgba(0, 0, 0, 0.2)',
+			},
+			// Mobile-optimized border radius
+			borderRadius: {
+				'xl': 'var(--radius)',
+				'2xl': 'calc(var(--radius) + 2px)',
+				'3xl': 'calc(var(--radius) + 4px)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -50,11 +101,6 @@ module.exports = {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))',
 				},
-			},
-			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)',
 			},
 			keyframes: {
 				'accordion-down': {

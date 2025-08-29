@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const isAdmin = useMemo(() => {
-    return user?.email === 'admin@memarental.com' || user?.user_metadata?.role === 'admin';
+    return user?.email === 'admin@memarental.com' || user?.email === 'prov@gmail.com' || user?.user_metadata?.role === 'admin';
   }, [user]);
 
   const value = useMemo(() => ({

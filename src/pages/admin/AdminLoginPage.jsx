@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,13 +11,20 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, user, isAdmin, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect to admin dashboard if already logged in as admin
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      navigate('/admin');
+    }
+  }, [user, isAdmin, loading, navigate]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -32,7 +39,7 @@ const AdminLoginPage = () => {
 
     try {
       await signIn(formData.email, formData.password);
-      navigate('/admin');
+      // The useEffect will handle the redirect when auth state updates
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -47,6 +54,18 @@ const AdminLoginPage = () => {
     "description": "Admin login for MEMA Rental car rental service in Tirana, Albania",
     "url": "https://memarental.com/admin/login"
   };
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -86,15 +105,15 @@ const AdminLoginPage = () => {
                   <Label htmlFor="email" className="text-gray-700 font-medium">
                     Email Address
                   </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="h-12 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500"
-                    placeholder="admin@memarental.com"
-                    required
-                  />
+                                     <Input
+                     id="email"
+                     type="email"
+                     value={formData.email}
+                     onChange={(e) => handleInputChange('email', e.target.value)}
+                     className="h-12 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500"
+                     placeholder="prov@gmail.com"
+                     required
+                   />
                 </div>
 
                 <div className="space-y-2">

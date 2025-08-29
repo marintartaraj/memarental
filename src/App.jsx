@@ -13,11 +13,14 @@ import CarDetailPage from '@/pages/client/CarDetailPage';
 import BookingPage from '@/pages/client/BookingPage';
 import AboutPage from '@/pages/client/AboutPage';
 import ContactPage from '@/pages/client/ContactPage';
+import BookingConfirmation from '@/pages/client/BookingConfirmation';
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminLoginPage from '@/pages/admin/AdminLoginPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
+
+// Removed ScrollToTop and BackToTopButton per request
 
 function App() {
   return (
@@ -39,6 +42,7 @@ function App() {
                     
                     {/* Booking route - accessible to all users */}
                     <Route path="/booking/:carId" element={<BookingPage />} />
+                    <Route path="/booking-confirmation" element={<BookingConfirmation />} />
                     
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -50,10 +54,19 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
+                    <Route 
+                      path="/admin/dashboard" 
+                      element={
+                        <ProtectedRoute adminOnly>
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      } 
+                    />
                   </Routes>
                 </main>
                 <Footer />
                 <Toaster />
+                {/* Back-to-top removed */}
               </div>
             </AuthProvider>
           </LanguageProvider>

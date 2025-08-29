@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Seo from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,57 +23,100 @@ import {
   Mail,
   Navigation,
   Heart,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
-import HeroHeader from '@/components/HeroHeader';
+// Removed HeroHeader per request
+import { supabase } from '@/lib/customSupabaseClient';
+import { getAvailableCarImages } from '@/lib/addCarsToDatabase';
 
 const CarDetailPage = () => {
   const { carId } = useParams();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [carData, setCarData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock car data
-  const carData = {
-    id: carId,
-    brand: 'BMW',
-    model: '3 Series',
-    year: 2023,
-    price: 65,
-    rating: 4.8,
-    reviews: 127,
-    seats: 5,
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    category: 'Luxury',
-    mileage: 'Unlimited',
-    location: 'Tirana',
-    pickupTime: '24/7',
-    features: [
-      'Bluetooth Connectivity',
-      'GPS Navigation',
-      'Backup Camera',
-      'Heated Seats',
-      'Automatic Climate Control',
-      'USB Charging Ports',
-      'Cruise Control',
-      'Parking Sensors'
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1612935459247-3f90353c6c50',
-      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d',
-      'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6',
-      'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6'
-    ],
-    description: 'Experience luxury and performance with our BMW 3 Series. This premium sedan offers the perfect blend of comfort, style, and driving dynamics. Perfect for business travel or exploring Albania in style.',
-    specifications: {
-      engine: '2.0L Turbo',
-      power: '184 HP',
-      acceleration: '7.1s (0-100 km/h)',
-      topSpeed: '235 km/h',
-      fuelConsumption: '6.2L/100km',
-      trunkCapacity: '480L'
-    }
-  };
+  // Fetch car data from database
+  useEffect(() => {
+    const fetchCarData = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('id', carId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching car:', error);
+          setError('Car not found');
+          return;
+        }
+
+        if (!data) {
+          setError('Car not found');
+          return;
+        }
+
+        // Get available images for this car's brand
+        const availableImages = getAvailableCarImages()[data.brand] || [];
+        
+        // Create car data object with real data and available images
+        const car = {
+          id: data.id,
+          brand: data.brand,
+          model: data.model,
+          year: data.year,
+          price: data.daily_rate,
+          rating: 4.8,
+          reviews: 127,
+          seats: data.seats,
+          fuel: data.fuel_type?.charAt(0).toUpperCase() + data.fuel_type?.slice(1) || 'Petrol',
+          transmission: data.transmission?.charAt(0).toUpperCase() + data.transmission?.slice(1) || 'Automatic',
+          category: data.daily_rate > 70 ? 'Luxury' : data.daily_rate > 50 ? 'Premium' : 'Economy',
+          mileage: 'Unlimited',
+          location: 'Tirana',
+          pickupTime: '24/7',
+          engine: data.engine || '',
+          luggage: data.luggage || 2,
+          status: data.status,
+          image_url: data.image_url,
+          features: [
+            'Bluetooth Connectivity',
+            'GPS Navigation',
+            'Backup Camera',
+            'Air Conditioning',
+            'USB Charging Ports',
+            'Cruise Control',
+            'Parking Sensors',
+            'Insurance Included'
+          ],
+          images: availableImages.length > 0 ? availableImages : [data.image_url || '/images/cars/placeholder-car.jpg'],
+          description: `Experience the ${data.brand} ${data.model} - a perfect blend of comfort, style, and performance. This ${data.year} model offers excellent value for money and is perfect for exploring Albania. Available for rent in Tirana with competitive rates.`,
+          specifications: {
+            engine: data.engine || 'Standard Engine',
+            seats: `${data.seats} Seats`,
+            luggage: `${data.luggage} Luggage`,
+            transmission: data.transmission?.charAt(0).toUpperCase() + data.transmission?.slice(1) || 'Automatic',
+            fuelType: data.fuel_type?.charAt(0).toUpperCase() + data.fuel_type?.slice(1) || 'Petrol',
+            status: data.status?.charAt(0).toUpperCase() + data.status?.slice(1) || 'Available'
+          }
+        };
+
+        setCarData(car);
+      } catch (err) {
+        console.error('Error:', err);
+        setError('Failed to load car details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCarData();
+  }, [carId]);
 
   const localBenefits = [
     { icon: Shield, title: 'Fully Insured', description: 'Comprehensive coverage for peace of mind' },
@@ -81,6 +124,33 @@ const CarDetailPage = () => {
     { icon: Zap, title: 'Quick Booking', description: 'Reserve your car in minutes' },
     { icon: Heart, title: 'Best Rates', description: 'Competitive pricing guaranteed' }
   ];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-yellow-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading car details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !carData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Car Not Found</h1>
+          <p className="text-gray-600 mb-6">The car you're looking for doesn't exist or has been removed.</p>
+          <Button asChild>
+            <Link to="/cars">Back to Cars</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -111,7 +181,7 @@ const CarDetailPage = () => {
         "priceCurrency": "EUR",
         "unitText": "per day"
       },
-      "availability": "https://schema.org/InStock",
+      "availability": carData.status === 'available' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "seller": {
         "@type": "Organization",
         "name": "MEMA Rental - Car Rental Tirana Albania",
@@ -154,17 +224,8 @@ const CarDetailPage = () => {
       />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <HeroHeader
-          title={`${carData.brand} ${carData.model} - ${carData.year}`}
-          subtitle={t('carDetailHeroSubtitle')}
-          stats={[
-            { icon: Star, label: `${carData.rating} ${t('rating')}` },
-            { icon: Users, label: `${carData.seats} ${t('seats')}` },
-            { icon: Fuel, label: carData.fuel },
-            { icon: Clock, label: carData.pickupTime },
-          ]}
-        />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Removed top hero header section */}
+        <div className="container-mobile py-6 sm:py-8">
           {/* Back Button */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -172,7 +233,7 @@ const CarDetailPage = () => {
             transition={{ duration: 0.8 }}
             className="mb-6"
           >
-            <Button asChild variant="ghost" className="flex items-center space-x-2">
+            <Button asChild variant="ghost" className="flex items-center space-x-2 min-h-[44px]">
               <Link to="/cars">
                 <ArrowLeft className="h-4 w-4" />
                 <span>{t('backToCars')}</span>
@@ -186,13 +247,17 @@ const CarDetailPage = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
+              className="lg:sticky lg:top-8 self-start"
             >
               <Card className="overflow-hidden shadow-xl border-0">
                 <div className="relative">
                   <img 
                     src={carData.images[selectedImage]} 
                     alt={`${carData.brand} ${carData.model} car rental in Tirana, Albania - Image ${selectedImage + 1}`}
-                    className="w-full h-80 sm:h-96 object-cover"
+                    className="w-full aspect-photo object-cover"
+                    onError={(e) => {
+                      e.target.src = "/images/cars/placeholder-car.jpg";
+                    }}
                   />
                   <div className="absolute top-4 left-4">
                     <Badge className="bg-yellow-500 text-white">
@@ -223,12 +288,42 @@ const CarDetailPage = () => {
                           src={image} 
                           alt={`${carData.brand} ${carData.model} car rental Tirana thumbnail ${index + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/images/cars/placeholder-car.jpg";
+                          }}
                         />
                       </button>
                     ))}
                   </div>
                 </div>
               </Card>
+
+              {/* Additional Information (desktop-only, to balance column heights) */}
+              <div className="hidden lg:block mt-8">
+                <Card className="shadow-xl border-0">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Car className="h-6 w-6 text-yellow-600" />
+                      <span>{t('whyChooseMema')}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      {localBenefits.map((benefit, index) => (
+                        <div key={index} className="text-center">
+                          <div className="inline-block p-3 bg-yellow-100 rounded-full mb-2">
+                            <benefit.icon className="h-6 w-6 text-yellow-600" />
+                          </div>
+                          <h4 className="font-semibold text-gray-800 mb-1 text-sm">{benefit.title}</h4>
+                          <p className="text-gray-600 text-xs">
+                            {benefit.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </motion.div>
 
             {/* Car Details */}
@@ -236,7 +331,7 @@ const CarDetailPage = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Header */}
               <div>
@@ -246,8 +341,15 @@ const CarDetailPage = () => {
                 <p className="text-lg text-gray-600 mb-4">
                   {carData.year} • {carData.location}, Albania
                 </p>
-                <div className="text-3xl sm:text-4xl font-bold text-yellow-600 mb-4">
-                  €{carData.price}/{t('perDay')}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-3xl sm:text-4xl font-bold text-yellow-600">
+                    €{carData.price}/{t('perDay')}
+                  </div>
+                  <Button asChild size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                    <Link to={`/booking/${carData.id}`}>
+                      {t('bookThisCar')}
+                    </Link>
+                  </Button>
                 </div>
               </div>
 
@@ -266,10 +368,21 @@ const CarDetailPage = () => {
                   <span className="text-sm font-medium">{carData.transmission}</span>
                 </div>
                 <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-                  <Shield className="h-5 w-5 text-yellow-500" />
-                  <span className="text-sm font-medium">{t('insured')}</span>
+                  <Zap className="h-5 w-5 text-orange-500" />
+                  <span className="text-sm font-medium">{carData.luggage} Luggage</span>
                 </div>
               </div>
+              
+              {/* Engine Information */}
+              {carData.engine && (
+                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Zap className="h-5 w-5 text-orange-600" />
+                    <h4 className="font-semibold text-gray-800">Engine</h4>
+                  </div>
+                  <p className="text-gray-700">{carData.engine}</p>
+                </div>
+              )}
 
               {/* Description */}
               <div>
@@ -327,14 +440,9 @@ const CarDetailPage = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white">
-                  <Link to={`/booking/${carData.id}`}>
-                    {t('bookThisCar')}
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="flex-1">
+              {/* Contact Button */}
+              <div className="flex">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
                   <Link to="/contact">
                     {t('contactUs')}
                   </Link>
@@ -343,12 +451,12 @@ const CarDetailPage = () => {
             </motion.div>
           </div>
 
-          {/* Additional Information */}
+          {/* Additional Information (mobile/tablet only) */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-8"
+            className="mt-8 lg:hidden"
           >
             <Card className="shadow-xl border-0">
               <CardHeader>
@@ -418,3 +526,5 @@ const CarDetailPage = () => {
 };
 
 export default CarDetailPage;
+
+
