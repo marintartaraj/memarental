@@ -25,6 +25,8 @@ import {
   Car,
   TrendingUp,
   Heart,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
@@ -113,6 +115,14 @@ const CarsPage = () => {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" },
+  }
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
   }
 
   // Persist view mode
@@ -304,32 +314,44 @@ const CarsPage = () => {
         schema={structuredData}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+        {/* Global light effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/15 to-orange-200/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/12 to-yellow-200/8 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/8 to-transparent rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
+        </div>
+
         {/* Removed top hero header section */}
 
-        <nav aria-label="Breadcrumb" className="container-mobile pt-2">
+        <nav aria-label="Breadcrumb" className="container-mobile pt-2 relative z-10">
           <ol className="flex items-center gap-2 text-sm text-gray-600">
             <li>
-              <Link to="/" className="hover:underline">
-                {t("navHome") || "Home"}
+              <Link to="/" className="hover:underline group relative overflow-hidden inline-block">
+                <span className="relative z-10">{t("navHome") || "Home"}</span>
+                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 rounded blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
             </li>
             <li aria-hidden="true" className="text-gray-400">
               /
             </li>
-            <li aria-current="page" className="text-gray-800 font-medium">
-              {t("navCars") || "Cars"}
+            <li aria-current="page" className="text-gray-800 font-medium relative">
+              <span className="relative z-10">{t("navCars") || "Cars"}</span>
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 rounded blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </li>
           </ol>
         </nav>
 
-        <div className="container-mobile py-6 sm:py-8">
+        <div className="container-mobile py-6 sm:py-8 relative z-10">
           {/* Search and Controls */}
           <motion.section
             {...fadeUp}
-            className="mb-6 sm:mb-8 bg-white rounded-2xl shadow-xl p-4 sm:p-6 border-0"
+            className="mb-6 sm:mb-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 border-0 relative overflow-hidden group"
             aria-labelledby="filters-title"
           >
+            {/* Glow effect for search section */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <div className="sr-only" id="filters-title">
               {t("filters") || "Filters"}
             </div>
@@ -339,7 +361,7 @@ const CarsPage = () => {
               <label htmlFor="car-search" className="sr-only">
                 {t("carsSearchPlaceholder")}
               </label>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-yellow-500 transition-colors duration-300" aria-hidden="true" />
               <Input
                 id="car-search"
                 placeholder={t("carsSearchPlaceholder")}
@@ -348,7 +370,7 @@ const CarsPage = () => {
                   setPage(1)
                   setSearchTerm(e.target.value)
                 }}
-                className="pl-10 h-12 text-base sm:text-lg border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]"
+                className="pl-10 h-12 text-base sm:text-lg border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px] bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300"
                 autoComplete="off"
                 enterKeyHint="search"
               />
@@ -356,7 +378,8 @@ const CarsPage = () => {
 
             {/* Top Row: Count, Sort, View Mode, Toggle Filters */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-              <span aria-live="polite" className="text-sm text-gray-600">
+              <span aria-live="polite" className="text-sm text-gray-600 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-yellow-500 animate-pulse" />
                 {tFormat("carsAvailableCount", {
                   count: filteredCars.length,
                   plural: filteredCars.length !== 1 ? "s" : "",
@@ -376,7 +399,7 @@ const CarsPage = () => {
                       setPage(1)
                     }}
                   >
-                    <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
+                    <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px] bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300">
                       <SelectValue placeholder={t("sortBy") || "Sort by"} />
                     </SelectTrigger>
                     <SelectContent>
@@ -389,22 +412,17 @@ const CarsPage = () => {
                 </div>
 
                 {/* View Mode */}
-                <div className="flex bg-gray-100 rounded-lg p-1" role="tablist" aria-label="View mode">
+                <div className="flex bg-gray-100/80 backdrop-blur-sm rounded-lg p-1" role="tablist" aria-label="View mode">
                   <Button
                     role="tab"
                     aria-selected={viewMode === "grid"}
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
-                    className="h-8 px-3 min-h-[44px]"
+                    className="h-8 px-3 min-h-[44px] group relative overflow-hidden"
                   >
-                    <span className="sr-only">{t("gridView") || "Grid view"}</span>
-                    <div className="grid grid-cols-2 gap-1 w-4 h-4" aria-hidden="true">
-                      <div className="bg-current rounded-sm" />
-                      <div className="bg-current rounded-sm" />
-                      <div className="bg-current rounded-sm" />
-                      <div className="bg-current rounded-sm" />
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative z-10">Grid</span>
                   </Button>
                   <Button
                     role="tab"
@@ -412,28 +430,30 @@ const CarsPage = () => {
                     variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("list")}
-                    className="h-8 px-3 min-h-[44px]"
+                    className="h-8 px-3 min-h-[44px] group relative overflow-hidden"
                   >
-                    <span className="sr-only">{t("listView") || "List view"}</span>
-                    <div className="flex flex-col gap-1 w-4 h-4" aria-hidden="true">
-                      <div className="bg-current rounded-sm h-1" />
-                      <div className="bg-current rounded-sm h-1" />
-                      <div className="bg-current rounded-sm h-1" />
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative z-10">List</span>
                   </Button>
                 </div>
 
-                {/* Filter Toggle */}
+                {/* Toggle Filters */}
                 <Button
                   variant="outline"
-                  onClick={() => setShowFilters((s) => !s)}
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 group relative overflow-hidden"
                   aria-expanded={showFilters}
-                  aria-controls="filter-panel"
-                  className="flex items-center gap-2 border-2 hover:border-yellow-500 hover:bg-yellow-50 min-h-[44px]"
+                  aria-controls="filters-panel"
                 >
-                  <Filter className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("filters")}</span>
-                  {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <Filter className="mr-2 h-4 w-4 group-hover:animate-pulse relative z-10" />
+                  <span className="relative z-10">{t("filters") || "Filters"}</span>
+                  {showFilters ? (
+                    <ChevronUp className="ml-2 h-4 w-4 relative z-10" />
+                  ) : (
+                    <ChevronDown className="ml-2 h-4 w-4 relative z-10" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -520,7 +540,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px] bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300">
                           <SelectValue placeholder={t("allBrands")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -543,7 +563,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px] bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300">
                           <SelectValue placeholder={t("allCategories")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -566,7 +586,7 @@ const CarsPage = () => {
                           setPage(1)
                         }}
                       >
-                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px]">
+                        <SelectTrigger className="w-full sm:w-[220px] border-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 min-h-[44px] bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300">
                           <SelectValue placeholder={t("allPrices")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -622,7 +642,10 @@ const CarsPage = () => {
 
             {!loading && (
               <>
-                <div
+                <motion.div 
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
                   className={
                     viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" : "space-y-4"
                   }
@@ -631,17 +654,17 @@ const CarsPage = () => {
                   {visibleCars.map((car, index) => (
                     <motion.div
                       key={car.id}
-                      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 40 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: prefersReducedMotion ? 0 : 0.4, delay: Math.min(index * 0.04, 0.3) }}
-                      whileHover={prefersReducedMotion ? undefined : { y: -6 }}
+                      variants={fadeUp}
+                      whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
                       className="group"
                     >
                       <Card
-                        className={`overflow-hidden car-card h-full flex flex-col hover:shadow-2xl transition-shadow duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 ${
+                        className={`overflow-hidden car-card h-full flex flex-col hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white/95 to-gray-50/95 backdrop-blur-sm relative ${
                           viewMode === "list" ? "flex-row" : ""
                         }`}
                       >
+                        {/* Glow effect for car card */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <Link
                           to={`/cars/${car.id}`}
                           className={`block relative ${viewMode === "list" ? "w-1/3" : ""}`}
@@ -805,7 +828,7 @@ const CarsPage = () => {
                       </Card>
                     </motion.div>
                   ))}
-                </div>
+                </motion.div>
 
                 {/* Load More */}
                 {filteredCars.length > 0 && canLoadMore && (
@@ -875,10 +898,19 @@ const CarsPage = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600 relative overflow-hidden">
+        {/* Light effects for CTA */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
+          <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div {...fadeUp} className="text-center">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">{t("homeCtaTitle")}</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 relative">
+              <span className="relative z-10">{t("homeCtaTitle")}</span>
+              <div className="absolute -inset-2 bg-gradient-to-r from-white/10 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </h2>
             <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">{t("homeCtaCopy")}</p>
             <motion.div
               initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -889,15 +921,22 @@ const CarsPage = () => {
               <Button
                 asChild
                 size="lg"
-                className="w-full sm:w-auto bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl"
+                className="w-full sm:w-auto bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl group relative overflow-hidden"
               >
-                <Link to="/cars">{t("bookNow")}</Link>
+                <Link to="/cars">
+                  <span className="relative z-10 flex items-center">
+                    <Sparkles className="mr-2 h-5 w-5 group-hover:animate-pulse" />
+                    {t("bookNow")}
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent"
+                className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent group relative overflow-hidden"
               >
                 <Link to="/contact">{t("getInTouch")}</Link>
               </Button>
