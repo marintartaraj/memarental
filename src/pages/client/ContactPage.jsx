@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import Seo from "@/components/Seo"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { motion, useReducedMotion } from "framer-motion"
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, MessageSquare, User, Calendar, Map, Navigation, MessageCircle } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Navigation, MessageCircle } from "lucide-react"
 import HeroHeader from "@/components/HeroHeader"
 
 const ContactPage = () => {
@@ -56,7 +56,7 @@ const ContactPage = () => {
       title: t("contactEmail") || "Email",
       details: "info@memarental.com",
       subtitle: t("contactQuickResponse") || "Quick Response Guaranteed",
-      color: "purple",
+      color: "yellow",
       action: "Send Email",
       actionIcon: Mail,
     },
@@ -65,17 +65,17 @@ const ContactPage = () => {
       title: t("businessHours") || "Business Hours",
       details: "Monday - Sunday",
       subtitle: "8:00 AM - 8:00 PM",
-      color: "yellow",
+      color: "purple",
       action: "Book Now",
       actionIcon: Calendar,
     },
   ]
 
   const colorStyles = {
-    blue: { bg: "bg-blue-100", text: "text-blue-600", border: "border-blue-200" },
-    green: { bg: "bg-green-100", text: "text-green-600", border: "border-green-200" },
-    yellow: { bg: "bg-yellow-100", text: "text-yellow-600", border: "border-yellow-200" },
-    purple: { bg: "bg-purple-100", text: "text-purple-600", border: "border-purple-200" },
+    blue: { bg: "bg-yellow-50", text: "text-yellow-600", border: "border-yellow-200" },
+    green: { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-300" },
+    yellow: { bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-400" },
+    purple: { bg: "bg-gray-50", text: "text-gray-800", border: "border-gray-200" },
   }
 
   const handleInputChange = (e) => {
@@ -90,13 +90,13 @@ const ContactPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 2000))
-    
+
     setIsSubmitting(false)
     setIsSubmitted(true)
-    
+
     // Reset form after showing success message
     setTimeout(() => {
       setIsSubmitted(false)
@@ -114,7 +114,8 @@ const ContactPage = () => {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "Contact MEMA Rental - Car Rental Tirana Albania",
-    description: "Get in touch with MEMA Rental for car rental services in Tirana, Albania. Contact us for bookings, support, or inquiries.",
+    description:
+      "Get in touch with MEMA Rental for car rental services in Tirana, Albania. Contact us for bookings, support, or inquiries.",
     url: "https://memarental.com/contact",
     mainEntity: {
       "@type": "Organization",
@@ -147,7 +148,10 @@ const ContactPage = () => {
     <>
       <Seo
         title={t("seoContactTitle") || "Contact MEMA Rental - Car Rental Tirana Albania"}
-        description={t("seoContactDescription") || "Contact MEMA Rental for car rental services in Tirana, Albania. Get in touch for bookings, support, or inquiries. 24/7 customer service available."}
+        description={
+          t("seoContactDescription") ||
+          "Contact MEMA Rental for car rental services in Tirana, Albania. Get in touch for bookings, support, or inquiries. 24/7 customer service available."
+        }
         path="/contact"
         image="https://memarental.com/contact-image.jpg"
         keywords="contact MEMA Rental, car rental contact Tirana, car rental phone Albania, MEMA Rental email, car rental support Albania, Tirana car rental contact, Albania car hire contact, car rental customer service Tirana"
@@ -164,7 +168,7 @@ const ContactPage = () => {
 
       <div className="min-h-screen">
         {/* Hero Section with Colored Background */}
-        <HeroHeader 
+        <HeroHeader
           title={t("contactHeroTitle") || "Get in Touch"}
           subtitle={t("contactHeroSubtitle") || "We're here to help with all your car rental needs"}
           gradientClassName="bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-600"
@@ -175,10 +179,10 @@ const ContactPage = () => {
           <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 left-0 w-72 h-72 bg-blue-400 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 right-0 w-96 h-96 bg-green-400 rounded-full blur-3xl"></div>
+              <div className="absolute top-0 left-0 w-72 h-72 bg-yellow-400 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
             </div>
-            
+
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <motion.div {...fadeUp} className="text-center mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
@@ -219,7 +223,7 @@ const ContactPage = () => {
                           <p className="text-gray-500 mb-6">{info.subtitle}</p>
                           <Button
                             variant="outline"
-                            className={`w-full border-2 ${style.border} ${style.text} hover:${style.bg} transition-all duration-300`}
+                            className={`w-full border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300`}
                           >
                             <ActionIcon className="h-4 w-4 mr-2" />
                             {info.action}
@@ -244,7 +248,8 @@ const ContactPage = () => {
                       {t("contactFormTitle") || "Send us a Message"}
                     </h2>
                     <p className="text-lg text-gray-600 leading-relaxed">
-                      {t("contactFormCopy") || "Have a question or need assistance? Fill out the form below and we'll get back to you as soon as possible."}
+                      {t("contactFormCopy") ||
+                        "Have a question or need assistance? Fill out the form below and we'll get back to you as soon as possible."}
                     </p>
                   </div>
 
@@ -389,7 +394,7 @@ const ContactPage = () => {
                   </div>
 
                   {/* Quick Contact */}
-                  <Card className="p-8 shadow-xl border-0 bg-gradient-to-br from-yellow-50 to-orange-50">
+                  <Card className="p-8 shadow-xl border-0 bg-gradient-to-br from-yellow-50 to-yellow-100">
                     <div className="text-center">
                       <MessageCircle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
                       <h3 className="text-2xl font-bold text-gray-900 mb-4">Need Immediate Help?</h3>
@@ -411,8 +416,10 @@ const ContactPage = () => {
                   {/* Business Hours */}
                   <Card className="p-8 shadow-xl border-0 bg-white">
                     <div className="text-center">
-                      <Clock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4">Business Hours</h3>
+                      <Clock className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-yellow-600 transition-colors duration-300">
+                        Business Hours
+                      </h3>
                       <div className="space-y-2 text-gray-600">
                         <div className="flex justify-between">
                           <span>Monday - Friday:</span>
@@ -454,20 +461,22 @@ const ContactPage = () => {
                 {[
                   {
                     question: "What documents do I need to rent a car?",
-                    answer: "You'll need a valid driver's license, passport/ID, and a credit or debit card for the security deposit."
+                    answer:
+                      "You'll need a valid driver's license, passport/ID, and a credit or debit card for the security deposit.",
                   },
                   {
                     question: "Can I pick up at Tirana Airport?",
-                    answer: "Yes! We offer convenient pickup and drop-off at Tirana International Airport (TIA)."
+                    answer: "Yes! We offer convenient pickup and drop-off at Tirana International Airport (TIA).",
                   },
                   {
                     question: "What is your cancellation policy?",
-                    answer: "Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee."
+                    answer:
+                      "Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee.",
                   },
                   {
                     question: "Do you offer insurance?",
-                    answer: "All rentals include basic insurance. Full coverage options are available during booking."
-                  }
+                    answer: "All rentals include basic insurance. Full coverage options are available during booking.",
+                  },
                 ].map((faq, index) => (
                   <motion.div
                     key={index}
@@ -480,9 +489,7 @@ const ContactPage = () => {
                       <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-yellow-600 transition-colors duration-300">
                         {faq.question}
                       </h3>
-                      <p className="text-gray-600 leading-relaxed">
-                        {faq.answer}
-                      </p>
+                      <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
                     </Card>
                   </motion.div>
                 ))}
