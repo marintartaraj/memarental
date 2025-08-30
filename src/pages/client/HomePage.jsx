@@ -1,207 +1,145 @@
 "use client"
-
-import React from "react"
-import Seo from "@/components/Seo"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
-import { Car, Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard } from "lucide-react"
+import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import WhatsAppButton from "@/components/WhatsAppButton"
 
 const HomePage = () => {
-  const { t } = useLanguage()
   const prefersReducedMotion = useReducedMotion()
 
-  // Animations (respect prefers-reduced-motion)
   const fadeUp = {
-    initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 },
+    initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: prefersReducedMotion ? 0 : 0.6, ease: "easeOut" },
+    transition: { duration: prefersReducedMotion ? 0 : 0.5, ease: "easeOut" },
+    viewport: { once: true, amount: 0.3 },
   }
 
-  // Content
   const destinations = [
-    { name: t("destTiranaCenterName"), emoji: "🏙️", description: t("destTiranaCenterDesc") },
-    { name: t("destDurresBeachName"), emoji: "🏖️", description: t("destDurresBeachDesc") },
-    { name: t("destAlbanianAlpsName"), emoji: "⛰️", description: t("destAlbanianAlpsDesc") },
-    { name: t("destHistoricalSitesName"), emoji: "🏛️", description: t("destHistoricalSitesDesc") },
+    { name: "Tirana City Center", emoji: "🏙️", description: "Explore Albania's vibrant capital with ease" },
+    { name: "Durres Beach", emoji: "🏖️", description: "Drive to the stunning Adriatic coastline" },
+    { name: "Albanian Alps", emoji: "⛰️", description: "Adventure through breathtaking mountain roads" },
+    { name: "Historical Sites", emoji: "🏛️", description: "Visit ancient castles and UNESCO sites" },
   ]
 
   const benefits = [
-    { icon: Shield, title: t("fullyInsured"), description: t("benefitFullyInsuredDesc") },
-    { icon: Clock, title: t("support247"), description: t("support247Desc") },
-    { icon: Zap, title: t("benefitQuickBookingTitle"), description: t("benefitQuickBookingDesc") },
-    { icon: Heart, title: t("benefitBestRatesTitle"), description: t("benefitBestRatesDesc") },
-    { icon: Navigation, title: t("benefitFreeGpsTitle"), description: t("benefitFreeGpsDesc") },
-    { icon: CreditCard, title: t("benefitFlexiblePaymentTitle"), description: t("benefitFlexiblePaymentDesc") },
+    { icon: Shield, title: "Fully Insured", description: "Complete coverage and peace of mind" },
+    { icon: Clock, title: "24/7 Support", description: "Round-the-clock assistance when you need it" },
+    { icon: Zap, title: "Instant Booking", description: "Reserve your car in under 2 minutes" },
+    { icon: Heart, title: "Best Rates", description: "Competitive pricing with no hidden fees" },
+    { icon: Navigation, title: "Free GPS", description: "Navigate Albania with confidence" },
+    { icon: CreditCard, title: "Flexible Payment", description: "Multiple payment options available" },
   ]
-
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "CarRental",
-    name: "MEMA Rental - Car Rental Tirana Albania",
-    alternateName: "MEMA Car Rental",
-    description:
-      "Premium car rental service in Tirana, Albania. Rent cars, SUVs, and luxury vehicles for your Albanian adventure. Best car rental in Tirana with competitive rates.",
-    url: "https://memarental.com",
-    telephone: "+355-4-123-4567",
-    email: "info@memarental.com",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "Rruga e Durresit 123",
-      addressLocality: "Tirana",
-      addressRegion: "Tirana",
-      postalCode: "1001",
-      addressCountry: "AL",
-    },
-    geo: { "@type": "GeoCoordinates", latitude: "41.3275", longitude: "19.8187" },
-    openingHours: ["Mo-Su 08:00-20:00"],
-    priceRange: "€€",
-    aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "127" },
-    areaServed: { "@type": "Country", name: "Albania" },
-    serviceArea: { "@type": "Place", name: "Tirana, Albania" },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Car Rental Services",
-      itemListElement: [
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Economy Car Rental Tirana" } },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "SUV Rental Albania" } },
-        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Luxury Car Rental Tirana" } },
-      ],
-    },
-    sameAs: ["https://facebook.com/memarental", "https://instagram.com/memarental"],
-  }
 
   return (
     <>
-      <Seo
-        title={t("seoHomeTitle")}
-        description={t("seoHomeDescription")}
-        path="/"
-        image="https://memarental.com/hero-image.jpg"
-        keywords="car rental Tirana, car rental Albania, rent car Tirana, car hire Albania, Tirana car rental, Albania car rental, luxury car rental Tirana, economy car rental Albania, SUV rental Tirana, car rental service Albania, Tirana airport car rental, Albania car hire service, car rental Tirana city center, best car rental Tirana, cheap car rental Albania, car rental near me Tirana"
-        schema={structuredData}
+      <title>MEMA Rental - Premium Car Rental in Albania | Tirana Airport Pickup</title>
+      <meta
+        name="description"
+        content="Rent premium cars in Albania with MEMA Rental. Airport pickup, fully insured vehicles, and 24/7 support. Book your Albanian adventure today!"
       />
 
+      {/* Skip link for accessibility */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:m-4 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:shadow"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
       >
         Skip to content
       </a>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-background">
         <main id="main">
-          {/* Hero */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-            <div className="container-mobile py-16 sm:py-20 lg:py-28 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
-              <div>
+          <section className="relative overflow-hidden bg-background" aria-labelledby="hero-title">
+            <div className="container-mobile py-12 sm:py-16 lg:py-24 grid gap-8 lg:grid-cols-2 items-center">
+              {/* Hero Content */}
+              <div className="space-y-6">
                 <motion.h1
                   {...fadeUp}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900"
+                  id="hero-title"
+                  className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance"
                 >
-                  {t("heroTitle")}
+                  Explore Albania with Confidence
                 </motion.h1>
+
                 <motion.p
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.08 }}
-                  className="mt-4 text-lg sm:text-xl text-gray-700 max-w-2xl"
+                  transition={{ ...fadeUp.transition, delay: 0.1 }}
+                  className="text-lg sm:text-xl text-muted-foreground max-w-2xl text-pretty"
                 >
-                  {t("heroSubtitle")}
+                  Premium car rental service in Tirana and across Albania. Fully insured vehicles, airport pickup, and
+                  transparent pricing for your perfect Albanian adventure.
                 </motion.p>
 
                 <motion.div
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.16 }}
-                  className="mt-8 flex flex-col sm:flex-row gap-3"
+                  transition={{ ...fadeUp.transition, delay: 0.2 }}
+                  className="flex flex-col sm:flex-row gap-4"
                 >
-                  <Button asChild size="lg" className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
-                    <Link to="/cars">{t("bookNow")}</Link>
+                  <Button
+                    size="lg"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl"
+                  >
+                    Find Your Car
+                  </Button>
+                  <Button size="lg" variant="outline" className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8 py-6 text-lg bg-transparent">
+                    View Fleet
                   </Button>
                 </motion.div>
 
-                {/* Trust signals */}
                 <motion.div
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.24 }}
-                  className="mt-8 flex flex-wrap gap-6 items-center text-sm text-gray-600"
+                  transition={{ ...fadeUp.transition, delay: 0.3 }}
+                  className="flex flex-wrap gap-6 items-center text-sm text-muted-foreground pt-4"
+                  aria-label="Trust signals"
                 >
                   <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-600" aria-hidden="true" />
-                    <span>4.9/5 average rating from 127 reviews</span>
+                    <Star className="h-4 w-4 text-yellow-500 fill-current" aria-hidden="true" />
+                    <span>4.9/5 rating</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-yellow-600" aria-hidden="true" />
-                    <span>Trusted by travelers across Albania</span>
+                    <Users className="h-4 w-4 text-yellow-500" aria-hidden="true" />
+                    <span>1000+ happy customers</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-yellow-600" aria-hidden="true" />
-                    <span>Fully insured, transparent pricing</span>
+                    <Award className="h-4 w-4 text-yellow-500" aria-hidden="true" />
+                    <span>Fully insured</span>
                   </div>
                 </motion.div>
-
-                {/* SEO-friendly internal links */}
-                <motion.p
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.3 }}
-                  className="mt-6 text-sm text-gray-600"
-                >
-                  Popular:{" "}
-                  <Link className="underline underline-offset-2 hover:text-gray-900" to="/cars?type=economy">
-                    Economy car rental in Tirana
-                  </Link>{" "}
-                  ·{" "}
-                  <Link className="underline underline-offset-2 hover:text-gray-900" to="/cars?type=suv">
-                    SUV rental in Albania
-                  </Link>{" "}
-                  ·{" "}
-                  <Link className="underline underline-offset-2 hover:text-gray-900" to="/cars?type=luxury">
-                    Luxury car hire in Tirana
-                  </Link>
-                </motion.p>
               </div>
 
-              <motion.div
-                {...fadeUp}
-                transition={{ ...fadeUp.transition, delay: 0.12 }}
-                className="relative"
-              >
-                <Card className="p-0 shadow-xl border-0 bg-white/90 backdrop-blur rounded-2xl overflow-hidden">
-                  <div className="flex flex-col">
-                    <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] bg-gray-100">
-                      <img
-                        src="/images/cars/e class1.jpeg"
-                        alt="Mercedes-Benz E-Class available for rent in Tirana, Albania"
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="eager"
-                        onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
-                        decoding="async"
-                        draggable={false}
-                      />
+              <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }}>
+                <Card className="p-0 shadow-2xl border-0 bg-card rounded-xl overflow-hidden">
+                  <div className="relative w-full aspect-[4/3] bg-muted">
+                    <img
+                      src="/mercedes-benz-e-class-luxury-sedan-in-silver.png"
+                      alt="Mercedes-Benz E-Class available for rent"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="eager"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                        Featured
+                      </span>
                     </div>
-                    <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-wider text-yellow-700 font-semibold mb-1">Featured</p>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">Mercedes‑Benz E‑Class</h3>
-                        <p className="text-sm text-gray-600">Executive comfort • Automatic • Diesel • Premium</p>
-                      </div>
+                  </div>
 
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl sm:text-3xl font-bold text-yellow-700">€85</span>
-                        <span className="text-sm text-gray-600">/ {t("perDay")}</span>
-                      </div>
+                  <div className="p-6 space-y-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-yellow-600 font-semibold mb-1">Featured</p>
+                      <h3 className="font-heading text-2xl font-bold text-card-foreground">Mercedes-Benz E-Class</h3>
+                      <p className="text-muted-foreground">Executive • Automatic • Premium</p>
+                    </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button asChild size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
-                          <Link to="/cars">{t("bookNow")}</Link>
-                        </Button>
-                        <Button asChild size="lg" variant="outline" className="min-h-[44px]">
-                          <Link to="/cars">See all cars</Link>
-                        </Button>
-                      </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-heading text-3xl font-black text-yellow-600">€85</span>
+                      <span className="text-muted-foreground">/ day</span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg hover:shadow-xl">Book Now</Button>
+                      <Button variant="outline" className="flex-1 bg-transparent border-yellow-500 text-yellow-600 hover:bg-yellow-50">
+                        View Details
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -209,149 +147,37 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* Features */}
-          <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="why-us-title">
+          <section id="why-us" className="py-16 lg:py-24 bg-muted/30" aria-labelledby="why-us-title">
             <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
-                <h2 id="why-us-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-                  {t("homeWhyTitle")}
+              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+                <h2
+                  id="why-us-title"
+                  className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance"
+                >
+                  Why Choose MEMA Rental
                 </h2>
-                <p className="mt-4 text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto">{t("homeWhyCopy")}</p>
-              </motion.div>
-
-              <ul className="grid-mobile">
-                {benefits.map((benefit, index) => (
-                  <li key={benefit.title}>
-                    <motion.div
-                      {...fadeUp}
-                      transition={{ ...fadeUp.transition, delay: 0.12 + index * 0.06 }}
-                      whileHover={prefersReducedMotion ? undefined : { y: -6 }}
-                      className="group"
-                    >
-                      <Card className="p-6 hover:shadow-xl transition-shadow duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                        <div className="text-center">
-                          <div className="inline-block p-3 bg-yellow-100 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">
-                            <benefit.icon className="h-6 w-6 text-yellow-600" aria-hidden="true" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">{benefit.title}</h3>
-                          <p className="mt-1.5 text-gray-600">{benefit.description}</p>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Popular Destinations */}
-          <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="destinations-title">
-            <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16">
-                <h2 id="destinations-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-                  {t("homeDestinationsTitle")}
-                </h2>
-                <p className="mt-4 text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto">{t("homeDestinationsCopy")}</p>
-              </motion.div>
-
-              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                {destinations.map((destination, index) => (
-                  <li key={destination.name}>
-                    <motion.div
-                      {...fadeUp}
-                      transition={{ ...fadeUp.transition, delay: 0.12 + index * 0.06 }}
-                      whileHover={prefersReducedMotion ? undefined : { y: -6 }}
-                      className="group"
-                    >
-                      <Card className="p-6 hover:shadow-xl transition-shadow duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50">
-                        <div className="text-center">
-                          <div className="text-4xl mb-3" aria-hidden="true">
-                            {destination.emoji}
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900">{destination.name}</h3>
-                          <p className="mt-1.5 text-gray-600">{destination.description}</p>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          {/* Testimonials */}
-          <section className="py-12 sm:py-16 lg:py-20 bg-gray-50" aria-labelledby="testimonials-title">
-            <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center mb-10">
-                <h2 id="testimonials-title" className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  Trusted by Travelers Worldwide
-                </h2>
-                <p className="mt-3 text-gray-700">
-                  See what our customers say about their car rental experience in Albania
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+                  Experience premium car rental service with transparent pricing, comprehensive insurance, and
+                  exceptional customer support.
                 </p>
               </motion.div>
 
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  {
-                    name: "Maria K.",
-                    location: "Italy",
-                    rating: 5,
-                    text: "Perfect experience! Picked up at Tirana Airport, car was spotless and fuel-efficient. Drove to Durres and the Albanian Riviera without any issues. Staff was incredibly helpful with local tips.",
-                    date: "2 weeks ago"
-                  },
-                  {
-                    name: "Ahmed S.",
-                    location: "Germany",
-                    rating: 5,
-                    text: "Excellent service from start to finish. The SUV was perfect for our family trip to the mountains. GPS included, full insurance, and transparent pricing. Will definitely rent again!",
-                    date: "1 month ago"
-                  },
-                  {
-                    name: "Sarah L.",
-                    location: "UK",
-                    rating: 5,
-                    text: "Amazing experience exploring Albania with MEMA Rental. The car was reliable, staff spoke perfect English, and the pickup/drop-off at the airport was seamless. Highly recommend!",
-                    date: "3 weeks ago"
-                  },
-                  {
-                    name: "Nikolai P.",
-                    location: "Russia",
-                    rating: 5,
-                    text: "Great value for money! Rented a luxury car for our business trip. Professional service, clean vehicle, and excellent customer support. Made our stay in Tirana much more convenient.",
-                    date: "1 week ago"
-                  },
-                  {
-                    name: "Elena M.",
-                    location: "Greece",
-                    rating: 5,
-                    text: "Perfect for our road trip through Albania! The car was in excellent condition, fuel-efficient, and the staff provided great recommendations for our journey. Very satisfied!",
-                    date: "2 months ago"
-                  },
-                  {
-                    name: "David R.",
-                    location: "USA",
-                    rating: 5,
-                    text: "Outstanding service! Rented for 10 days to explore the country. Car was reliable, GPS worked perfectly, and the team was always available for support. Best car rental experience!",
-                    date: "1 month ago"
-                  }
-                ].map((testimonial, i) => (
-                  <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.06 }}>
-                    <Card className="p-4 sm:p-6 h-full">
-                      <div className="flex items-center gap-2 text-yellow-600 mb-3" aria-hidden="true">
-                        {Array.from({ length: testimonial.rating }, (_, i) => (
-                          <span key={i}>★</span>
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-700 mb-4 italic">
-                        "{testimonial.text}"
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{testimonial.name}</p>
-                          <p className="text-xs text-gray-500">{testimonial.location}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {benefits.map((benefit, index) => (
+                  <motion.div
+                    key={benefit.title}
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.1 + index * 0.05 }}
+                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                    className="group"
+                  >
+                    <Card className="p-6 hover:shadow-xl transition-all duration-300 border-0 bg-card h-full">
+                      <div className="text-center space-y-4">
+                        <div className="inline-flex p-3 bg-yellow-100 rounded-full group-hover:bg-yellow-200 transition-colors">
+                          <benefit.icon className="h-6 w-6 text-yellow-600" aria-hidden="true" />
                         </div>
-                        <p className="text-xs text-gray-400">{testimonial.date}</p>
+                        <h3 className="font-heading text-xl font-bold text-card-foreground">{benefit.title}</h3>
+                        <p className="text-muted-foreground text-pretty">{benefit.description}</p>
                       </div>
                     </Card>
                   </motion.div>
@@ -360,70 +186,147 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* FAQ */}
-          <section className="py-12 sm:py-16 lg:py-20 bg-white" aria-labelledby="faq-title">
+          <section id="destinations" className="py-16 lg:py-24 bg-background" aria-labelledby="destinations-title">
             <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center mb-10">
-                <h2 id="faq-title" className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  Frequently Asked Questions
+              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+                <h2
+                  id="destinations-title"
+                  className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance"
+                >
+                  Popular Destinations
                 </h2>
-                <p className="mt-3 text-gray-700">
-                  Everything you need to know about renting a car in Albania
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+                  Discover Albania's most beautiful locations with the freedom of your own vehicle.
                 </p>
               </motion.div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {destinations.map((destination, index) => (
+                  <motion.div
+                    key={destination.name}
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.1 + index * 0.05 }}
+                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                  >
+                    <Card className="p-6 hover:shadow-xl transition-all duration-300 border-0 bg-card text-center h-full">
+                      <div className="text-4xl mb-4" aria-hidden="true">
+                        {destination.emoji}
+                      </div>
+                      <h3 className="font-heading text-lg font-bold text-card-foreground mb-2">{destination.name}</h3>
+                      <p className="text-muted-foreground text-sm text-pretty">{destination.description}</p>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="testimonials" className="py-16 lg:py-24 bg-muted/30" aria-labelledby="testimonials-title">
+            <div className="container-mobile">
+              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+                <h2 id="testimonials-title" className="font-heading text-3xl sm:text-4xl font-black text-foreground">
+                  Trusted by Travelers Worldwide
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  See what our customers say about their Albanian adventure
+                </p>
+              </motion.div>
+
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {[
+                  {
+                    name: "Maria K.",
+                    location: "Italy",
+                    rating: 5,
+                    text: "Perfect experience! Car was spotless and the staff provided excellent local recommendations. Made our Albanian road trip unforgettable.",
+                    date: "2 weeks ago",
+                  },
+                  {
+                    name: "Ahmed S.",
+                    location: "Germany",
+                    rating: 5,
+                    text: "Excellent service from start to finish. The SUV was perfect for our mountain adventure. Professional and reliable!",
+                    date: "1 month ago",
+                  },
+                  {
+                    name: "Sarah L.",
+                    location: "UK",
+                    rating: 5,
+                    text: "Amazing experience! Seamless airport pickup and the car was in perfect condition. Highly recommend MEMA Rental.",
+                    date: "3 weeks ago",
+                  },
+                ].map((testimonial, i) => (
+                  <motion.div key={i} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.05 }}>
+                    <Card className="p-6 h-full bg-card">
+                      <div className="flex items-center gap-1 text-yellow-500 mb-3" aria-hidden="true">
+                        {Array.from({ length: testimonial.rating }, (_, j) => (
+                          <Star key={j} className="h-4 w-4 fill-current" />
+                        ))}
+                        <span className="sr-only">{testimonial.rating} out of 5 stars</span>
+                      </div>
+                      <p className="text-card-foreground mb-4 italic text-pretty">"{testimonial.text}"</p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold text-card-foreground">{testimonial.name}</p>
+                          <p className="text-xs text-muted-foreground">{testimonial.location}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{testimonial.date}</p>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="faq" className="py-16 lg:py-24 bg-background" aria-labelledby="faq-title">
+            <div className="container-mobile">
+              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+                <h2 id="faq-title" className="font-heading text-3xl sm:text-4xl font-black text-foreground">
+                  Frequently Asked Questions
+                </h2>
+                <p className="text-lg text-muted-foreground">Everything you need to know about renting with us</p>
+              </motion.div>
+
               <div className="mx-auto max-w-3xl">
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="q1">
-                    <AccordionTrigger>
+                <Accordion type="single" collapsible className="space-y-4">
+                  <AccordionItem value="q1" className="border border-border rounded-lg px-6">
+                    <AccordionTrigger className="text-left font-semibold hover:no-underline text-foreground">
                       What documents do I need to rent a car?
                     </AccordionTrigger>
-                    <AccordionContent>
-                      You'll need a valid driver's license (international license recommended for non-EU citizens), passport or national ID, and a credit or debit card for the security deposit. The driver must be at least 21 years old with at least 2 years of driving experience.
+                    <AccordionContent className="text-muted-foreground">
+                      You'll need a valid driver's license, passport or national ID, and a credit card. International
+                      license recommended for non-EU citizens. Minimum age 21 with 2+ years driving experience.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="q2">
-                    <AccordionTrigger>
-                      Can I pick up at Tirana Airport?
+
+                  <AccordionItem value="q2" className="border border-border rounded-lg px-6">
+                    <AccordionTrigger className="text-left font-semibold hover:no-underline text-foreground">
+                      Do you offer airport pickup?
                     </AccordionTrigger>
-                    <AccordionContent>
-                      Yes! We offer convenient pickup and drop-off at Tirana International Airport (TIA). Our staff will meet you at the arrivals hall with your vehicle. Airport pickup is available 24/7, and we can also arrange delivery to your hotel or any location in Tirana.
+                    <AccordionContent className="text-muted-foreground">
+                      Yes! We provide 24/7 pickup and drop-off at Tirana International Airport. Our staff will meet you
+                      at arrivals with your vehicle ready to go.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="q3">
-                    <AccordionTrigger>Is insurance included?</AccordionTrigger>
-                    <AccordionContent>
-                      All our rentals include basic third-party liability insurance. We also offer comprehensive coverage options including collision damage waiver (CDW), theft protection, and roadside assistance. You can select your preferred coverage level during booking.
+
+                  <AccordionItem value="q3" className="border border-border rounded-lg px-6">
+                    <AccordionTrigger className="text-left font-semibold hover:no-underline text-foreground">
+                      Is insurance included?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      All rentals include comprehensive insurance coverage. We offer additional protection options
+                      including collision damage waiver and roadside assistance.
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="q4">
-                    <AccordionTrigger>What is the fuel policy?</AccordionTrigger>
-                    <AccordionContent>
-                      Our fuel policy is "full-to-full" - you receive the car with a full tank and return it with a full tank. If you return the car with less fuel, we'll charge the difference at current market rates plus a small service fee.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="q5">
-                    <AccordionTrigger>Can I drive to other countries?</AccordionTrigger>
-                    <AccordionContent>
-                      Yes, you can drive to neighboring countries including Greece, North Macedonia, Montenegro, and Kosovo. Please inform us in advance about your travel plans, and we'll ensure you have the necessary documentation and insurance coverage for cross-border travel.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="q6">
-                    <AccordionTrigger>What happens if I have an accident or breakdown?</AccordionTrigger>
-                    <AccordionContent>
-                      We provide 24/7 roadside assistance. In case of an accident, contact us immediately at +355-4-123-4567. We'll guide you through the process and arrange for a replacement vehicle if needed. All our vehicles are fully insured and maintained to the highest standards.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="q7">
-                    <AccordionTrigger>How far in advance should I book?</AccordionTrigger>
-                    <AccordionContent>
-                      We recommend booking at least 1-2 weeks in advance, especially during peak season (June-September) and holidays. For airport pickup or specific vehicle types, booking 2-3 weeks ahead ensures availability. Last-minute bookings are possible but subject to availability.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="q8">
-                    <AccordionTrigger>What are your cancellation policies?</AccordionTrigger>
-                    <AccordionContent>
-                      Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee. No-show or same-day cancellations are charged 50% of the rental fee. We understand emergencies happen, so please contact us as soon as possible if you need to modify your booking.
+
+                  <AccordionItem value="q4" className="border border-border rounded-lg px-6">
+                    <AccordionTrigger className="text-left font-semibold hover:no-underline text-foreground">
+                      Can I drive to other countries?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Yes, cross-border travel to Greece, North Macedonia, Montenegro, and Kosovo is permitted. Please
+                      inform us in advance for proper documentation.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -431,41 +334,46 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* CTA */}
-          <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600">
+          <section className="py-16 lg:py-24 bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
             <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center text-white">
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">{t("homeCtaTitle")}</h2>
-                <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">{t("homeCtaCopy")}</p>
+              <motion.div {...fadeUp} className="text-center space-y-8">
+                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-balance">
+                  Ready to Explore Albania?
+                </h2>
+                <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto text-pretty">
+                  Book your premium rental car today and discover the beauty of Albania with complete confidence and
+                  comfort.
+                </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
-                    asChild
                     size="lg"
-                    className="bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl min-h-[44px]"
+                    className="bg-white text-yellow-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl"
                   >
-                    <Link to="/cars">{t("bookNow")}</Link>
+                    Book Your Car Now
                   </Button>
+                  <div className="flex items-center gap-4 text-white/80">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      <span>+355-4-123-4567</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span>info@memarental.com</span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
           </section>
         </main>
 
-        {/* Mobile sticky CTA */}
-        <div className="sticky-bottom-cta">
-          <div className="mx-auto max-w-md rounded-xl shadow-lg ring-1 ring-black/5 bg-white p-3">
-            <Button asChild className="w-full bg-yellow-500 hover:bg-yellow-600 text-white min-h-[44px]">
-              <Link to="/cars">{t("bookNow")}</Link>
+        <div className="sticky-bottom-cta sm:hidden">
+          <div className="mx-auto max-w-md">
+            <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 text-lg shadow-xl">
+              Book Your Car
             </Button>
           </div>
         </div>
-
-        {/* WhatsApp Button */}
-        <WhatsAppButton 
-          phoneNumber="+355-4-123-4567"
-          message="Hello! I'm interested in renting a car from MEMA Rental. Can you help me with availability and pricing?"
-        />
-
       </div>
     </>
   )

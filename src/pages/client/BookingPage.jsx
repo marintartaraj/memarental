@@ -64,11 +64,7 @@ const BookingPage = () => {
     extras: [],
     specialRequests: '',
     
-    // Step 4: Payment
-    cardNumber: '',
-    cardExpiry: '',
-    cardCVC: '',
-    cardholderName: '',
+    // Terms acceptance (moved from step 4)
     acceptTerms: false
   });
 
@@ -316,7 +312,7 @@ const BookingPage = () => {
                   )}
                   {/* Progress Steps */}
                   <div className="flex items-center justify-between mb-8">
-                    {[1, 2, 3, 4].map((step) => (
+                    {[1, 2, 3].map((step) => (
                       <div key={step} className="flex items-center">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                           step <= currentStep 
@@ -325,7 +321,7 @@ const BookingPage = () => {
                         }`}>
                           {step}
                         </div>
-                        {step < 4 && (
+                        {step < 3 && (
                           <div className={`w-16 h-1 mx-2 ${
                             step < currentStep ? 'bg-yellow-500' : 'bg-gray-200'
                           }`}></div>
@@ -542,53 +538,16 @@ const BookingPage = () => {
                               rows={3}
                             />
                           </div>
-                        </div>
-                      )}
 
-                      {currentStep === 4 && (
-                        <div className="space-y-6">
-                          <h3 className="text-xl font-semibold text-gray-800 mb-4">{t('step4Title')}</h3>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                              <Label htmlFor="cardNumber">{t('cardNumber')}</Label>
-                              <Input
-                                id="cardNumber"
-                                value={formData.cardNumber}
-                                onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-                                placeholder="1234 5678 9012 3456"
-                                className="mt-1"
-                              />
+                          {/* Terms acceptance moved to step 3 */}
+                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <CreditCard className="h-5 w-5 text-blue-600" />
+                              <h4 className="font-semibold text-gray-800">Cash Payment</h4>
                             </div>
-                            <div>
-                              <Label htmlFor="cardholderName">{t('cardholderName')}</Label>
-                              <Input
-                                id="cardholderName"
-                                value={formData.cardholderName}
-                                onChange={(e) => handleInputChange('cardholderName', e.target.value)}
-                                className="mt-1"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="cardExpiry">{t('expiryDate')}</Label>
-                              <Input
-                                id="cardExpiry"
-                                value={formData.cardExpiry}
-                                onChange={(e) => handleInputChange('cardExpiry', e.target.value)}
-                                placeholder="MM/YY"
-                                className="mt-1"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="cardCVC">{t('cvc')}</Label>
-                              <Input
-                                id="cardCVC"
-                                value={formData.cardCVC}
-                                onChange={(e) => handleInputChange('cardCVC', e.target.value)}
-                                placeholder="123"
-                                className="mt-1"
-                              />
-                            </div>
+                            <p className="text-gray-700 text-sm">
+                              Payment will be collected in cash upon pickup. No online payment required.
+                            </p>
                           </div>
 
                           <div className="flex items-center space-x-3">
@@ -614,7 +573,7 @@ const BookingPage = () => {
                           <span>{t('back')}</span>
                         </Button>
                         
-                        {currentStep < 4 ? (
+                        {currentStep < 3 ? (
                           <Button
                             onClick={handleNext}
                             className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600"
