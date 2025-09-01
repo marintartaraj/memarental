@@ -60,6 +60,11 @@ const AdminCars = () => {
     engine: '',
     image_url: ''
   });
+
+  // Debug log for form data changes
+  useEffect(() => {
+    console.log('Form data changed:', carFormData);
+  }, [carFormData]);
   const [editingCar, setEditingCar] = useState(null);
   const [isCarDialogOpen, setIsCarDialogOpen] = useState(false);
 
@@ -87,8 +92,10 @@ const AdminCars = () => {
   const validateForm = useCallback(() => {
     const errors = {};
     
-    if (!carFormData.brand.trim()) errors.brand = 'Brand is required';
-    if (!carFormData.model.trim()) errors.model = 'Model is required';
+    console.log('Validating form data:', carFormData); // Debug log
+    
+    if (!carFormData.brand?.trim()) errors.brand = 'Brand is required';
+    if (!carFormData.model?.trim()) errors.model = 'Model is required';
     if (carFormData.year < 1900 || carFormData.year > new Date().getFullYear() + 1) {
       errors.year = 'Invalid year';
     }
@@ -96,6 +103,7 @@ const AdminCars = () => {
     if (carFormData.seats < 1 || carFormData.seats > 10) errors.seats = 'Invalid seat count';
     if (carFormData.luggage < 0 || carFormData.luggage > 10) errors.luggage = 'Invalid luggage capacity';
     
+    console.log('Validation errors:', errors); // Debug log
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [carFormData]);
@@ -143,7 +151,7 @@ const AdminCars = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [itemsPerPage]);
 
   useEffect(() => {
     loadData(currentPage);
@@ -264,6 +272,9 @@ const AdminCars = () => {
   const handleCarSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('Submitting form data:', carFormData); // Debug log
+    console.log('Editing car:', editingCar); // Debug log
+    
     if (!validateForm()) {
       toast({
         title: "Validation Error",
@@ -290,15 +301,42 @@ const AdminCars = () => {
         
         if (result.error) throw result.error;
         
+        console.log('Update result:', result); // Debug log
+        console.log('Updated car data:', cleanedUpdateData); // Debug log
+        
+        // Update the local state immediately for better UX
+        setCars(prevCars => {
+          const updatedCars = prevCars.map(car => 
+            car.id === editingCar.id 
+              ? { ...car, ...cleanedUpdateData }
+              : car
+          );
+          console.log('Updated cars state:', updatedCars); // Debug log
+          return updatedCars;
+        });
+        
         toast({ title: "Car Updated", description: `${carFormData.brand} ${carFormData.model} has been updated.` });
       } else {
         result = await supabase.from('cars').insert(carFormData).select();
+        
+        if (result.error) throw result.error;
+        
+        // Add the new car to local state immediately
+        if (result.data && result.data[0]) {
+          setCars(prevCars => [result.data[0], ...prevCars]);
+        }
+        
         toast({ title: "Car Added", description: `${carFormData.brand} ${carFormData.model} has been added.` });
       }
       
+      // Refresh data from server to ensure consistency
       await loadData(currentPage);
+      
+      // Close dialog and reset form
       setIsCarDialogOpen(false);
-      resetCarForm();
+      setTimeout(() => {
+        resetCarForm();
+      }, 100);
     } catch (error) {
       console.error('Car submit error:', error);
       toast({ title: "Operation failed", description: error.message, variant: "destructive" });
@@ -368,23 +406,24 @@ const AdminCars = () => {
     setIsCarDialogOpen(true);
     setFormErrors({});
     
-    setTimeout(() => {
-      const formData = {
-        brand: car.brand || '',
-        model: car.model || '',
-        year: car.year || new Date().getFullYear(),
-        daily_rate: car.daily_rate || '',
-        transmission: car.transmission || 'automatic',
-        seats: car.seats || 5,
-        luggage: car.luggage || 2,
-        fuel_type: car.fuel_type || 'petrol',
-        status: car.status || 'available',
-        engine: car.engine || '',
-        image_url: car.image_url || ''
-      };
-      setCarFormData(formData);
-      setImagePreview(car.image_url || null);
-    }, 100);
+    // Set form data immediately without setTimeout
+    const formData = {
+      brand: car.brand || '',
+      model: car.model || '',
+      year: car.year || new Date().getFullYear(),
+      daily_rate: car.daily_rate || '',
+      transmission: car.transmission || 'automatic',
+      seats: car.seats || 5,
+      luggage: car.luggage || 2,
+      fuel_type: car.fuel_type || 'petrol',
+      status: car.status || 'available',
+      engine: car.engine || '',
+      image_url: car.image_url || ''
+    };
+    
+    console.log('Setting form data for edit:', formData); // Debug log
+    setCarFormData(formData);
+    setImagePreview(car.image_url || null);
   };
 
   const resetCarForm = () => {
@@ -455,7 +494,10 @@ const AdminCars = () => {
                         <Label>Brand *</Label>
                         <Input 
                           value={carFormData.brand || ''} 
-                          onChange={e => setCarFormData({...carFormData, brand: e.target.value})} 
+                          onChange={e => {
+                            console.log('Brand changed to:', e.target.value); // Debug log
+                            setCarFormData({...carFormData, brand: e.target.value});
+                          }} 
                           required 
                           placeholder="e.g., Mercedes"
                           className={formErrors.brand ? 'border-red-500' : ''}
