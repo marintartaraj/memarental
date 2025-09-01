@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react"
 import Seo from "@/components/Seo"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -112,8 +114,8 @@ const AboutPage = () => {
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/15 to-orange-200/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/12 to-yellow-200/8 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/8 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/12 to-yellow-200/8 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/8 to-transparent rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
         </div>
 
         {/* Hero Section with Colored Background */}
@@ -135,7 +137,7 @@ const AboutPage = () => {
             {/* Light rays for stats section */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
-              <div className="absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse"></div>
+              <div className="absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse animation-delay-1000"></div>
             </div>
             
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -204,7 +206,7 @@ const AboutPage = () => {
             {/* Light rays for story section */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
-              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse"></div>
+              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse animation-delay-2000"></div>
             </div>
             
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -215,12 +217,12 @@ const AboutPage = () => {
                     <Star className="h-4 w-4 mr-2 relative z-10 group-hover:animate-pulse" />
                     <span className="relative z-10">Since 2014</span>
                   </div>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight relative">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight text-balance relative">
                     <span className="relative z-10">{t("aboutStoryTitle") || "Our Journey"}</span>
                     <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </h2>
                   <div className="space-y-4 text-lg leading-relaxed text-gray-700">
-                    <p>
+                    <p className="text-balance">
                       {t("aboutStoryP1") ||
                         "Founded in 2014, MEMA Rental began with a simple mission: to provide reliable, affordable, and high-quality car rental services in Tirana and across Albania."}
                     </p>
@@ -228,7 +230,7 @@ const AboutPage = () => {
                     <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mt-6 mb-3">
                       Growing with Albania
                     </h3>
-                    <p>
+                    <p className="text-balance">
                       {t("aboutStoryP2") ||
                         "Over the past decade, we've grown from a small local business to one of Albania's most trusted car rental companies, serving thousands of satisfied customers."}
                     </p>
@@ -236,7 +238,7 @@ const AboutPage = () => {
                     <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mt-6 mb-3">
                       Innovation & Excellence
                     </h3>
-                    <p>
+                    <p className="text-balance">
                       {t("aboutStoryP3") ||
                         "Today, we continue to innovate and expand our services while maintaining the personal touch and local expertise that our customers value most."}
                     </p>
@@ -305,7 +307,7 @@ const AboutPage = () => {
             </div>
           </section>
 
-          {/* Values Section */}
+          {/* Values Section - New */}
           <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-yellow-50 to-orange-50 relative overflow-hidden">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div {...fadeUp} className="text-center mb-16">
