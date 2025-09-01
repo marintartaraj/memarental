@@ -12,6 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/customSupabaseClient';
 import { toast } from '@/components/ui/use-toast';
+import { BookingService } from '@/lib/bookingService';
+import { getValidationErrors, canProceedToNextStep } from '@/lib/validation';
 import { 
   Calendar, 
   Clock, 
@@ -31,7 +33,9 @@ import {
   Zap,
   Navigation,
   Wifi,
-  Heart
+  Heart,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 // Removed HeroHeader per request
 
@@ -41,8 +45,10 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [car, setCar] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
   const [formData, setFormData] = useState({
     // Step 1: Dates
     pickupDate: '',
@@ -64,7 +70,7 @@ const BookingPage = () => {
     extras: [],
     specialRequests: '',
     
-    // Terms acceptance (moved from step 4)
+    // Terms acceptance
     acceptTerms: false
   });
 
@@ -144,6 +150,14 @@ const BookingPage = () => {
       ...prev,
       [field]: value
     }));
+    
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
   };
 
   const handleExtraToggle = (extraId) => {
@@ -175,8 +189,20 @@ const BookingPage = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+    // Validate current step before proceeding
+    const errors = getValidationErrors(formData, currentStep);
+    setValidationErrors(errors);
+    
+    if (Object.keys(errors).length === 0) {
+      if (currentStep < 3) {
+        setCurrentStep(currentStep + 1);
+      }
+    } else {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields correctly.',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -188,24 +214,79 @@ const BookingPage = () => {
 
   const handleSubmit = async () => {
     if (!carData) return;
-    // Re-check availability just before booking
-    const { data: latestCar, error } = await supabase
-      .from('cars')
-      .select('status, daily_rate')
-      .eq('id', carData.id)
-      .single();
-    if (error) {
-      toast({ title: 'Booking failed', description: error.message, variant: 'destructive' });
-      return;
-    }
-    if (latestCar?.status !== 'available') {
-      toast({ title: 'Car not available', description: 'This car has just been booked. Please choose another car.', variant: 'destructive' });
+    
+    // Final validation
+    const errors = getValidationErrors(formData, currentStep);
+    setValidationErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields correctly.',
+        variant: 'destructive'
+      });
       return;
     }
 
-    // Optionally, insert a booking record here if your schema allows anonymous bookings
-    // and/or update the car status to 'booked'. For now, just navigate to confirmation.
-    navigate('/booking-confirmation');
+    setSubmitting(true);
+    
+    try {
+      // Prepare booking data
+      const bookingData = {
+        carId: carData.id,
+        pickupDate: formData.pickupDate,
+        returnDate: formData.returnDate,
+        pickupTime: formData.pickupTime,
+        returnTime: formData.returnTime,
+        pickupLocation: formData.pickupLocation,
+        returnLocation: formData.returnLocation,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        licenseNumber: formData.licenseNumber,
+        licenseExpiry: formData.licenseExpiry,
+        extras: formData.extras.map(extraId => {
+          const extra = extras.find(e => e.id === extraId);
+          return extra ? { id: extra.id, name: extra.name, price: extra.price } : null;
+        }).filter(Boolean),
+        specialRequests: formData.specialRequests
+      };
+
+      // Create booking
+      const result = await BookingService.createBooking(bookingData);
+      
+      if (result.success) {
+        toast({
+          title: 'Booking Confirmed!',
+          description: `Your booking has been created successfully. Reference: ${result.booking.booking_reference}`,
+          variant: 'default'
+        });
+        
+        // Navigate to confirmation page with booking details
+        navigate('/booking-confirmation', { 
+          state: { 
+            bookingId: result.bookingId,
+            bookingReference: result.booking.booking_reference 
+          } 
+        });
+      } else {
+        toast({
+          title: 'Booking Failed',
+          description: result.error || 'Failed to create booking. Please try again.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      toast({
+        title: 'Booking Failed',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const structuredData = carData ? {
@@ -345,29 +426,51 @@ const BookingPage = () => {
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="pickupDate">{t('pickupDate')}</Label>
+                              <Label htmlFor="pickupDate" className="flex items-center">
+                                {t('pickupDate')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="pickupDate"
                                 type="date"
                                 value={formData.pickupDate}
                                 onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                                className="mt-1"
+                                min={new Date().toISOString().split('T')[0]}
+                                className={`mt-1 ${validationErrors.pickupDate ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.pickupDate ? 'pickupDate-error' : undefined}
                               />
+                              {validationErrors.pickupDate && (
+                                <p id="pickupDate-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.pickupDate}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="returnDate">{t('returnDate')}</Label>
+                              <Label htmlFor="returnDate" className="flex items-center">
+                                {t('returnDate')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="returnDate"
                                 type="date"
                                 value={formData.returnDate}
                                 onChange={(e) => handleInputChange('returnDate', e.target.value)}
-                                className="mt-1"
+                                min={formData.pickupDate || new Date().toISOString().split('T')[0]}
+                                className={`mt-1 ${validationErrors.returnDate ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.returnDate ? 'returnDate-error' : undefined}
                               />
+                              {validationErrors.returnDate && (
+                                <p id="returnDate-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.returnDate}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="pickupTime">{t('pickupTime')}</Label>
+                              <Label htmlFor="pickupTime" className="flex items-center">
+                                {t('pickupTime')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Select value={formData.pickupTime} onValueChange={(value) => handleInputChange('pickupTime', value)}>
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className={`mt-1 ${validationErrors.pickupTime ? 'border-red-500 focus:border-red-500' : ''}`}>
                                   <SelectValue placeholder={t('selectPickupTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -383,11 +486,19 @@ const BookingPage = () => {
                                   <SelectItem value="17:00">5:00 PM</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {validationErrors.pickupTime && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.pickupTime}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="returnTime">{t('returnTime')}</Label>
+                              <Label htmlFor="returnTime" className="flex items-center">
+                                {t('returnTime')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Select value={formData.returnTime} onValueChange={(value) => handleInputChange('returnTime', value)}>
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className={`mt-1 ${validationErrors.returnTime ? 'border-red-500 focus:border-red-500' : ''}`}>
                                   <SelectValue placeholder={t('selectReturnTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -403,6 +514,12 @@ const BookingPage = () => {
                                   <SelectItem value="17:00">5:00 PM</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {validationErrors.returnTime && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.returnTime}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -414,61 +531,116 @@ const BookingPage = () => {
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="firstName">{t('firstName')}</Label>
+                              <Label htmlFor="firstName" className="flex items-center">
+                                {t('firstName')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="firstName"
                                 value={formData.firstName}
                                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                                className="mt-1"
+                                className={`mt-1 ${validationErrors.firstName ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.firstName ? 'firstName-error' : undefined}
                               />
+                              {validationErrors.firstName && (
+                                <p id="firstName-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.firstName}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="lastName">{t('lastName')}</Label>
+                              <Label htmlFor="lastName" className="flex items-center">
+                                {t('lastName')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="lastName"
                                 value={formData.lastName}
                                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                                className="mt-1"
+                                className={`mt-1 ${validationErrors.lastName ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.lastName ? 'lastName-error' : undefined}
                               />
+                              {validationErrors.lastName && (
+                                <p id="lastName-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.lastName}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="email">Email</Label>
+                              <Label htmlFor="email" className="flex items-center">
+                                Email <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="email"
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleInputChange('email', e.target.value)}
-                                className="mt-1"
+                                className={`mt-1 ${validationErrors.email ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.email ? 'email-error' : undefined}
                               />
+                              {validationErrors.email && (
+                                <p id="email-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.email}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="phone">{t('phoneNumber')}</Label>
+                              <Label htmlFor="phone" className="flex items-center">
+                                {t('phoneNumber')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="phone"
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                                className="mt-1"
+                                className={`mt-1 ${validationErrors.phone ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.phone ? 'phone-error' : undefined}
                               />
+                              {validationErrors.phone && (
+                                <p id="phone-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.phone}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="licenseNumber">{t('driversLicenseNumber')}</Label>
+                              <Label htmlFor="licenseNumber" className="flex items-center">
+                                {t('driversLicenseNumber')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="licenseNumber"
                                 value={formData.licenseNumber}
                                 onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
-                                className="mt-1"
+                                className={`mt-1 ${validationErrors.licenseNumber ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.licenseNumber ? 'licenseNumber-error' : undefined}
                               />
+                              {validationErrors.licenseNumber && (
+                                <p id="licenseNumber-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.licenseNumber}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="licenseExpiry">{t('licenseExpiry')}</Label>
+                              <Label htmlFor="licenseExpiry" className="flex items-center">
+                                {t('licenseExpiry')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Input
                                 id="licenseExpiry"
                                 type="date"
                                 value={formData.licenseExpiry}
                                 onChange={(e) => handleInputChange('licenseExpiry', e.target.value)}
-                                className="mt-1"
+                                min={new Date().toISOString().split('T')[0]}
+                                className={`mt-1 ${validationErrors.licenseExpiry ? 'border-red-500 focus:border-red-500' : ''}`}
+                                aria-describedby={validationErrors.licenseExpiry ? 'licenseExpiry-error' : undefined}
                               />
+                              {validationErrors.licenseExpiry && (
+                                <p id="licenseExpiry-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.licenseExpiry}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -480,9 +652,11 @@ const BookingPage = () => {
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                              <Label htmlFor="pickupLocation">{t('pickupLocationLabel')}</Label>
+                              <Label htmlFor="pickupLocation" className="flex items-center">
+                                {t('pickupLocationLabel')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Select value={formData.pickupLocation} onValueChange={(value) => handleInputChange('pickupLocation', value)}>
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className={`mt-1 ${validationErrors.pickupLocation ? 'border-red-500 focus:border-red-500' : ''}`}>
                                   <SelectValue placeholder={t('selectPickupLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -491,11 +665,19 @@ const BookingPage = () => {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              {validationErrors.pickupLocation && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.pickupLocation}
+                                </p>
+                              )}
                             </div>
                             <div>
-                              <Label htmlFor="returnLocation">{t('returnLocationLabel')}</Label>
+                              <Label htmlFor="returnLocation" className="flex items-center">
+                                {t('returnLocationLabel')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
                               <Select value={formData.returnLocation} onValueChange={(value) => handleInputChange('returnLocation', value)}>
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className={`mt-1 ${validationErrors.returnLocation ? 'border-red-500 focus:border-red-500' : ''}`}>
                                   <SelectValue placeholder={t('selectReturnLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -504,6 +686,12 @@ const BookingPage = () => {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              {validationErrors.returnLocation && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.returnLocation}
+                                </p>
+                              )}
                             </div>
                           </div>
 
@@ -539,7 +727,7 @@ const BookingPage = () => {
                             />
                           </div>
 
-                          {/* Terms acceptance moved to step 3 */}
+                          {/* Payment Information */}
                           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div className="flex items-center space-x-2 mb-3">
                               <CreditCard className="h-5 w-5 text-blue-600" />
@@ -550,13 +738,23 @@ const BookingPage = () => {
                             </p>
                           </div>
 
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-start space-x-3">
                             <Checkbox
                               id="acceptTerms"
                               checked={formData.acceptTerms}
                               onCheckedChange={(checked) => handleInputChange('acceptTerms', checked)}
                             />
-                            <Label htmlFor="acceptTerms" className="text-sm">{t('acceptTerms')}</Label>
+                            <div className="flex-1">
+                              <Label htmlFor="acceptTerms" className="text-sm flex items-start">
+                                {t('acceptTerms')} <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              {validationErrors.acceptTerms && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                  <AlertCircle className="h-4 w-4 mr-1" />
+                                  {validationErrors.acceptTerms}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -566,7 +764,7 @@ const BookingPage = () => {
                         <Button
                           variant="outline"
                           onClick={handleBack}
-                          disabled={currentStep === 1}
+                          disabled={currentStep === 1 || submitting}
                           className="flex items-center space-x-2"
                         >
                           <ArrowLeft className="h-4 w-4" />
@@ -577,7 +775,7 @@ const BookingPage = () => {
                           <Button
                             onClick={handleNext}
                             className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600"
-                            disabled={carUnavailable}
+                            disabled={carUnavailable || submitting}
                           >
                             <span>{t('next')}</span>
                             <ArrowRight className="h-4 w-4" />
@@ -585,11 +783,20 @@ const BookingPage = () => {
                         ) : (
                           <Button
                             onClick={handleSubmit}
-                            disabled={!formData.acceptTerms || carUnavailable}
+                            disabled={!formData.acceptTerms || carUnavailable || submitting}
                             className="flex items-center space-x-2 bg-green-500 hover:bg-green-600"
                           >
-                            <CheckCircle className="h-4 w-4" />
-                            <span>{t('completeBooking')}</span>
+                            {submitting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Creating Booking...</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4" />
+                                <span>{t('completeBooking')}</span>
+                              </>
+                            )}
                           </Button>
                         )}
                       </div>

@@ -1,5 +1,3 @@
-"use client"
-
 import React from "react"
 import Seo from "@/components/Seo"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -104,7 +102,7 @@ const AboutPage = () => {
 
       <div className="min-h-screen">
         {/* Hero Section with Colored Background */}
-        <HeroHeader 
+        <HeroHeader
           title={t("aboutHeroTitle") || "Our Story"}
           subtitle={t("aboutHeroSubtitle") || "10+ years of excellence in car rental services across Albania"}
           gradientClassName="bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-600"
@@ -118,7 +116,7 @@ const AboutPage = () => {
               <div className="absolute top-0 left-0 w-72 h-72 bg-yellow-400 rounded-full blur-3xl"></div>
               <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-400 rounded-full blur-3xl"></div>
             </div>
-            
+
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <motion.div {...fadeUp} className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -128,7 +126,7 @@ const AboutPage = () => {
                   Trusted by thousands of customers across Albania
                 </p>
               </motion.div>
-              
+
               <motion.ul
                 {...fadeUp}
                 transition={{ ...fadeUp.transition, delay: 0.2 }}
@@ -195,15 +193,15 @@ const AboutPage = () => {
                 <div className="relative">
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/10">
                     <img
-                      src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+                        src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
                       width={960}
                       height={640}
-                      alt="MEMA Rental office and team in Tirana, Albania - premium car rental service"
+                        alt="MEMA Rental office and team in Tirana, Albania - premium car rental service"
                       className="w-full h-80 sm:h-96 object-cover"
                       loading="lazy"
                       decoding="async"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                   </div>
                   {/* Floating Stats Card */}
                   <motion.div

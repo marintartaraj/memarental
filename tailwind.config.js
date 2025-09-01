@@ -38,6 +38,7 @@ module.exports = {
 			// Mobile-first spacing scale
 			spacing: {
 				'18': '4.5rem',
+				'70': '17.5rem', // 280px for sidebar width
 				'88': '22rem',
 				'128': '32rem',
 			},
