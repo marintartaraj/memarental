@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
-import { Users, Award, Shield, Clock, MapPin, Phone, Mail, Star, Heart, Zap, Car, CheckCircle, Globe, Target, TrendingUp } from "lucide-react"
+import { Users, Award, Shield, Clock, MapPin, Phone, Mail, Star, Heart, Zap, Car, CheckCircle, Globe, Target, TrendingUp, Sparkles, ArrowRight } from "lucide-react"
 import HeroHeader from "@/components/HeroHeader"
 
 const AboutPage = () => {
@@ -17,6 +17,14 @@ const AboutPage = () => {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: prefersReducedMotion ? 0 : 0.6, ease: "easeOut" },
+  }
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
   }
 
   // Fixed class mapping to avoid dynamic Tailwind classes (better for SEO and CSS purge)
@@ -100,15 +108,22 @@ const AboutPage = () => {
         Skip to content
       </a>
 
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+        {/* Global light effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/15 to-orange-200/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/12 to-yellow-200/8 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/8 to-transparent rounded-full blur-3xl animate-pulse"></div>
+        </div>
+
         {/* Hero Section with Colored Background */}
-        <HeroHeader
+        <HeroHeader 
           title={t("aboutHeroTitle") || "Our Story"}
           subtitle={t("aboutHeroSubtitle") || "10+ years of excellence in car rental services across Albania"}
           gradientClassName="bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-600"
         />
 
-        <main id="main">
+        <main id="main" className="relative z-10">
           {/* Stats Section with Enhanced Design */}
           <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
             {/* Background Pattern */}
@@ -116,20 +131,36 @@ const AboutPage = () => {
               <div className="absolute top-0 left-0 w-72 h-72 bg-yellow-400 rounded-full blur-3xl"></div>
               <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-400 rounded-full blur-3xl"></div>
             </div>
-
+            
+            {/* Light rays for stats section */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
+              <div className="absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse"></div>
+            </div>
+            
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <motion.div {...fadeUp} className="text-center mb-12">
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                  {t("aboutStatsTitle") || "Our Impact in Numbers"}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 rounded-full text-sm font-medium mb-6 shadow-sm border border-yellow-200 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-orange-200/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <Sparkles className="h-4 w-4 relative z-10 animate-pulse" />
+                  <span className="relative z-10">Trusted by 1000+ Customers</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 relative">
+                  <span className="relative z-10">{t("aboutStatsTitle") || "Our Impact in Numbers"}</span>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   Trusted by thousands of customers across Albania
                 </p>
               </motion.div>
-
-              <motion.ul
-                {...fadeUp}
-                transition={{ ...fadeUp.transition, delay: 0.2 }}
+              
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
                 className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8"
                 aria-label={t("aboutStatsAria") || "Company statistics"}
               >
@@ -137,86 +168,135 @@ const AboutPage = () => {
                   const style = colorStyles[stat.color]
                   const Icon = stat.icon
                   return (
-                    <li key={stat.label}>
-                      <motion.div
-                        {...fadeUp}
-                        transition={{ ...fadeUp.transition, delay: 0.3 + index * 0.1 }}
-                        whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
-                        className="group"
-                      >
-                        <Card className="p-6 sm:p-8 hover:shadow-2xl transition-all duration-500 border-0 shadow-xl bg-white/80 backdrop-blur-sm border border-gray-200/50">
-                          <div className="text-center">
-                            <div
-                              className={`inline-flex p-4 ${style.bg} rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 border ${style.border}`}
-                            >
-                              <Icon className={`h-8 w-8 ${style.text}`} aria-hidden="true" />
-                            </div>
-                            <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                            <div className="text-lg font-semibold text-gray-700 mb-1">{stat.label}</div>
-                            <div className="text-sm text-gray-500">{stat.description}</div>
+                    <motion.div
+                      key={stat.label}
+                      variants={fadeUp}
+                      whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
+                      className="group"
+                    >
+                      <Card className="p-6 sm:p-8 hover:shadow-2xl transition-all duration-500 border-0 shadow-xl bg-white/80 backdrop-blur-sm border border-gray-200/50 relative overflow-hidden">
+                        {/* Glow effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div className="text-center relative z-10">
+                          <div
+                            className={`inline-flex p-4 ${style.bg} rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 border ${style.border} relative overflow-hidden`}
+                          >
+                            <Icon className={`h-8 w-8 ${style.text} relative z-10 group-hover:animate-pulse`} aria-hidden="true" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                           </div>
-                        </Card>
-                      </motion.div>
-                    </li>
+                          <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 group-hover:animate-pulse">{stat.value}</div>
+                          <div className="text-lg font-semibold text-gray-700 mb-1">{stat.label}</div>
+                          <div className="text-sm text-gray-500">{stat.description}</div>
+                        </div>
+                      </Card>
+                    </motion.div>
                   )
                 })}
-              </motion.ul>
+              </motion.div>
             </div>
           </section>
 
           {/* Story Section with Enhanced Layout */}
           <section className="py-16 sm:py-20 lg:py-24 bg-white relative overflow-hidden">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white"></div>
+            
+            {/* Light rays for story section */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
+              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/12 via-orange-200/8 to-transparent animate-pulse"></div>
+            </div>
+            
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <motion.div {...fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div className="space-y-6">
-                  <div className="inline-flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold mb-4">
-                    <Star className="h-4 w-4 mr-2" />
-                    Since 2014
+                  <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 rounded-full text-sm font-semibold mb-4 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-orange-200/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <Star className="h-4 w-4 mr-2 relative z-10 group-hover:animate-pulse" />
+                    <span className="relative z-10">Since 2014</span>
                   </div>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                    {t("aboutStoryTitle") || "Our Journey"}
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight relative">
+                    <span className="relative z-10">{t("aboutStoryTitle") || "Our Journey"}</span>
+                    <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </h2>
-                  <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
-                    <p>{t("aboutStoryP1") || "Founded in 2014, MEMA Rental began with a simple mission: to provide reliable, affordable, and high-quality car rental services in Tirana and across Albania."}</p>
-                    <p>{t("aboutStoryP2") || "Over the past decade, we've grown from a small local business to one of Albania's most trusted car rental companies, serving thousands of satisfied customers."}</p>
-                    <p>{t("aboutStoryP3") || "Today, we continue to innovate and expand our services while maintaining the personal touch and local expertise that our customers value most."}</p>
+                  <div className="space-y-4 text-lg leading-relaxed text-gray-700">
+                    <p>
+                      {t("aboutStoryP1") ||
+                        "Founded in 2014, MEMA Rental began with a simple mission: to provide reliable, affordable, and high-quality car rental services in Tirana and across Albania."}
+                    </p>
+
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mt-6 mb-3">
+                      Growing with Albania
+                    </h3>
+                    <p>
+                      {t("aboutStoryP2") ||
+                        "Over the past decade, we've grown from a small local business to one of Albania's most trusted car rental companies, serving thousands of satisfied customers."}
+                    </p>
+
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mt-6 mb-3">
+                      Innovation & Excellence
+                    </h3>
+                    <p>
+                      {t("aboutStoryP3") ||
+                        "Today, we continue to innovate and expand our services while maintaining the personal touch and local expertise that our customers value most."}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-4">
-                    <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3">
-                      <Link to="/cars">View Our Fleet</Link>
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                    <Button
+                      asChild
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 min-h-[44px] text-base group relative overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    >
+                      <Link to="/cars">
+                        <span className="relative z-10 flex items-center">
+                          View Our Fleet
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      </Link>
                     </Button>
-                    <Button variant="outline" asChild className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 px-8 py-3">
-                      <Link to="/contact">Contact Us</Link>
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-6 py-3 min-h-[44px] text-base bg-transparent group relative overflow-hidden"
+                    >
+                      <Link to="/contact">
+                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span className="relative z-10">Contact Us</span>
+                      </Link>
                     </Button>
                   </div>
                 </div>
-                <div className="relative">
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/10">
-                    <img
+                <div className="relative order-first lg:order-last group">
+                  <div className="relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/10 group-hover:shadow-2xl transition-all duration-300">
+                    {/* Glow effect for image */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div className="aspect-[16/9] relative">
+                      <img
                         src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-                      width={960}
-                      height={640}
                         alt="MEMA Rental office and team in Tirana, Albania - premium car rental service"
-                      className="w-full h-80 sm:h-96 object-cover"
-                      loading="lazy"
-                      decoding="async"
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        loading="eager"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                      
+                      {/* Light overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    </div>
                   </div>
-                  {/* Floating Stats Card */}
                   <motion.div
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6 border border-gray-200"
+                    transition={{ delay: 0.3 }}
+                    className="absolute -bottom-4 -left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-gray-200 group-hover:shadow-xl transition-all duration-300"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      <div className="p-2 bg-green-100 rounded-lg group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle className="h-4 w-4 text-green-600 group-hover:animate-pulse" />
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-gray-900">1000+</div>
-                        <div className="text-sm text-gray-600">Happy Customers</div>
+                        <div className="text-xl font-bold text-gray-900 group-hover:animate-pulse">1000+</div>
+                        <div className="text-xs text-gray-600">Happy Customers</div>
                       </div>
                     </div>
                   </motion.div>
@@ -225,7 +305,7 @@ const AboutPage = () => {
             </div>
           </section>
 
-          {/* Values Section - New */}
+          {/* Values Section */}
           <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-yellow-50 to-orange-50 relative overflow-hidden">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div {...fadeUp} className="text-center mb-16">
