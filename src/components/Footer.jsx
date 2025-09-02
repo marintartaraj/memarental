@@ -22,10 +22,10 @@ const Footer = () => {
                 <Car className="h-8 w-8 text-yellow-500 group-hover:scale-110 transition-transform duration-300 group-hover:animate-pulse" />
                 <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
-              <span className="text-2xl font-bold group-hover:text-yellow-400 transition-colors duration-300 relative">
+              <div className="text-2xl font-bold group-hover:text-yellow-400 transition-colors duration-300 relative">
                 MEMA <span className="text-yellow-500 group-hover:animate-pulse">Rental</span>
                 <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </span>
+              </div>
             </Link>
             <p className="text-gray-400 leading-relaxed">
               {t('footerDescription')}
@@ -33,10 +33,10 @@ const Footer = () => {
           </div>
 
           <div>
-            <p className="font-semibold text-lg mb-4 relative">
+            <div className="font-semibold text-lg mb-4 relative">
               <span className="relative z-10">{t('quickLinks')}</span>
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/5 to-orange-400/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </p>
+            </div>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-gray-400 hover:text-yellow-500 transition-colors group relative overflow-hidden inline-block">
@@ -66,10 +66,10 @@ const Footer = () => {
           </div>
 
           <div>
-            <p className="font-semibold text-lg mb-4 relative">
+            <div className="font-semibold text-lg mb-4 relative">
               <span className="relative z-10">{t('contactUs')}</span>
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/5 to-orange-400/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </p>
+            </div>
             <ul className="space-y-3 text-gray-400">
               <li className="flex items-center space-x-2 group">
                 <MapPin className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" />
@@ -87,10 +87,10 @@ const Footer = () => {
           </div>
 
           <div>
-            <p className="font-semibold text-lg mb-4 relative">
+            <div className="font-semibold text-lg mb-4 relative">
               <span className="relative z-10">{t('followUs')}</span>
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/5 to-orange-400/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </p>
+            </div>
             <div className="flex space-x-4">
               <a 
                 href="#" 
