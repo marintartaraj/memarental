@@ -289,55 +289,23 @@ const BookingPage = () => {
     }
   };
 
-  const structuredData = carData ? {
+  const structuredData = {
     "@context": "https://schema.org",
     "@type": "Reservation",
-    "name": `Car Rental Booking - ${carData.brand} ${carData.model} in Tirana, Albania`,
-    "description": `Book your ${carData.brand} ${carData.model} rental in Tirana, Albania. Secure online booking with instant confirmation.`,
+    "name": `Car Rental Booking - ${carData?.brand} ${carData?.model}`,
+    "description": `Book your ${carData?.brand} ${carData?.model} rental car in Tirana, Albania`,
     "provider": {
       "@type": "Organization",
-      "name": "MEMA Rental - Car Rental Tirana Albania",
-      "alternateName": "MEMA Car Rental",
-      "url": "https://memarental.com",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Rruga e Durresit 123",
-        "addressLocality": "Tirana",
-        "addressRegion": "Tirana",
-        "postalCode": "1001",
-        "addressCountry": "AL"
-      },
-      "telephone": "+355-4-123-4567",
-      "email": "info@memarental.com",
-      "openingHours": [
-        "Mo-Su 08:00-20:00"
-      ]
+      "name": "MEMA Rental",
+      "url": "https://memarental.com"
     },
     "reservationFor": {
       "@type": "Car",
-      "name": `${carData.brand} ${carData.model}`,
-      "brand": {
-        "@type": "Brand",
-        "name": carData.brand
-      },
-      "model": carData.model,
-      "vehicleCategory": carData.category
-    },
-    "priceSpecification": {
-      "@type": "UnitPriceSpecification",
-      "price": carData.price,
-      "priceCurrency": "EUR",
-      "unitText": "per day"
-    },
-    "areaServed": {
-      "@type": "Country",
-      "name": "Albania"
-    },
-    "serviceArea": {
-      "@type": "Place",
-      "name": "Tirana, Albania"
+      "brand": carData?.brand,
+      "model": carData?.model,
+      "year": carData?.year
     }
-  } : null;
+  };
 
   return (
     <>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Seo from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -526,5 +525,3 @@ const CarDetailPage = () => {
 };
 
 export default CarDetailPage;
-
-

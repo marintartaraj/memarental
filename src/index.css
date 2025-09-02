@@ -6,25 +6,25 @@
 
 /* ===== Theme tokens with Gold/White/Black palette ===== */
 :root {
-  --background: oklch(1 0 0); /* Pure white */
-  --foreground: oklch(0.145 0 0); /* Pure black */
-  --card: oklch(1 0 0); /* White cards */
-  --card-foreground: oklch(0.145 0 0); /* Black text on cards */
-  --popover: oklch(1 0 0); /* White popover */
-  --popover-foreground: oklch(0.145 0 0); /* Black text */
-  --primary: oklch(0.708 0.139 85.87); /* Gold primary */
-  --primary-foreground: oklch(0.145 0 0); /* Black text on gold */
-  --secondary: oklch(0.97 0 0); /* Very light gray for subtle backgrounds */
-  --secondary-foreground: oklch(0.205 0 0); /* Black text */
-  --muted: oklch(0.97 0 0); /* Light gray for muted elements */
-  --muted-foreground: oklch(0.556 0 0); /* Dark gray for muted text */
-  --accent: oklch(0.708 0.139 85.87); /* Gold accent */
-  --accent-foreground: oklch(0.145 0 0); /* Black text on gold */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0); /* Light gray borders */
-  --input: oklch(0.97 0 0); /* Light gray inputs */
-  --ring: oklch(0.708 0.139 85.87); /* Gold focus ring */
+  --background: #ffffff; /* Pure white */
+  --foreground: #000000; /* Pure black */
+  --card: #ffffff; /* White cards */
+  --card-foreground: #000000; /* Black text on cards */
+  --popover: #ffffff; /* White popover */
+  --popover-foreground: #000000; /* Black text */
+  --primary: #fbbf24; /* Gold primary */
+  --primary-foreground: #000000; /* Black text on gold */
+  --secondary: #f8fafc; /* Very light gray for subtle backgrounds */
+  --secondary-foreground: #334155; /* Black text */
+  --muted: #f8fafc; /* Light gray for muted elements */
+  --muted-foreground: #64748b; /* Dark gray for muted text */
+  --accent: #fbbf24; /* Gold accent */
+  --accent-foreground: #000000; /* Black text on gold */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0; /* Light gray borders */
+  --input: #ffffff; /* Solid white inputs */
+  --ring: #fbbf24; /* Gold focus ring */
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -42,23 +42,23 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0); /* Pure black background */
-  --foreground: oklch(0.985 0 0); /* White text */
-  --card: oklch(0.205 0 0); /* Dark gray cards */
-  --card-foreground: oklch(0.985 0 0); /* White text on cards */
-  --popover: oklch(0.145 0 0); /* Black popover */
-  --popover-foreground: oklch(0.985 0 0); /* White text */
-  --primary: oklch(0.708 0.139 85.87); /* Gold remains same */
-  --primary-foreground: oklch(0.145 0 0); /* Black text on gold */
-  --secondary: oklch(0.269 0 0); /* Dark gray secondary */
-  --secondary-foreground: oklch(0.985 0 0); /* White text */
-  --muted: oklch(0.269 0 0); /* Dark gray muted */
-  --muted-foreground: oklch(0.708 0 0); /* Light gray muted text */
-  --accent: oklch(0.708 0.139 85.87); /* Gold accent */
-  --accent-foreground: oklch(0.145 0 0); /* Black text on gold */
-  --border: oklch(0.269 0 0); /* Dark gray borders */
-  --input: oklch(0.269 0 0); /* Dark gray inputs */
-  --ring: oklch(0.708 0.139 85.87); /* Gold focus ring */
+  --background: #000000; /* Pure black background */
+  --foreground: #ffffff; /* White text */
+  --card: #1f2937; /* Dark gray cards */
+  --card-foreground: #ffffff; /* White text on cards */
+  --popover: #000000; /* Black popover */
+  --popover-foreground: #ffffff; /* White text */
+  --primary: #fbbf24; /* Gold remains same */
+  --primary-foreground: #000000; /* Black text on gold */
+  --secondary: #374151; /* Dark gray secondary */
+  --secondary-foreground: #ffffff; /* White text */
+  --muted: #374151; /* Dark gray muted */
+  --muted-foreground: #9ca3af; /* Light gray muted text */
+  --accent: #fbbf24; /* Gold accent */
+  --accent-foreground: #000000; /* Black text on gold */
+  --border: #374151; /* Dark gray borders */
+  --input: #1f2937; /* Dark gray inputs */
+  --ring: #fbbf24; /* Gold focus ring */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -78,6 +78,148 @@
   --font-sans: var(--font-open-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-montserrat);
+
+/* ===== Custom Animations for About Page ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ===== Form Elements - Solid Backgrounds ===== */
+input, select, textarea {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+}
+
+.dark input, .dark select, .dark textarea {
+  background-color: #1f2937 !important;
+  backdrop-filter: none !important;
+}
+
+/* Ensure select dropdowns have solid backgrounds */
+[data-radix-select-content] {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+}
+
+.dark [data-radix-select-content] {
+  background-color: #1f2937 !important;
+  backdrop-filter: none !important;
+}
+
+/* Ensure form elements don't inherit transparency */
+.bg-background {
+  background-color: #ffffff !important;
+}
+
+.dark .bg-background {
+  background-color: #000000 !important;
+}
+
+.bg-card {
+  background-color: #ffffff !important;
+}
+
+.dark .bg-card {
+  background-color: #1f2937 !important;
+}
+
+.bg-popover {
+  background-color: #ffffff !important;
+}
+
+.dark .bg-popover {
+  background-color: #000000 !important;
+}
+
+/* Booking page specific form styling */
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+}
+
+.dark .booking-form input,
+.dark .booking-form select,
+.dark .booking-form textarea {
+  background-color: #1f2937 !important;
+  backdrop-filter: none !important;
+}
+
+/* Ensure all form elements have solid backgrounds */
+[data-radix-select-trigger] {
+  background-color: #ffffff !important;
+}
+
+.dark [data-radix-select-trigger] {
+  background-color: #1f2937 !important;
+}
+
+/* Ensure checkboxes are properly styled and clickable */
+input[type="checkbox"] {
+  cursor: pointer !important;
+  background-color: #ffffff !important;
+  border: 2px solid #d1d5db !important;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #fbbf24 !important;
+  border-color: #fbbf24 !important;
+}
+
+.dark input[type="checkbox"] {
+  background-color: #1f2937 !important;
+  border-color: #6b7280 !important;
+}
+
+.dark input[type="checkbox"]:checked {
+  background-color: #fbbf24 !important;
+  border-color: #fbbf24 !important;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

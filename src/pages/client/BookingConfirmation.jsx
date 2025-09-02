@@ -311,5 +311,3 @@ Thank you for choosing MEMA Rental!
 }
 
 export default BookingConfirmation;
-
-

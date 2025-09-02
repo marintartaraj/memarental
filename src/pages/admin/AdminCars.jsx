@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
 import AddCarsButton from '@/components/AddCarsButton';
 
 const AdminCars = () => {
   const { t } = useLanguage();
+  const { user, session, isAdmin } = useAuth();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,11 +40,15 @@ const AdminCars = () => {
   
   // Enhanced error handling
   const [error, setError] = useState(null);
+  const [networkStatus, setNetworkStatus] = useState('online');
   
   // File upload states with preview
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  
+  // Form submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Enhanced form validation
   const [formErrors, setFormErrors] = useState({});
@@ -61,12 +67,36 @@ const AdminCars = () => {
     image_url: ''
   });
 
+  const [editingCar, setEditingCar] = useState(null);
+  const [isCarDialogOpen, setIsCarDialogOpen] = useState(false);
+
   // Debug log for form data changes
   useEffect(() => {
     console.log('Form data changed:', carFormData);
   }, [carFormData]);
-  const [editingCar, setEditingCar] = useState(null);
-  const [isCarDialogOpen, setIsCarDialogOpen] = useState(false);
+
+  // Effect to handle form data when editing car changes
+  useEffect(() => {
+    if (editingCar && isCarDialogOpen) {
+      console.log('Setting form data for editing:', editingCar);
+      const formData = {
+        id: editingCar.id,
+        brand: editingCar.brand || '',
+        model: editingCar.model || '',
+        year: parseInt(editingCar.year) || new Date().getFullYear(),
+        daily_rate: parseFloat(editingCar.daily_rate) || 0,
+        transmission: editingCar.transmission || 'automatic',
+        seats: parseInt(editingCar.seats) || 5,
+        luggage: parseInt(editingCar.luggage) || 2,
+        fuel_type: editingCar.fuel_type || 'petrol',
+        status: editingCar.status || 'available',
+        engine: editingCar.engine || '',
+        image_url: editingCar.image_url || ''
+      };
+      setCarFormData(formData);
+      setImagePreview(editingCar.image_url || null);
+    }
+  }, [editingCar, isCarDialogOpen]);
 
   // Enhanced confirmation dialog
   const [deleteConfirmation, setDeleteConfirmation] = useState({
@@ -96,12 +126,12 @@ const AdminCars = () => {
     
     if (!carFormData.brand?.trim()) errors.brand = 'Brand is required';
     if (!carFormData.model?.trim()) errors.model = 'Model is required';
-    if (carFormData.year < 1900 || carFormData.year > new Date().getFullYear() + 1) {
+    if (!carFormData.year || carFormData.year < 1900 || carFormData.year > new Date().getFullYear() + 1) {
       errors.year = 'Invalid year';
     }
-    if (carFormData.daily_rate <= 0) errors.daily_rate = 'Daily rate must be positive';
-    if (carFormData.seats < 1 || carFormData.seats > 10) errors.seats = 'Invalid seat count';
-    if (carFormData.luggage < 0 || carFormData.luggage > 10) errors.luggage = 'Invalid luggage capacity';
+    if (!carFormData.daily_rate || carFormData.daily_rate <= 0) errors.daily_rate = 'Daily rate must be positive';
+    if (!carFormData.seats || carFormData.seats < 1 || carFormData.seats > 10) errors.seats = 'Invalid seat count';
+    if (!carFormData.luggage || carFormData.luggage < 0 || carFormData.luggage > 10) errors.luggage = 'Invalid luggage capacity';
     
     console.log('Validation errors:', errors); // Debug log
     setFormErrors(errors);
@@ -117,11 +147,19 @@ const AdminCars = () => {
     setError(null);
     
     try {
+      console.log('Loading cars data...'); // Debug log
+      
       // Get total count
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from('cars')
         .select('*', { count: 'exact', head: true });
       
+      if (countError) {
+        console.error('Error getting count:', countError);
+        throw countError;
+      }
+      
+      console.log('Total cars count:', count); // Debug log
       setTotalCount(count);
       setTotalPages(Math.ceil(count / itemsPerPage));
       
@@ -132,19 +170,38 @@ const AdminCars = () => {
         .order('created_at', { ascending: false })
         .range((page - 1) * itemsPerPage, page * itemsPerPage - 1);
       
-      if (carsError) throw carsError;
+      if (carsError) {
+        console.error('Error loading cars data:', carsError);
+        throw carsError;
+      }
+      
+      console.log('Cars data loaded:', carsData); // Debug log
       setCars(carsData || []);
 
     } catch (error) {
       console.error('Error loading cars:', error);
+      
+      let errorMessage = error.message;
+      let errorTitle = "Error loading cars";
+      
+      // Handle network-specific errors
+      if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorTitle = "Network Error";
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "Request timed out. Please try again.";
+        errorTitle = "Timeout Error";
+      }
+      
       setError({
-        message: error.message,
+        message: errorMessage,
         code: error.code,
         retry: () => loadData(page)
       });
+      
       toast({
-        title: "Error loading cars",
-        description: error.message,
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -155,6 +212,91 @@ const AdminCars = () => {
 
   useEffect(() => {
     loadData(currentPage);
+  }, [loadData, currentPage]);
+
+  // Test database connectivity on component mount
+  useEffect(() => {
+    const testDatabaseConnection = async () => {
+      try {
+        console.log('Testing database connection...'); // Debug log
+        
+        // Test read access
+        const { data: testRead, error: readError } = await supabase
+          .from('cars')
+          .select('id')
+          .limit(1);
+        
+        if (readError) {
+          console.error('Database read test failed:', readError);
+          if (readError.message.includes('Failed to fetch') || readError.message.includes('network')) {
+            setNetworkStatus('offline');
+            toast({
+              title: "Network Error",
+              description: "Cannot connect to database. Please check your internet connection.",
+              variant: "destructive"
+            });
+          }
+        } else {
+          console.log('Database read test successful:', testRead);
+          setNetworkStatus('online');
+        }
+        
+        // Test if we can see the cars table structure
+        const { data: tableInfo, error: tableError } = await supabase
+          .from('cars')
+          .select('*')
+          .limit(0);
+        
+        if (tableError) {
+          console.error('Table structure test failed:', tableError);
+        } else {
+          console.log('Table structure test successful - columns accessible');
+        }
+        
+      } catch (error) {
+        console.error('Database connection test failed:', error);
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          setNetworkStatus('offline');
+          toast({
+            title: "Network Error",
+            description: "Cannot connect to database. Please check your internet connection.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    testDatabaseConnection();
+  }, []);
+
+  // Monitor network status
+  useEffect(() => {
+    const handleOnline = () => {
+      setNetworkStatus('online');
+      toast({
+        title: "Connection Restored",
+        description: "Internet connection has been restored.",
+      });
+      // Retry loading data when connection is restored
+      loadData(currentPage);
+    };
+
+    const handleOffline = () => {
+      setNetworkStatus('offline');
+      toast({
+        title: "Connection Lost",
+        description: "Internet connection has been lost.",
+        variant: "destructive"
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [loadData, currentPage]);
 
   // Enhanced file upload with preview
@@ -284,25 +426,89 @@ const AdminCars = () => {
       return;
     }
     
+    setIsSubmitting(true);
+    
     try {
       let result;
       if (editingCar) {
+        // For editing, exclude id and other system fields
         const { id, created_at, updated_at, ...updateData } = carFormData;
         
+        // Clean and validate the update data
         const cleanedUpdateData = {
-          ...updateData,
+          brand: updateData.brand?.trim(),
+          model: updateData.model?.trim(),
           year: parseInt(updateData.year) || new Date().getFullYear(),
           daily_rate: parseFloat(updateData.daily_rate) || 0,
+          transmission: updateData.transmission || 'automatic',
           seats: parseInt(updateData.seats) || 5,
-          luggage: parseInt(updateData.luggage) || 2
+          luggage: parseInt(updateData.luggage) || 2,
+          fuel_type: updateData.fuel_type || 'petrol',
+          status: updateData.status || 'available',
+          engine: updateData.engine?.trim() || '',
+          image_url: updateData.image_url?.trim() || ''
         };
         
-        result = await supabase.from('cars').update(cleanedUpdateData).eq('id', editingCar.id).select();
+        console.log('Updating car with data:', cleanedUpdateData); // Debug log
+        console.log('Car ID to update:', editingCar.id); // Debug log
+        console.log('Current user:', user); // Debug log
+        console.log('Current session:', session); // Debug log
+        console.log('Is admin:', isAdmin); // Debug log
         
-        if (result.error) throw result.error;
+        // Check if we have a valid session
+        if (!session) {
+          throw new Error('No active session. Please log in again.');
+        }
+        
+        // Debug: Check the JWT token contents
+        try {
+          const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            console.error('Error getting current user:', userError);
+          } else {
+            console.log('Current user from auth:', currentUser);
+            console.log('User metadata:', currentUser?.user_metadata);
+            console.log('User email:', currentUser?.email);
+          }
+        } catch (authError) {
+          console.error('Auth check error:', authError);
+        }
+        
+        // Refresh the session to ensure it's valid
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error('Session refresh error:', refreshError);
+          throw new Error('Session refresh failed. Please log in again.');
+        }
+        
+        console.log('Refreshed session:', refreshedSession); // Debug log
+        
+        // First, let's check if the car exists
+        const { data: existingCar, error: checkError } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('id', editingCar.id)
+          .single();
+        
+        if (checkError) {
+          console.error('Error checking existing car:', checkError);
+          throw new Error(`Car not found: ${checkError.message}`);
+        }
+        
+        console.log('Existing car found:', existingCar); // Debug log
+        
+        result = await supabase
+          .from('cars')
+          .update(cleanedUpdateData)
+          .eq('id', editingCar.id)
+          .select();
+        
+        if (result.error) {
+          console.error('Supabase update error:', result.error);
+          throw result.error;
+        }
         
         console.log('Update result:', result); // Debug log
-        console.log('Updated car data:', cleanedUpdateData); // Debug log
         
         // Update the local state immediately for better UX
         setCars(prevCars => {
@@ -311,13 +517,35 @@ const AdminCars = () => {
               ? { ...car, ...cleanedUpdateData }
               : car
           );
-          console.log('Updated cars state:', updatedCars); // Debug log
           return updatedCars;
         });
         
-        toast({ title: "Car Updated", description: `${carFormData.brand} ${carFormData.model} has been updated.` });
+        toast({ 
+          title: "Car Updated", 
+          description: `${cleanedUpdateData.brand} ${cleanedUpdateData.model} has been updated successfully.` 
+        });
       } else {
-        result = await supabase.from('cars').insert(carFormData).select();
+        // For new car, clean the data
+        const cleanedInsertData = {
+          brand: carFormData.brand?.trim(),
+          model: carFormData.model?.trim(),
+          year: parseInt(carFormData.year) || new Date().getFullYear(),
+          daily_rate: parseFloat(carFormData.daily_rate) || 0,
+          transmission: carFormData.transmission || 'automatic',
+          seats: parseInt(carFormData.seats) || 5,
+          luggage: parseInt(carFormData.luggage) || 2,
+          fuel_type: carFormData.fuel_type || 'petrol',
+          status: carFormData.status || 'available',
+          engine: carFormData.engine?.trim() || '',
+          image_url: carFormData.image_url?.trim() || ''
+        };
+        
+        console.log('Inserting new car with data:', cleanedInsertData); // Debug log
+        
+        result = await supabase
+          .from('cars')
+          .insert(cleanedInsertData)
+          .select();
         
         if (result.error) throw result.error;
         
@@ -326,20 +554,25 @@ const AdminCars = () => {
           setCars(prevCars => [result.data[0], ...prevCars]);
         }
         
-        toast({ title: "Car Added", description: `${carFormData.brand} ${carFormData.model} has been added.` });
+        toast({ 
+          title: "Car Added", 
+          description: `${cleanedInsertData.brand} ${cleanedInsertData.model} has been added successfully.` 
+        });
       }
-      
-      // Refresh data from server to ensure consistency
-      await loadData(currentPage);
       
       // Close dialog and reset form
       setIsCarDialogOpen(false);
-      setTimeout(() => {
-        resetCarForm();
-      }, 100);
+      resetCarForm();
+      
     } catch (error) {
       console.error('Car submit error:', error);
-      toast({ title: "Operation failed", description: error.message, variant: "destructive" });
+      toast({ 
+        title: "Operation failed", 
+        description: error.message, 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -402,36 +635,29 @@ const AdminCars = () => {
   };
 
   const handleEditCar = (car) => {
+    console.log('Editing car:', car); // Debug log
+    
+    // Set the editing car and open dialog
     setEditingCar(car);
-    setIsCarDialogOpen(true);
     setFormErrors({});
-    
-    // Set form data immediately without setTimeout
-    const formData = {
-      brand: car.brand || '',
-      model: car.model || '',
-      year: car.year || new Date().getFullYear(),
-      daily_rate: car.daily_rate || '',
-      transmission: car.transmission || 'automatic',
-      seats: car.seats || 5,
-      luggage: car.luggage || 2,
-      fuel_type: car.fuel_type || 'petrol',
-      status: car.status || 'available',
-      engine: car.engine || '',
-      image_url: car.image_url || ''
-    };
-    
-    console.log('Setting form data for edit:', formData); // Debug log
-    setCarFormData(formData);
-    setImagePreview(car.image_url || null);
+    setIsCarDialogOpen(true);
   };
 
   const resetCarForm = () => {
+    console.log('Resetting form'); // Debug log
     setEditingCar(null);
     setCarFormData({
-      brand: '', model: '', year: new Date().getFullYear(), daily_rate: '',
-      transmission: 'automatic', seats: 5, luggage: 2, fuel_type: 'petrol', status: 'available',
-      engine: '', image_url: ''
+      brand: '', 
+      model: '', 
+      year: new Date().getFullYear(), 
+      daily_rate: '',
+      transmission: 'automatic', 
+      seats: 5, 
+      luggage: 2, 
+      fuel_type: 'petrol', 
+      status: 'available',
+      engine: '', 
+      image_url: ''
     });
     setSelectedImage(null);
     setImagePreview(null);
@@ -472,9 +698,17 @@ const AdminCars = () => {
             <p className="text-gray-600 mt-1">Manage your car fleet and vehicle inventory</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Dialog open={isCarDialogOpen} onOpenChange={(isOpen) => { setIsCarDialogOpen(isOpen); if (!isOpen) resetCarForm(); }}>
+            <Dialog open={isCarDialogOpen} onOpenChange={(isOpen) => { 
+              setIsCarDialogOpen(isOpen); 
+              if (!isOpen) {
+                resetCarForm();
+              }
+            }}>
               <DialogTrigger asChild>
-                <Button onClick={() => setIsCarDialogOpen(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white w-full sm:w-auto">
+                <Button onClick={() => {
+                  resetCarForm();
+                  setIsCarDialogOpen(true);
+                }} className="bg-yellow-500 hover:bg-yellow-600 text-white w-full sm:w-auto">
                   <Plus className="mr-2 h-4 w-4" /> Add Car
                 </Button>
               </DialogTrigger>
@@ -485,7 +719,7 @@ const AdminCars = () => {
                     {editingCar ? 'Edit Car' : 'Add New Car'}
                   </DialogTitle>
                 </DialogHeader>
-                <form key={editingCar?.id || 'new-car'} onSubmit={handleCarSubmit} className="space-y-6 pt-4">
+                <form key={editingCar ? `edit-${editingCar.id}` : 'new-car'} onSubmit={handleCarSubmit} className="space-y-6 pt-4">
                   {/* Basic Information */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Basic Information</h3>
@@ -494,10 +728,7 @@ const AdminCars = () => {
                         <Label>Brand *</Label>
                         <Input 
                           value={carFormData.brand || ''} 
-                          onChange={e => {
-                            console.log('Brand changed to:', e.target.value); // Debug log
-                            setCarFormData({...carFormData, brand: e.target.value});
-                          }} 
+                          onChange={e => setCarFormData({...carFormData, brand: e.target.value})} 
                           required 
                           placeholder="e.g., Mercedes"
                           className={formErrors.brand ? 'border-red-500' : ''}
@@ -680,27 +911,74 @@ const AdminCars = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 h-12">
-                    {editingCar ? 'Update Car' : 'Add Car'}
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        setIsCarDialogOpen(false);
+                        resetCarForm();
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="flex-1 bg-yellow-500 hover:bg-yellow-600"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          {editingCar ? 'Updating...' : 'Adding...'}
+                        </>
+                      ) : (
+                        editingCar ? 'Update Car' : 'Add Car'
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
           </div>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <Card className="p-6 border-red-200 bg-red-50">
-            <div className="flex items-center gap-2 text-red-800">
-              <AlertCircle className="h-5 w-5" />
-              <span>Error: {error.message}</span>
-            </div>
-            <Button onClick={error.retry} className="mt-2">
-              Retry
-            </Button>
-          </Card>
-        )}
+        {/* Network Status and Error Display */}
+        <div className="space-y-4">
+          {/* Network Status */}
+          {networkStatus === 'offline' && (
+            <Card className="p-4 border-orange-200 bg-orange-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-orange-800">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>Network Connection Lost</span>
+                </div>
+                <Button 
+                  onClick={() => loadData(currentPage)} 
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry Connection
+                </Button>
+              </div>
+            </Card>
+          )}
+          
+          {/* Error Display */}
+          {error && (
+            <Card className="p-6 border-red-200 bg-red-50">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertCircle className="h-5 w-5" />
+                <span>Error: {error.message}</span>
+              </div>
+              <Button onClick={error.retry} className="mt-2">
+                Retry
+              </Button>
+            </Card>
+          )}
+        </div>
             
         {/* Enhanced Search and Filter */}
         <div className="space-y-4">
@@ -811,6 +1089,117 @@ const AdminCars = () => {
         {/* Add Sample Cars Section */}
         <div>
           <AddCarsButton />
+        </div>
+        
+        {/* Test Database Connection */}
+        <div className="mt-4 space-y-2">
+          <Button 
+            onClick={async () => {
+              try {
+                console.log('Testing database read access...');
+                const { data, error } = await supabase
+                  .from('cars')
+                  .select('id, brand, model')
+                  .limit(1);
+                
+                if (error) {
+                  console.error('Database read test failed:', error);
+                  toast({
+                    title: "Database Read Test Failed",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                } else {
+                  console.log('Database read test successful:', data);
+                  toast({
+                    title: "Database Read Test Successful",
+                    description: "Can read from cars table"
+                  });
+                }
+              } catch (error) {
+                console.error('Database test error:', error);
+                toast({
+                  title: "Database Test Error",
+                  description: error.message,
+                  variant: "destructive"
+                });
+              }
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Test Database Read
+          </Button>
+          
+          <Button 
+            onClick={async () => {
+              try {
+                console.log('Testing database update access...');
+                if (!cars.length) {
+                  toast({
+                    title: "No Cars Available",
+                    description: "Add a car first to test updates",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                const testCar = cars[0];
+                console.log('Testing update on car:', testCar);
+                
+                // Test with a simple field update
+                const { data, error } = await supabase
+                  .from('cars')
+                  .update({ 
+                    status: testCar.status // Just update with the same value to test
+                  })
+                  .eq('id', testCar.id)
+                  .select();
+                
+                if (error) {
+                  console.error('Database update test failed:', error);
+                  console.error('Error details:', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                  });
+                  
+                  // Check if it's an RLS policy issue
+                  if (error.message.includes('policy') || error.message.includes('permission') || error.message.includes('row')) {
+                    toast({
+                      title: "RLS Policy Issue",
+                      description: "This appears to be a Row Level Security policy issue. Check the console for details.",
+                      variant: "destructive"
+                    });
+                  } else {
+                    toast({
+                      title: "Database Update Test Failed",
+                      description: error.message,
+                      variant: "destructive"
+                    });
+                  }
+                } else {
+                  console.log('Database update test successful:', data);
+                  toast({
+                    title: "Database Update Test Successful",
+                    description: "Can update cars table - RLS policies are working"
+                  });
+                }
+              } catch (error) {
+                console.error('Database update test error:', error);
+                toast({
+                  title: "Database Update Test Error",
+                  description: error.message,
+                  variant: "destructive"
+                });
+              }
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Test Database Update
+          </Button>
         </div>
 
         {/* Mobile Cards View */}
