@@ -97,12 +97,12 @@ const CarsPage = () => {
   // UI state
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [priceFilter, setPriceFilter] = useState("")
-  const [brandFilter, setBrandFilter] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("")
-  const [transmissionFilter, setTransmissionFilter] = useState("")
-  const [fuelFilter, setFuelFilter] = useState("")
-  const [seatsFilter, setSeatsFilter] = useState("")
+  const [priceFilter, setPriceFilter] = useState("all")
+  const [brandFilter, setBrandFilter] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [transmissionFilter, setTransmissionFilter] = useState("all")
+  const [fuelFilter, setFuelFilter] = useState("all")
+  const [seatsFilter, setSeatsFilter] = useState("all")
   const [sortBy, setSortBy] = useState("recommended")
   const [showFilters, setShowFilters] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -213,7 +213,7 @@ const CarsPage = () => {
       
       // Price filter logic
       let matchesPrice = true
-      if (priceFilter) {
+      if (priceFilter && priceFilter !== "all") {
         if (priceFilter === "0-30") {
           matchesPrice = car.price <= 30
         } else if (priceFilter === "30-50") {
@@ -226,19 +226,19 @@ const CarsPage = () => {
       }
       
       // Brand filter logic
-      const matchesBrand = !brandFilter || car.brand.toLowerCase() === brandFilter.toLowerCase()
+      const matchesBrand = brandFilter === 'all' || car.brand.toLowerCase() === brandFilter.toLowerCase()
       
       // Category filter logic
-      const matchesCategory = !categoryFilter || car.category.toLowerCase() === categoryFilter.toLowerCase()
+      const matchesCategory = categoryFilter === 'all' || car.category.toLowerCase() === categoryFilter.toLowerCase()
       
       // Transmission filter logic
-      const matchesTransmission = !transmissionFilter || car.transmission.toLowerCase() === transmissionFilter.toLowerCase()
+      const matchesTransmission = transmissionFilter === 'all' || car.transmission.toLowerCase() === transmissionFilter.toLowerCase()
       
       // Fuel filter logic
-      const matchesFuel = !fuelFilter || car.fuel.toLowerCase() === fuelFilter.toLowerCase()
+      const matchesFuel = fuelFilter === 'all' || car.fuel.toLowerCase() === fuelFilter.toLowerCase()
       
       // Seats filter logic
-      const matchesSeats = !seatsFilter || car.seats.toString() === seatsFilter
+      const matchesSeats = seatsFilter === 'all' || car.seats.toString() === seatsFilter
       
       const matches = matchesSearch && matchesPrice && matchesBrand && matchesCategory && matchesTransmission && matchesFuel && matchesSeats
       
@@ -349,12 +349,12 @@ const CarsPage = () => {
 
   const clearAll = () => {
     setSearchTerm("")
-    setPriceFilter("")
-    setBrandFilter("")
-    setCategoryFilter("")
-    setTransmissionFilter("")
-    setFuelFilter("")
-    setSeatsFilter("")
+    setPriceFilter("all")
+    setBrandFilter("all")
+    setCategoryFilter("all")
+    setTransmissionFilter("all")
+    setFuelFilter("all")
+    setSeatsFilter("all")
     setSortBy("recommended")
   }
 
@@ -475,7 +475,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Price" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Price</SelectItem>
+                               <SelectItem value="all">Any Price</SelectItem>
                                <SelectItem value="0-30">€0 - €30</SelectItem>
                                <SelectItem value="30-50">€30 - €50</SelectItem>
                                <SelectItem value="50-70">€50 - €70</SelectItem>
@@ -492,7 +492,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Brand" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Brand</SelectItem>
+                               <SelectItem value="all">Any Brand</SelectItem>
                                {brands.map((brand) => (
                                  <SelectItem key={brand} value={brand}>
                                    {brand}
@@ -510,7 +510,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Category" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Category</SelectItem>
+                               <SelectItem value="all">Any Category</SelectItem>
                                <SelectItem value="economy">Economy</SelectItem>
                                <SelectItem value="premium">Premium</SelectItem>
                                <SelectItem value="luxury">Luxury</SelectItem>
@@ -527,7 +527,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Transmission" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Transmission</SelectItem>
+                               <SelectItem value="all">Any Transmission</SelectItem>
                                <SelectItem value="automatic">Automatic</SelectItem>
                                <SelectItem value="manual">Manual</SelectItem>
                              </SelectContent>
@@ -542,7 +542,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Fuel Type" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Fuel Type</SelectItem>
+                               <SelectItem value="all">Any Fuel Type</SelectItem>
                                <SelectItem value="petrol">Petrol</SelectItem>
                                <SelectItem value="diesel">Diesel</SelectItem>
                                <SelectItem value="hybrid">Hybrid</SelectItem>
@@ -559,7 +559,7 @@ const CarsPage = () => {
                                <SelectValue placeholder="Select Seats" />
                              </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="">Any Number of Seats</SelectItem>
+                               <SelectItem value="all">Any Number of Seats</SelectItem>
                                <SelectItem value="2">2 Seats</SelectItem>
                                <SelectItem value="4">4 Seats</SelectItem>
                                <SelectItem value="5">5 Seats</SelectItem>
@@ -633,7 +633,7 @@ const CarsPage = () => {
                   variants={staggerContainer}
                   initial="initial"
                   animate="animate"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8"
                 >
                   {visibleCars.map((car, index) => (
                     <CarCardWithSlider

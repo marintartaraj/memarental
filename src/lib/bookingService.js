@@ -4,6 +4,9 @@ import { toast } from '@/components/ui/use-toast';
 export class BookingService {
   static async createBooking(bookingData) {
     try {
+      // Get current user session
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // First, check if car is still available
       const { data: car, error: carError } = await supabase
         .from('cars')
@@ -27,27 +30,45 @@ export class BookingService {
       }, 0);
       const totalPrice = basePrice + extrasTotal;
 
+      // Prepare booking data
+      const bookingInsertData = {
+        car_id: bookingData.carId,
+        pickup_date: bookingData.pickupDate,
+        return_date: bookingData.returnDate,
+        pickup_time: bookingData.pickupTime,
+        return_time: bookingData.returnTime,
+        pickup_location: bookingData.pickupLocation,
+        return_location: bookingData.returnLocation,
+        total_price: totalPrice,
+        customer_name: `${bookingData.firstName} ${bookingData.lastName}`,
+        customer_email: bookingData.email,
+        customer_phone: bookingData.phone,
+        license_number: bookingData.licenseNumber,
+        license_expiry: bookingData.licenseExpiry,
+        extras: bookingData.extras.map(extra => extra.name), // Store as array of names
+        special_requests: bookingData.specialRequests,
+        status: 'confirmed'
+      };
+
+      // Add user_id only if user is authenticated and profile exists
+      if (user) {
+        // Check if profile exists for this user
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile && !profileError) {
+          bookingInsertData.user_id = user.id;
+        }
+        // If no profile exists, don't set user_id (allows anonymous booking)
+      }
+
       // Create booking record
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
-        .insert({
-          car_id: bookingData.carId,
-          pickup_date: bookingData.pickupDate,
-          return_date: bookingData.returnDate,
-          pickup_time: bookingData.pickupTime,
-          return_time: bookingData.returnTime,
-          pickup_location: bookingData.pickupLocation,
-          return_location: bookingData.returnLocation,
-          total_price: totalPrice,
-          customer_name: `${bookingData.firstName} ${bookingData.lastName}`,
-          customer_email: bookingData.email,
-          customer_phone: bookingData.phone,
-          license_number: bookingData.licenseNumber,
-          license_expiry: bookingData.licenseExpiry,
-          extras: JSON.stringify(bookingData.extras),
-          special_requests: bookingData.specialRequests,
-          status: 'confirmed'
-        })
+        .insert(bookingInsertData)
         .select()
         .single();
 

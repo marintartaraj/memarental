@@ -67,6 +67,43 @@
   }
 }
 
+/* ===== Desktop Navbar Enhancements ===== */
+@media (min-width: 1024px) {
+  .navbar-desktop {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  
+  .navbar-desktop .nav-item {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-desktop .nav-item:hover {
+    transform: translateY(-1px);
+  }
+  
+  .navbar-desktop .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(to right, #f59e0b, #f97316);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+  
+  .navbar-desktop .nav-item:hover::after {
+    width: 100%;
+  }
+  
+  .navbar-desktop .nav-item.active::after {
+    width: 100%;
+  }
+}
+
 /* ===== Minimal Mobile Menu Styles ===== */
 .mobile-menu-panel {
   backdrop-filter: blur(16px);
@@ -415,6 +452,14 @@ input, select, textarea {
 @media (min-width: 1280px) {
   .container-mobile {
     padding: 0 3rem;
+    max-width: 1400px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-mobile {
+    padding: 0 4rem;
+    max-width: 1600px;
   }
 }
 

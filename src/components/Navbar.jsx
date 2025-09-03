@@ -109,7 +109,7 @@ const Navbar = () => {
 
   return (
     <motion.header 
-      className={`sticky top-0 z-50 transition-all duration-500 ease-out ${
+      className={`sticky top-0 z-50 transition-all duration-500 ease-out navbar-desktop ${
         isScrolled 
           ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100' 
           : 'bg-white/95 backdrop-blur-sm'
@@ -122,13 +122,13 @@ const Navbar = () => {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-60" />
 
       <div className="container-mobile relative z-10">
-        <div className="flex items-center justify-between h-14 md:h-16">
+        <div className="flex items-center justify-between h-14 md:h-16 lg:h-18">
           {/* Minimal Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex-shrink-0 ml-1"
+            className="flex-shrink-0 ml-1 lg:ml-0"
           >
             <Link 
               to="/" 
@@ -136,14 +136,14 @@ const Navbar = () => {
               aria-label="MEMA Rental Home"
             >
               <div className="p-1.5 rounded-lg bg-yellow-50 border border-yellow-100 group-hover:bg-yellow-100 transition-all duration-300 flex-shrink-0">
-                <Car className="h-5 w-5 md:h-6 md:w-6 text-yellow-600" />
+                <Car className="h-5 w-5 md:h-6 md:w-6 lg:h-7 lg:w-7 text-yellow-600" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-base sm:text-lg md:text-xl font-light text-gray-800 tracking-wide leading-tight">
+                <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-gray-800 tracking-wide leading-tight">
                   MEMA <span className="font-medium text-yellow-600">Rental</span>
                 </span>
-                <span className="text-xs text-gray-400 font-light tracking-widest leading-tight">
-                  {language === 'sq' ? 'QIRA MAKINE' : 'CAR RENTAL'}
+                <span className="text-xs lg:text-sm text-gray-400 font-light tracking-widest leading-tight">
+                  {language === 'en' ? 'QIRA MAKINE' : 'CAR RENTAL'}
                 </span>
               </div>
             </Link>
@@ -151,13 +151,13 @@ const Navbar = () => {
 
           {/* Desktop Navigation - Centered */}
           <motion.nav 
-            className="hidden lg:flex items-center justify-center flex-1" 
+            className="hidden lg:flex items-center justify-center flex-1 max-w-2xl mx-auto" 
             role="navigation"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2 lg:space-x-4">
               {navItems.map((item, index) => (
                 <motion.div 
                   key={item.to} 
@@ -168,16 +168,16 @@ const Navbar = () => {
                 >
                   <Link 
                     to={item.to} 
-                    className={`relative px-5 py-2.5 text-sm font-light transition-all duration-300 min-h-[40px] flex items-center rounded-lg ${
+                    className={`relative px-4 lg:px-6 py-2.5 lg:py-3 text-sm lg:text-base font-light transition-all duration-300 min-h-[40px] lg:min-h-[48px] flex items-center rounded-lg nav-item ${
                       isActive(item.to) 
-                        ? 'text-yellow-700 bg-yellow-50/50' 
+                        ? 'text-yellow-700 bg-yellow-50/50 active' 
                         : 'text-gray-600 hover:text-yellow-600 hover:bg-yellow-50/30'
                     }`}
                     aria-current={isActive(item.to) ? 'page' : undefined}
                     onMouseEnter={() => setActiveDropdown(item.to === '/cars' ? 'cars' : null)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    <item.icon className={`mr-2 h-4 w-4 transition-all duration-300 ${
+                    <item.icon className={`mr-2 lg:mr-3 h-4 w-4 lg:h-5 lg:w-5 transition-all duration-300 ${
                       isActive(item.to) ? 'text-yellow-600' : 'text-gray-500'
                     }`} />
                     <span className="tracking-wide">{item.label}</span>
@@ -185,7 +185,7 @@ const Navbar = () => {
                     {/* Badge for cars */}
                     {item.badge && (
                       <motion.span 
-                        className="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full border border-yellow-200"
+                        className="ml-2 lg:ml-3 px-2 py-0.5 text-xs lg:text-sm font-medium bg-yellow-100 text-yellow-700 rounded-full border border-yellow-200"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.5, type: "spring" }}
@@ -196,7 +196,7 @@ const Navbar = () => {
 
                     {/* Dropdown indicator */}
                     {item.to === '/cars' && (
-                      <ChevronDown className={`ml-1 h-3 w-3 transition-all duration-300 ${
+                      <ChevronDown className={`ml-1 lg:ml-2 h-3 w-3 lg:h-4 lg:w-4 transition-all duration-300 ${
                         activeDropdown === 'cars' ? 'rotate-180' : ''
                       }`} />
                     )}
@@ -205,7 +205,7 @@ const Navbar = () => {
                   {/* Minimal Cars Dropdown */}
                   {item.to === '/cars' && activeDropdown === 'cars' && (
                     <motion.div 
-                      className="absolute top-full left-0 mt-2 w-72 bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-lg overflow-hidden"
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-white/95 backdrop-blur-md border border-gray-100 rounded-xl shadow-lg overflow-hidden"
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -261,7 +261,7 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <motion.div 
-            className="hidden lg:flex items-center space-x-3 flex-1 justify-end"
+            className="hidden lg:flex items-center space-x-3 lg:space-x-4 flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -269,28 +269,28 @@ const Navbar = () => {
             {/* Language Switcher */}
             <button
               onClick={() => switchLanguage(language === 'en' ? 'sq' : 'en')}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-yellow-50 transition-all duration-300 text-xs font-light text-gray-600 border border-gray-100 hover:border-yellow-200"
+              className="flex items-center space-x-2 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg bg-gray-50 hover:bg-yellow-50 transition-all duration-300 text-xs lg:text-sm font-light text-gray-600 border border-gray-100 hover:border-yellow-200"
               aria-label={`Switch to ${language === 'en' ? 'Albanian' : 'English'}`}
             >
-              <Globe className="h-3.5 w-3.5 text-gray-500" />
+              <Globe className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-gray-500" />
               <span>{language === 'en' ? 'Shqip' : 'English'}</span>
             </button>
 
             {/* User Actions */}
             {user && isAdmin ? (
-              <div className="flex items-center space-x-2">
-                <Button asChild variant="ghost" size="sm" className="bg-green-50 hover:bg-green-100 border border-green-100 text-green-700 text-xs font-light">
+              <div className="flex items-center space-x-2 lg:space-x-3">
+                <Button asChild variant="ghost" size="sm" className="bg-green-50 hover:bg-green-100 border border-green-100 text-green-700 text-xs lg:text-sm font-light px-3 lg:px-4 py-2 lg:py-2.5">
                   <Link to="/admin">
-                    <User className="mr-1.5 h-3.5 w-3.5" />
+                    <User className="mr-1.5 lg:mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
                     <span>Admin</span>
                   </Link>
                 </Button>
                 <Button 
                   onClick={handleLogout} 
                   size="sm"
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-100 text-xs font-light"
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-100 text-xs lg:text-sm font-light px-3 lg:px-4 py-2 lg:py-2.5"
                 >
-                  <LogOut className="mr-1.5 h-3.5 w-3.5" />
+                  <LogOut className="mr-1.5 lg:mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
                   <span>Logout</span>
                 </Button>
               </div>
@@ -298,11 +298,11 @@ const Navbar = () => {
               /* Minimal CTA Button */
               <Button 
                 asChild
-                className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 hover:border-yellow-300 px-4 py-2 text-xs font-medium transition-all duration-300"
+                className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 hover:border-yellow-300 px-4 lg:px-6 py-2 lg:py-2.5 text-xs lg:text-sm font-medium transition-all duration-300"
               >
                 <Link to="/cars">
                   <span className="flex items-center">
-                    <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+                    <BookOpen className="mr-1.5 lg:mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
                     Book Now
                   </span>
                 </Link>

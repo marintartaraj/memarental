@@ -58,15 +58,53 @@ const AdminOverview = () => {
       // Load bookings with related data
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          profiles(full_name),
-          cars(brand, model, daily_rate)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (bookingsError) throw bookingsError;
-      setBookings(bookingsData || []);
+      
+      // Fetch profile and car data separately for each booking
+      const bookingsWithProfiles = await Promise.all(
+        (bookingsData || []).map(async (booking) => {
+          let profile = null;
+          let car = null;
+          
+          // Fetch profile data if user_id exists
+          if (booking.user_id) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name, email, phone')
+              .eq('id', booking.user_id)
+              .single();
+            profile = profileData;
+          } else {
+            // For anonymous bookings, use customer details from the booking
+            profile = {
+              full_name: booking.customer_name || 'Anonymous Customer',
+              email: booking.customer_email || 'No email',
+              phone: booking.customer_phone || 'No phone'
+            };
+          }
+          
+          // Fetch car data
+          if (booking.car_id) {
+            const { data: carData } = await supabase
+              .from('cars')
+              .select('brand, model, daily_rate')
+              .eq('id', booking.car_id)
+              .single();
+            car = carData;
+          }
+          
+          return {
+            ...booking,
+            profiles: profile,
+            cars: car
+          };
+        })
+      );
+      
+      setBookings(bookingsWithProfiles || []);
 
       // Load user profiles
       const { data: profilesData, error: profilesError } = await supabase
