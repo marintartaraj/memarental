@@ -42,10 +42,28 @@ const AdminLayout = () => {
                 <Menu className="h-5 w-5" />
               </Button>
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">M</span>
+                {/* Modern Admin Header Logo */}
+                <div className="relative group">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 via-orange-500 to-yellow-600 rounded-lg shadow-md flex items-center justify-center relative overflow-hidden">
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    {/* M Icon */}
+                    <span className="text-white font-bold text-sm relative z-10">M</span>
+                    
+                    {/* Subtle glow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-lg blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
                 </div>
-                <span className="font-semibold text-gray-900">MEMA Admin</span>
+                
+                {/* Modern Admin Typography */}
+                <div className="flex flex-col">
+                  <div className="flex items-baseline space-x-1">
+                    <span className="font-bold text-gray-900">MEMA</span>
+                    <span className="text-xs font-medium text-yellow-600">®</span>
+                  </div>
+                  <span className="text-xs font-medium text-gray-600 tracking-wide">ADMIN</span>
+                </div>
               </div>
               <div className="w-10" />
             </div>

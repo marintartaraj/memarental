@@ -87,17 +87,43 @@ const AdminLoginPage = () => {
         >
           <Card className="shadow-2xl border-0">
             <CardHeader className="text-center pb-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 bg-yellow-100 rounded-full">
-                  <Shield className="h-8 w-8 text-yellow-600" />
+              <div className="flex justify-center mb-6">
+                {/* Modern Admin Logo */}
+                <div className="relative group">
+                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 via-orange-500 to-yellow-600 rounded-2xl shadow-xl flex items-center justify-center relative overflow-hidden">
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    {/* Shield Icon */}
+                    <Shield className="h-8 w-8 text-white drop-shadow-sm" />
+                    
+                    {/* Subtle glow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-800">
-                Admin Access
-              </CardTitle>
-              <p className="text-gray-600 mt-2">
-                Sign in to access the admin dashboard
-              </p>
+              
+              {/* Modern Admin Typography */}
+              <div className="text-center mb-4">
+                <div className="flex items-baseline justify-center space-x-2 mb-2">
+                  <span className="text-2xl font-bold bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 bg-clip-text text-transparent">
+                    MEMA
+                  </span>
+                  <span className="text-lg font-medium text-yellow-600">®</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <span className="text-lg font-semibold bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-700 bg-clip-text text-transparent">
+                    ADMIN
+                  </span>
+                  <div className="w-2 h-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full animate-pulse"></div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-800">
+                  Admin Access
+                </CardTitle>
+                <p className="text-gray-600 mt-2">
+                  Sign in to access the admin dashboard
+                </p>
+              </div>
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">

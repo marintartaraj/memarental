@@ -97,10 +97,10 @@ const HomePage = () => {
   }
 
   const destinations = [
-    { name: "Tirana City Center", emoji: "🏙️", description: "Explore Albania's vibrant capital with ease", image: "/images/cars/c-class1.jpeg" },
-    { name: "Durres Beach", emoji: "🏖️", description: "Drive to the stunning Adriatic coastline", image: "/images/cars/santa fe1.jpeg" },
+    { name: "Tirana City Center", emoji: "🏛️", description: "Explore Albania's vibrant capital with ease", image: "/images/cars/c-class1.jpeg" },
+    { name: "Durres Beach", emoji: "🌊", description: "Drive to the stunning Adriatic coastline", image: "/images/cars/santa fe1.jpeg" },
     { name: "Albanian Alps", emoji: "⛰️", description: "Adventure through breathtaking mountain roads", image: "/images/cars/xc601.jpeg" },
-    { name: "Historical Sites", emoji: "🏛️", description: "Visit ancient castles and UNESCO sites", image: "/images/cars/passat1.jpeg" },
+    { name: "Historical Sites", emoji: "🏰", description: "Visit ancient castles and UNESCO sites", image: "/images/cars/passat1.jpeg" },
   ]
 
   const benefits = [

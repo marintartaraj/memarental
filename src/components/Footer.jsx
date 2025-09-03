@@ -18,14 +18,43 @@ const Footer = () => {
       <div className="container-mobile py-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2 group relative overflow-hidden" aria-label="MEMA Rental Home">
-              <div className="relative">
-                <Car className="h-8 w-8 text-yellow-500 group-hover:scale-110 transition-transform duration-300 group-hover:animate-pulse" />
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <Link to="/" className="flex items-center space-x-3 group relative overflow-hidden" aria-label="MEMA Rental Home">
+              {/* Modern Footer Logo Icon */}
+              <div className="relative group-hover:scale-110 transition-transform duration-300">
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 via-orange-500 to-yellow-600 rounded-2xl shadow-lg group-hover:shadow-xl flex items-center justify-center relative overflow-hidden">
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  
+                  {/* Car Icon */}
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12L5 8H19L21 12V18H19V20H17V18H7V20H5V18H3V12Z" fill="currentColor"/>
+                    <circle cx="7" cy="14" r="1.5" fill="currentColor"/>
+                    <circle cx="17" cy="14" r="1.5" fill="currentColor"/>
+                    <path d="M7 8V6C7 5.44772 7.44772 5 8 5H16C16.5523 5 17 5.44772 17 6V8" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                  </svg>
+                  
+                  {/* Subtle glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
-              <div className="text-2xl font-bold group-hover:text-yellow-400 transition-colors duration-300 relative">
-                MEMA <span className="text-yellow-500 group-hover:animate-pulse">Rental</span>
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              {/* Modern Footer Typography */}
+              <div className="flex flex-col">
+                <div className="flex items-baseline space-x-1">
+                  <span className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent tracking-tight group-hover:from-yellow-400 group-hover:via-orange-400 group-hover:to-yellow-400 transition-all duration-300">
+                    MEMA
+                  </span>
+                  <span className="text-lg font-medium text-yellow-400 tracking-wide group-hover:text-yellow-300 transition-colors duration-300">®</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg font-semibold bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 bg-clip-text text-transparent tracking-wide group-hover:from-yellow-300 group-hover:via-orange-300 group-hover:to-yellow-400 transition-all duration-300">
+                    RENTAL
+                  </span>
+                  <div className="w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full animate-pulse group-hover:animate-bounce transition-all duration-300"></div>
+                </div>
+                <span className="text-xs font-medium text-gray-400 tracking-widest uppercase mt-1 group-hover:text-yellow-300 transition-colors duration-300">
+                  {t('footerDescription') ? 'Premium Car Rental' : 'CAR RENTAL'}
+                </span>
               </div>
             </Link>
             <p className="text-gray-400 leading-relaxed">

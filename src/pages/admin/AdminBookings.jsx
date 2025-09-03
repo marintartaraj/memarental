@@ -84,21 +84,21 @@ const AdminBookings = () => {
       }
       
       // Test 1: Check if we can access the bookings table at all
-      console.log('📋 Test 1: Checking basic table access...');
+      console.log('Test 1: Checking basic table access...');
       const { data: basicTest, error: basicError } = await supabase
         .from('bookings')
         .select('id')
         .limit(1);
       
       if (basicError) {
-        console.error('❌ Basic table access failed:', basicError);
+        console.error('Basic table access failed:', basicError);
         throw new Error(`Basic table access failed: ${basicError.message}`);
       }
       
-      console.log('✅ Basic table access successful');
+              console.log('Basic table access successful');
       
       // Test 2: Check if we can access with relationships
-      console.log('📋 Test 2: Checking relationships access...');
+              console.log('Test 2: Checking relationships access...');
       const { data: relationshipTest, error: relationshipError } = await supabase
         .from('bookings')
         .select(`
@@ -108,28 +108,28 @@ const AdminBookings = () => {
         .limit(1);
       
       if (relationshipError) {
-        console.error('❌ Relationship access failed:', relationshipError);
+                  console.error('Relationship access failed:', relationshipError);
         throw new Error(`Relationship access failed: ${relationshipError.message}`);
       }
       
-      console.log('✅ Relationship access successful');
+              console.log('Relationship access successful');
       
       // Test 3: Check if we can access cars table
-      console.log('📋 Test 3: Checking cars table access...');
+              console.log('Test 3: Checking cars table access...');
       const { data: carsTest, error: carsError } = await supabase
         .from('cars')
         .select('id, brand, model')
         .limit(1);
       
       if (carsError) {
-        console.error('❌ Cars table access failed:', carsError);
+                  console.error('Cars table access failed:', carsError);
         throw new Error(`Cars table access failed: ${carsError.message}`);
       }
       
-      console.log('✅ Cars table access successful');
+              console.log('Cars table access successful');
       
       // Now load the full data
-      console.log('📋 Loading full bookings data...');
+              console.log('Loading full bookings data...');
       const { data: fullBookingsData, error: fullError } = await supabase
         .from('bookings')
         .select(`
@@ -140,20 +140,20 @@ const AdminBookings = () => {
         .order('created_at', { ascending: false });
       
       if (fullError) {
-        console.error('❌ Full data loading error:', fullError);
+                  console.error('Full data loading error:', fullError);
         throw new Error(`Full data loading error: ${fullError.message}`);
       }
       
-      console.log('✅ Successfully loaded bookings:', fullBookingsData?.length || 0);
+              console.log('Successfully loaded bookings:', fullBookingsData?.length || 0);
       setBookings(fullBookingsData || []);
       
       // If no bookings found, that's okay - just log it
       if (!fullBookingsData || fullBookingsData.length === 0) {
-        console.log('ℹ️ No bookings found in database - this is normal for a new system');
+        console.log('Info: No bookings found in database - this is normal for a new system');
       }
 
     } catch (error) {
-      console.error('❌ Error loading bookings:', error);
+      console.error('Error loading bookings:', error);
       
       // Provide more specific error messages
       let errorMessage = 'Failed to load bookings';

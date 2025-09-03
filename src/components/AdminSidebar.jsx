@@ -99,12 +99,31 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {/* Header */}
           <header className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                <Shield className="h-5 w-5 text-white" />
+              {/* Modern Admin Sidebar Logo */}
+              <div className="relative group">
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 via-orange-500 to-yellow-600 rounded-xl shadow-md flex items-center justify-center relative overflow-hidden">
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  
+                  {/* Shield Icon */}
+                  <Shield className="h-5 w-5 text-white drop-shadow-sm relative z-10" />
+                  
+                  {/* Subtle glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
+              
+              {/* Modern Admin Sidebar Typography */}
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">MEMA Admin</h1>
-                <p className="text-sm text-gray-500">Car Rental Management</p>
+                <div className="flex items-baseline space-x-1">
+                  <h1 className="text-lg font-bold text-gray-900">MEMA</h1>
+                  <span className="text-xs font-medium text-yellow-600">®</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-semibold text-gray-700">ADMIN</span>
+                  <div className="w-1.5 h-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full animate-pulse"></div>
+                </div>
+                <p className="text-xs text-gray-500">Car Rental Management</p>
               </div>
             </div>
             <Button
