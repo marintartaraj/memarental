@@ -3,7 +3,7 @@
 import React from "react"
 import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
-import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Play, Sparkles } from "lucide-react"
+import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Play, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -123,6 +123,13 @@ const HomePage = () => {
     } else if (type === 'email') {
       window.open('mailto:info@memarental.com', '_self')
     }
+  }
+
+  const handleWhatsAppClick = () => {
+    const phoneNumber = '+355-4-123-4567'
+    const message = 'Hello! I would like to inquire about car rental services in Tirana.'
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\s/g, '')}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
   }
 
   return (
@@ -726,19 +733,6 @@ const HomePage = () => {
           </section>
         </main>
 
-        <div className="sticky-bottom-cta sm:hidden">
-          <div className="mx-auto max-w-md">
-            <Button asChild className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-4 text-lg shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden">
-              <Link to="/cars">
-                <span className="flex items-center justify-center relative z-10">
-                  Book Your Car
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              </Link>
-            </Button>
-          </div>
-        </div>
       </div>
     </>
   )

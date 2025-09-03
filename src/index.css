@@ -4,6 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===== Scrollbar utilities ===== */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
 /* ===== Theme tokens with Gold/White/Black palette ===== */
 :root {
   --background: #ffffff; /* Pure white */

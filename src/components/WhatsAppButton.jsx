@@ -1,20 +1,25 @@
 import React from "react"
 import { MessageCircle } from "lucide-react"
+import { useMobileMenu } from "@/contexts/MobileMenuContext"
 
 const WhatsAppButton = ({ phoneNumber = "+355-4-123-4567", message = "Hello! I'm interested in renting a car.", className = "" }) => {
+  const { isMobileMenuOpen } = useMobileMenu();
+  
   const handleWhatsAppClick = () => {
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodedMessage}`
     window.open(whatsappUrl, '_blank')
   }
 
+  if (isMobileMenuOpen) return null;
+
   return (
     <button
       onClick={handleWhatsAppClick}
       className={`
-        fixed bottom-6 right-6 z-50
+        fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60]
         bg-green-500 hover:bg-green-600 
-        text-white rounded-full p-4
+        text-white rounded-full p-3 sm:p-4
         shadow-lg hover:shadow-xl
         transition-all duration-300 ease-in-out
         transform hover:scale-110
@@ -24,7 +29,7 @@ const WhatsAppButton = ({ phoneNumber = "+355-4-123-4567", message = "Hello! I'm
       aria-label="Contact us on WhatsApp"
       title="Chat with us on WhatsApp"
     >
-      <MessageCircle className="h-6 w-6" />
+      <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
       
       {/* Tooltip */}
       <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">

@@ -4,9 +4,11 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
+import WhatsAppButton from '@/components/WhatsAppButton';
 // Client pages
 import HomePage from '@/pages/client/HomePage';
 import CarsPage from '@/pages/client/CarsPage';
@@ -83,7 +85,10 @@ function App() {
         <Router>
           <LanguageProvider>
             <AuthProvider>
-              <AppContent />
+              <MobileMenuProvider>
+                <AppContent />
+                <WhatsAppButton />
+              </MobileMenuProvider>
             </AuthProvider>
           </LanguageProvider>
         </Router>

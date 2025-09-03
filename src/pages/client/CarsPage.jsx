@@ -166,7 +166,9 @@ const CarsPage = () => {
         if (error) {
           throw error
         }
-        setCars((data || []).map(normalizeCarRecord))
+        const normalizedCars = (data || []).map(normalizeCarRecord)
+        console.log('Loaded cars:', normalizedCars)
+        setCars(normalizedCars)
       } catch (err) {
         console.error("Failed to load cars:", err)
         if (isMounted) setCars([])
@@ -195,16 +197,58 @@ const CarsPage = () => {
   // Filtering
   useEffect(() => {
     const term = debouncedSearch.toLowerCase()
+    console.log('Filtering cars:', { 
+      totalCars: cars.length, 
+      searchTerm: term, 
+      priceFilter, 
+      brandFilter, 
+      categoryFilter, 
+      transmissionFilter, 
+      fuelFilter, 
+      seatsFilter 
+    })
+    
     const list = cars.filter((car) => {
       const matchesSearch = !term || car.brand.toLowerCase().includes(term) || car.model.toLowerCase().includes(term)
-      const matchesPrice =
-        !priceFilter ||
-        (priceFilter === "low" && car.price <= 50) ||
-        (priceFilter === "medium" && car.price > 50 && car.price <= 70) ||
-        (priceFilter === "high" && car.price > 70)
-      const matchesBrand = !brandFilter || car.brand === brandFilter
-      const matchesCategory = !categoryFilter || car.category === categoryFilter
-      return matchesSearch && matchesPrice && matchesBrand && matchesCategory
+      
+      // Price filter logic
+      let matchesPrice = true
+      if (priceFilter) {
+        if (priceFilter === "0-30") {
+          matchesPrice = car.price <= 30
+        } else if (priceFilter === "30-50") {
+          matchesPrice = car.price > 30 && car.price <= 50
+        } else if (priceFilter === "50-70") {
+          matchesPrice = car.price > 50 && car.price <= 70
+        } else if (priceFilter === "70+") {
+          matchesPrice = car.price > 70
+        }
+      }
+      
+      // Brand filter logic
+      const matchesBrand = !brandFilter || car.brand.toLowerCase() === brandFilter.toLowerCase()
+      
+      // Category filter logic
+      const matchesCategory = !categoryFilter || car.category.toLowerCase() === categoryFilter.toLowerCase()
+      
+      // Transmission filter logic
+      const matchesTransmission = !transmissionFilter || car.transmission.toLowerCase() === transmissionFilter.toLowerCase()
+      
+      // Fuel filter logic
+      const matchesFuel = !fuelFilter || car.fuel.toLowerCase() === fuelFilter.toLowerCase()
+      
+      // Seats filter logic
+      const matchesSeats = !seatsFilter || car.seats.toString() === seatsFilter
+      
+      const matches = matchesSearch && matchesPrice && matchesBrand && matchesCategory && matchesTransmission && matchesFuel && matchesSeats
+      
+      if (!matches) {
+        console.log('Car filtered out:', car.brand, car.model, {
+          matchesSearch, matchesPrice, matchesBrand, matchesCategory, matchesTransmission, matchesFuel, matchesSeats
+        })
+      }
+      
+      return matches
     })
 
     // Sorting
@@ -231,7 +275,7 @@ const CarsPage = () => {
         })
     }
     setFilteredCars(sorted)
-  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, sortBy])
+  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, transmissionFilter, fuelFilter, seatsFilter, sortBy])
 
   const visibleCars = useMemo(() => filteredCars.slice(0, 9), [filteredCars]) // Show 9 cars per page
   const canLoadMore = filteredCars.length > 9
@@ -422,82 +466,113 @@ const CarsPage = () => {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Price Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Price Range</label>
-                          <Select value={priceFilter} onValueChange={setPriceFilter}>
-                            <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder="Select Price" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0-30">€0 - €30</SelectItem>
-                              <SelectItem value="30-50">€30 - €50</SelectItem>
-                              <SelectItem value="50-70">€50 - €70</SelectItem>
-                              <SelectItem value="70+">€70+</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                 {/* Price Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Price Range</label>
+                           <Select value={priceFilter} onValueChange={setPriceFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Price" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Price</SelectItem>
+                               <SelectItem value="0-30">€0 - €30</SelectItem>
+                               <SelectItem value="30-50">€30 - €50</SelectItem>
+                               <SelectItem value="50-70">€50 - €70</SelectItem>
+                               <SelectItem value="70+">€70+</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
 
-                        {/* Brand Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Brand</label>
-                          <Select value={brandFilter} onValueChange={setBrandFilter}>
-                            <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder="Select Brand" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                              <SelectItem value="volkswagen">Volkswagen</SelectItem>
-                              <SelectItem value="toyota">Toyota</SelectItem>
-                              <SelectItem value="hyundai">Hyundai</SelectItem>
-                              <SelectItem value="volvo">Volvo</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                                                 {/* Brand Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Brand</label>
+                           <Select value={brandFilter} onValueChange={setBrandFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Brand" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Brand</SelectItem>
+                               {brands.map((brand) => (
+                                 <SelectItem key={brand} value={brand}>
+                                   {brand}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
 
-                        {/* Category Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Category</label>
-                          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder="Select Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="economy">Economy</SelectItem>
-                              <SelectItem value="premium">Premium</SelectItem>
-                              <SelectItem value="luxury">Luxury</SelectItem>
-                              <SelectItem value="suv">SUV</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                                                 {/* Category Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Category</label>
+                           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Category" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Category</SelectItem>
+                               <SelectItem value="economy">Economy</SelectItem>
+                               <SelectItem value="premium">Premium</SelectItem>
+                               <SelectItem value="luxury">Luxury</SelectItem>
+                               <SelectItem value="suv">SUV</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
 
-                        {/* Transmission Filter */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Transmission</label>
-                          <Select value={transmissionFilter} onValueChange={setTransmissionFilter}>
-                            <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder="Select Transmission" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="automatic">Automatic</SelectItem>
-                              <SelectItem value="manual">Manual</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                                                 {/* Transmission Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Transmission</label>
+                           <Select value={transmissionFilter} onValueChange={setTransmissionFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Transmission" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Transmission</SelectItem>
+                               <SelectItem value="automatic">Automatic</SelectItem>
+                               <SelectItem value="manual">Manual</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
+
+                                                 {/* Fuel Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Fuel Type</label>
+                           <Select value={fuelFilter} onValueChange={setFuelFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Fuel Type" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Fuel Type</SelectItem>
+                               <SelectItem value="petrol">Petrol</SelectItem>
+                               <SelectItem value="diesel">Diesel</SelectItem>
+                               <SelectItem value="hybrid">Hybrid</SelectItem>
+                               <SelectItem value="electric">Electric</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
+
+                                                 {/* Seats Filter */}
+                         <div className="space-y-2">
+                           <label className="text-sm font-medium text-foreground">Seats</label>
+                           <Select value={seatsFilter} onValueChange={setSeatsFilter}>
+                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
+                               <SelectValue placeholder="Select Seats" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="">Any Number of Seats</SelectItem>
+                               <SelectItem value="2">2 Seats</SelectItem>
+                               <SelectItem value="4">4 Seats</SelectItem>
+                               <SelectItem value="5">5 Seats</SelectItem>
+                               <SelectItem value="7">7+ Seats</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
                       </div>
 
                       {/* Clear Filters */}
                       <div className="flex justify-center mt-6">
                         <Button
-                          onClick={() => {
-                            setPriceFilter("")
-                            setBrandFilter("")
-                            setCategoryFilter("")
-                            setTransmissionFilter("")
-                            setFuelFilter("")
-                            setSeatsFilter("")
-                          }}
+                          onClick={clearAll}
                           variant="outline"
                           className="border-gray-300 text-gray-600 hover:bg-gray-50"
                         >
@@ -582,15 +657,7 @@ const CarsPage = () => {
                       Try adjusting your filters or search terms to find more cars.
                     </p>
                     <Button
-                      onClick={() => {
-                        setSearchTerm("")
-                        setPriceFilter("")
-                        setBrandFilter("")
-                        setCategoryFilter("")
-                        setTransmissionFilter("")
-                        setFuelFilter("")
-                        setSeatsFilter("")
-                      }}
+                      onClick={clearAll}
                       className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
                     >
                       Clear All Filters
