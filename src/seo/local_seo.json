@@ -1,0 +1,45 @@
+{
+  "businessName": "MEMA Rental",
+  "legalName": "MEMA Rental sh.p.k",
+  "phone": "+355 69 123 4567",
+  "email": "info@memarental.com",
+  "address": {
+    "streetAddress": "Rruga Myslym Shyri, Nr. 23",
+    "addressLocality": "Tiranë",
+    "postalCode": "1001",
+    "addressCountry": "AL"
+  },
+  "geo": {
+    "latitude": 41.3275,
+    "longitude": 19.8187
+  },
+  "priceRange": "€€",
+  "openingHours": ["Mo-Su 08:00-22:00"],
+  "sameAs": [
+    "https://www.facebook.com/memarental",
+    "https://www.instagram.com/memarental"
+  ],
+  "areaServed": "Tirana, Albania",
+  "serviceArea": {
+    "cities": ["Tirana", "Durres", "Vlore", "Shkoder", "Korce"],
+    "airports": ["Tirana International Airport (TIA)", "Rinas Airport"],
+    "regions": ["Central Albania", "Coastal Albania", "Northern Albania"]
+  },
+  "services": [
+    "Car Rental",
+    "Airport Pickup",
+    "24/7 Support",
+    "Insurance Coverage",
+    "GPS Navigation",
+    "Child Seats",
+    "Long-term Rentals"
+  ],
+  "paymentMethods": [
+    "Credit Card",
+    "Debit Card",
+    "Cash",
+    "Bank Transfer"
+  ],
+  "languages": ["Albanian", "English", "Italian"],
+  "currencies": ["EUR", "USD", "ALL"]
+}

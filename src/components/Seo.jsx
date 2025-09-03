@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://memarental.com';
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://memarental.com';
 const SITE_NAME = 'MEMA Rental';
 
 const toAbsoluteUrl = (path) => {
@@ -22,10 +22,21 @@ export default function Seo({
   schema,          // object or array of objects
   noindex = false,
   notranslate = false,
+  language = 'en',
+  hreflang = true, // Enable hreflang by default
 }) {
   const url = canonical || toAbsoluteUrl(path || '/');
   const ogImage = toAbsoluteUrl(image || '/og-image.jpg');
   const blocks = Array.isArray(schema) ? schema : schema ? [schema] : [];
+  
+  // Generate hreflang tags for Albanian and English
+  const defaultAlternates = hreflang ? [
+    { hrefLang: 'sq-AL', href: `${url}${url.includes('?') ? '&' : '?'}lang=sq` },
+    { hrefLang: 'en-AL', href: `${url}${url.includes('?') ? '&' : '?'}lang=en` },
+    { hrefLang: 'x-default', href: url }
+  ] : [];
+  
+  const allAlternates = [...defaultAlternates, ...alternates];
 
   return (
     <Helmet prioritizeSeoTags>
@@ -35,7 +46,7 @@ export default function Seo({
 
       {/* Canonical + hreflang */}
       <link rel="canonical" href={url} />
-      {alternates.map(({ hrefLang, href }) => (
+      {allAlternates.map(({ hrefLang, href }) => (
         <link key={hrefLang} rel="alternate" hrefLang={hrefLang} href={href} />
       ))}
 

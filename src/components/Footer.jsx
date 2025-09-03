@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Car, Facebook, Twitter, Instagram, MapPin, Mail, Phone, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import localSeo from '../seo/local_seo.json';
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -73,15 +74,15 @@ const Footer = () => {
             <ul className="space-y-3 text-gray-400">
               <li className="flex items-center space-x-2 group">
                 <MapPin className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" />
-                <span>Rruga e Kavajës, Tirana, Albania</span>
+                <span>{localSeo.address.streetAddress}, {localSeo.address.addressLocality}, {localSeo.address.addressCountry}</span>
               </li>
               <li className="flex items-center space-x-2 group">
                 <Mail className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" />
-                <span>Email: contact@memarental.al</span>
+                <span>Email: {localSeo.email}</span>
               </li>
               <li className="flex items-center space-x-2 group">
                 <Phone className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" />
-                <span>Phone: +355 69 123 4567</span>
+                <span>Phone: {localSeo.phone}</span>
               </li>
             </ul>
           </div>
@@ -92,30 +93,30 @@ const Footer = () => {
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/5 to-orange-400/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
             <div className="flex space-x-4">
-              <a 
-                href="#" 
-                className="text-gray-400 hover:text-yellow-500 transition-colors group relative overflow-hidden p-2 rounded-lg" 
-                aria-label="Facebook"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <Facebook size={24} className="relative z-10 group-hover:animate-pulse group-hover:scale-110 transition-transform duration-300" />
-              </a>
-              <a 
-                href="#" 
-                className="text-gray-400 hover:text-yellow-500 transition-colors group relative overflow-hidden p-2 rounded-lg" 
-                aria-label="Twitter"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <Twitter size={24} className="relative z-10 group-hover:animate-pulse group-hover:scale-110 transition-transform duration-300" />
-              </a>
-              <a 
-                href="#" 
-                className="text-gray-400 hover:text-yellow-500 transition-colors group relative overflow-hidden p-2 rounded-lg" 
-                aria-label="Instagram"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <Instagram size={24} className="relative z-10 group-hover:animate-pulse group-hover:scale-110 transition-transform duration-300" />
-              </a>
+              {localSeo.sameAs.map((social, index) => {
+                const isFacebook = social.includes('facebook');
+                const isInstagram = social.includes('instagram');
+                const Icon = isFacebook ? Facebook : isInstagram ? Instagram : Twitter;
+                const label = isFacebook ? 'Facebook' : isInstagram ? 'Instagram' : 'Social Media';
+                
+                return (
+                  <a 
+                    key={index}
+                    href={social} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-yellow-500 transition-colors group relative overflow-hidden p-2 rounded-lg" 
+                    aria-label={label}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-r ${
+                      isFacebook ? 'from-blue-500/20 to-indigo-500/20' : 
+                      isInstagram ? 'from-pink-500/20 to-purple-500/20' : 
+                      'from-blue-400/20 to-cyan-400/20'
+                    } rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                    <Icon size={24} className="relative z-10 group-hover:animate-pulse group-hover:scale-110 transition-transform duration-300" />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>

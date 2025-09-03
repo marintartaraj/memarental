@@ -1,18 +1,23 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://memarental.com/sitemap.xml
-
-# Disallow admin and private areas
+# Disallow admin and account areas
 Disallow: /admin/
-Disallow: /dashboard/
-Disallow: /booking/
+Disallow: /account/
+Disallow: /api/
+Disallow: /_/
 
 # Allow important pages
 Allow: /cars/
 Allow: /about/
 Allow: /contact/
+Allow: /rent-a-car-tirana/
+Allow: /rent-a-car-tirana-airport/
+Allow: /makina-me-qira-tirane/
+Allow: /qira-makine-rinas/
 
-# Crawl delay (optional)
+# Sitemap
+Sitemap: https://memarental.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
 Crawl-delay: 1 

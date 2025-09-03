@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
+import CarCardWithSlider from "@/components/CarCardWithSlider"
 
 // Normalize car records for consistent UI
 const normalizeCarRecord = (record) => {
@@ -389,7 +390,7 @@ const CarsPage = () => {
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder={t("searchCars") || "Search cars by brand, model, or features..."}
+                    placeholder="Search cars by brand, model, or features..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-12 pr-4 py-3 text-lg border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 rounded-xl transition-all duration-200 bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md"
@@ -406,7 +407,7 @@ const CarsPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <Filter className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
                     <span className="relative z-10">
-                      {showFilters ? t("hideFilters") || "Hide Filters" : t("showFilters") || "Show Filters"}
+                      {showFilters ? "Hide Filters" : "Show Filters"}
                     </span>
                   </Button>
                 </div>
@@ -424,10 +425,10 @@ const CarsPage = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {/* Price Filter */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">{t("priceRange") || "Price Range"}</label>
+                          <label className="text-sm font-medium text-foreground">Price Range</label>
                           <Select value={priceFilter} onValueChange={setPriceFilter}>
                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder={t("selectPrice") || "Select Price"} />
+                              <SelectValue placeholder="Select Price" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="0-30">€0 - €30</SelectItem>
@@ -440,10 +441,10 @@ const CarsPage = () => {
 
                         {/* Brand Filter */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">{t("brand") || "Brand"}</label>
+                          <label className="text-sm font-medium text-foreground">Brand</label>
                           <Select value={brandFilter} onValueChange={setBrandFilter}>
                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder={t("selectBrand") || "Select Brand"} />
+                              <SelectValue placeholder="Select Brand" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
@@ -457,10 +458,10 @@ const CarsPage = () => {
 
                         {/* Category Filter */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">{t("category") || "Category"}</label>
+                          <label className="text-sm font-medium text-foreground">Category</label>
                           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder={t("selectCategory") || "Select Category"} />
+                              <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="economy">Economy</SelectItem>
@@ -473,10 +474,10 @@ const CarsPage = () => {
 
                         {/* Transmission Filter */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">{t("transmission") || "Transmission"}</label>
+                          <label className="text-sm font-medium text-foreground">Transmission</label>
                           <Select value={transmissionFilter} onValueChange={setTransmissionFilter}>
                             <SelectTrigger className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20">
-                              <SelectValue placeholder={t("selectTransmission") || "Select Transmission"} />
+                              <SelectValue placeholder="Select Transmission" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="automatic">Automatic</SelectItem>
@@ -500,7 +501,7 @@ const CarsPage = () => {
                           variant="outline"
                           className="border-gray-300 text-gray-600 hover:bg-gray-50"
                         >
-                          {t("clearFilters") || "Clear All Filters"}
+                          Clear All Filters
                         </Button>
                       </div>
                     </motion.div>
@@ -517,10 +518,10 @@ const CarsPage = () => {
               <motion.div {...fadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                 <div>
                   <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-                    {filteredCars.length} {t("carsAvailable") || "Cars Available"}
+                    {filteredCars.length} Cars Available
                   </h2>
                   <p className="text-muted-foreground mt-1">
-                    {t("findPerfectCar") || "Find the perfect car for your journey"}
+                    Find the perfect car for your journey
                   </p>
                 </div>
 
@@ -531,11 +532,11 @@ const CarsPage = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="recommended">{t("recommended") || "Recommended"}</SelectItem>
-                      <SelectItem value="price-low">{t("priceLowToHigh") || "Price: Low to High"}</SelectItem>
-                      <SelectItem value="price-high">{t("priceHighToLow") || "Price: High to Low"}</SelectItem>
-                      <SelectItem value="rating">{t("highestRated") || "Highest Rated"}</SelectItem>
-                      <SelectItem value="popular">{t("mostPopular") || "Most Popular"}</SelectItem>
+                      <SelectItem value="recommended">Recommended</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="popular">Most Popular</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -546,7 +547,7 @@ const CarsPage = () => {
                 <motion.div {...fadeUp} className="text-center py-16">
                   <div className="inline-flex items-center gap-2 text-muted-foreground">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500"></div>
-                    <span>{t("loadingCars") || "Loading cars..."}</span>
+                    <span>Loading cars...</span>
                   </div>
                 </motion.div>
               )}
@@ -560,124 +561,11 @@ const CarsPage = () => {
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
                   {visibleCars.map((car, index) => (
-                    <motion.div
+                    <CarCardWithSlider
                       key={car.id}
-                      variants={fadeUp}
-                      whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
-                      className="group"
-                    >
-                      <Card className="p-0 hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden rounded-2xl relative h-full">
-                        {/* Glow effect */}
-                        <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div className="relative z-10 h-full flex flex-col">
-                          {/* Car Image */}
-                          <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                            <img
-                              src={car.image_url}
-                              alt={`${car.brand} ${car.model} available for rent`}
-                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                              loading="lazy"
-                              onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-                            
-                            {/* Popular Badge */}
-                            {car.popular && (
-                              <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                <TrendingUp className="inline h-3 w-3 mr-1" />
-                                Popular
-                              </div>
-                            )}
-
-                            {/* Discount Badge */}
-                            {car.discount > 0 && (
-                              <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                                -{car.discount}%
-                              </div>
-                            )}
-
-                            {/* Availability Badge */}
-                            <div className={`absolute bottom-4 right-4 px-3 py-1 rounded-full text-sm font-semibold shadow-sm ${
-                              car.available 
-                                ? "bg-green-500 text-white" 
-                                : "bg-red-500 text-white"
-                            }`}>
-                              {car.available ? "Available" : "Unavailable"}
-                            </div>
-
-                            {/* Light overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                          </div>
-
-                          {/* Car Details */}
-                          <div className="p-6 flex-1 flex flex-col">
-                            {/* Header */}
-                            <div className="mb-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs uppercase tracking-wider text-yellow-700 font-semibold">{car.category}</p>
-                                <div className="flex items-center gap-1 text-yellow-600">
-                                  <Star className="h-4 w-4 fill-current" />
-                                  <span className="text-sm font-medium">{car.rating}</span>
-                                </div>
-                              </div>
-                              <h3 className="font-heading text-xl font-bold text-card-foreground mb-1">{car.brand} {car.model}</h3>
-                              <p className="text-muted-foreground text-sm">{car.year} • {car.transmission} • {car.fuel}</p>
-                            </div>
-
-                            {/* Features */}
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded-full">
-                                <Users className="h-3 w-3" />
-                                {car.seats} seats
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded-full">
-                                <Fuel className="h-3 w-3" />
-                                {car.fuel}
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded-full">
-                                <Car className="h-3 w-3" />
-                                {car.transmission}
-                              </div>
-                            </div>
-
-                            {/* Price */}
-                            <div className="mt-auto">
-                              <div className="flex items-baseline gap-2 mb-4">
-                                <span className="font-heading text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent group-hover:animate-pulse">
-                                  €{car.price}
-                                </span>
-                                <span className="text-muted-foreground">/ day</span>
-                              </div>
-
-                              {/* Action Buttons */}
-                              <div className="flex gap-3">
-                                <Button 
-                                  asChild 
-                                  className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                                  disabled={!car.available}
-                                >
-                                  <Link to={`/cars/${car.id}`}>
-                                    <span className="relative z-10">Book Now</span>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                  </Link>
-                                </Button>
-                                <Button 
-                                  asChild 
-                                  variant="outline" 
-                                  className="flex-1 bg-transparent border-yellow-500 text-yellow-600 hover:bg-yellow-50 group relative overflow-hidden"
-                                >
-                                  <Link to={`/cars/${car.id}`}>
-                                    <span className="relative z-10">View Details</span>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                  </Link>
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    </motion.div>
+                      car={car}
+                      index={index}
+                    />
                   ))}
                 </motion.div>
               )}
@@ -688,10 +576,10 @@ const CarsPage = () => {
                   <div className="max-w-md mx-auto">
                     <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-heading text-xl font-semibold text-foreground mb-2">
-                      {t("noCarsFound") || "No cars found"}
+                      No cars found
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      {t("tryAdjustingFilters") || "Try adjusting your filters or search terms to find more cars."}
+                      Try adjusting your filters or search terms to find more cars.
                     </p>
                     <Button
                       onClick={() => {
@@ -705,7 +593,7 @@ const CarsPage = () => {
                       }}
                       className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
                     >
-                      {t("clearAllFilters") || "Clear All Filters"}
+                      Clear All Filters
                     </Button>
                   </div>
                 </motion.div>
@@ -726,10 +614,10 @@ const CarsPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div {...fadeUp} className="text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 relative">
-              <span className="relative z-10">{t("homeCtaTitle")}</span>
+              <span className="relative z-10">Ready to Start Your Journey?</span>
               <div className="absolute -inset-2 bg-gradient-to-r from-white/10 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </h2>
-            <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">{t("homeCtaCopy")}</p>
+            <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">Book your perfect rental car today and experience the freedom of the open road. Our team is here to help you find the ideal vehicle for your needs.</p>
             <motion.div
               initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -744,7 +632,7 @@ const CarsPage = () => {
                 <Link to="/cars">
                   <span className="relative z-10 flex items-center">
                     <Sparkles className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                    {t("bookNow")}
+                    Book Now
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -756,7 +644,7 @@ const CarsPage = () => {
                 size="lg"
                 className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent group relative overflow-hidden"
               >
-                <Link to="/contact">{t("getInTouch")}</Link>
+                <Link to="/contact">Get In Touch</Link>
               </Button>
             </motion.div>
           </motion.div>

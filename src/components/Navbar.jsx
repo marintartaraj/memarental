@@ -56,6 +56,7 @@ const Navbar = () => {
     { to: '/about', label: t('about') || 'About', icon: Info },
     { to: '/cars', label: t('cars') || 'Cars', icon: Car },
     { to: '/contact', label: t('contact') || 'Contact', icon: Phone },
+    { to: '/faq', label: t('faq') || 'FAQ', icon: BookOpen },
   ];
 
   const isActive = (path) => location.pathname === path;

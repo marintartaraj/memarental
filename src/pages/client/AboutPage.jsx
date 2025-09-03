@@ -9,10 +9,48 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { Users, Award, Shield, Clock, MapPin, Phone, Mail, Star, Heart, Zap, Car, CheckCircle, Globe, Target, TrendingUp, Sparkles, ArrowRight } from "lucide-react"
 import HeroHeader from "@/components/HeroHeader"
+import { generateLocalBusinessSchema } from "@/seo/structuredData"
 
 const AboutPage = () => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const prefersReducedMotion = useReducedMotion()
+
+  // Base URL for structured data
+  const baseUrl = import.meta.env.VITE_SITE_URL || "https://memarental.com"
+  const canonicalUrl = new URL("/about", baseUrl).toString()
+
+  // SEO titles and descriptions based on language
+  const seoData = {
+    sq: {
+      title: "Rreth MEMA Rental | Qira Makine në Tiranë",
+      description: "Njihuni me MEMA Rental: ekip lokal në Tiranë, makina të siguruara, mbështetje 24/7 dhe dorëzim në Aeroportin TIA. Lexoni historinë, vlerat dhe standardet tona."
+    },
+    en: {
+      title: "About MEMA Rental | Car Rental in Tirana",
+      description: "Meet MEMA Rental: Tirana-based team, fully insured cars, 24/7 support, and TIA airport delivery. Read our story, values, and standards."
+    }
+  }
+
+  // Structured data schemas
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": language === "sq" ? "Rreth MEMA Rental" : "About MEMA Rental",
+    "description": (language === "sq"
+      ? "Njihuni me MEMA Rental: ekip lokal në Tiranë, makina të siguruara, mbështetje 24/7 dhe dorëzim në Aeroportin TIA."
+      : "Meet MEMA Rental: Tirana-based team, fully insured cars, 24/7 support, and TIA airport delivery."),
+    "isPartOf": canonicalUrl,
+    "about": { "@id": `${baseUrl}#organization` }
+  }
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": language === "sq" ? "Kreu" : "Home", "item": baseUrl },
+      { "@type": "ListItem", "position": 2, "name": language === "sq" ? "Rreth Nesh" : "About Us", "item": canonicalUrl }
+    ]
+  }
 
   // Respect prefers-reduced-motion to avoid motion sickness
   const fadeUp = {
@@ -32,10 +70,10 @@ const AboutPage = () => {
 
   // Fixed class mapping to avoid dynamic Tailwind classes (better for SEO and CSS purge)
   const colorStyles = {
-    blue: { bg: "bg-blue-100", text: "text-blue-600", border: "border-blue-200" },
-    green: { bg: "bg-green-100", text: "text-green-600", border: "border-green-200" },
-    yellow: { bg: "bg-yellow-100", text: "text-yellow-600", border: "border-yellow-200" },
-    purple: { bg: "bg-purple-100", text: "text-purple-600", border: "border-purple-200" },
+    blue: { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" },
+    green: { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-200" },
+    yellow: { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200" },
+    purple: { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" },
   }
 
   const stats = [
@@ -59,57 +97,23 @@ const AboutPage = () => {
     { icon: Globe, title: "Local Expertise", description: "Deep knowledge of Albania and local roads" },
   ]
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "MEMA Rental - Car Rental Tirana Albania",
-    alternateName: "MEMA Car Rental",
-    description:
-      "Premium car rental service in Tirana, Albania. Providing reliable transportation solutions since 2014. Best car rental in Tirana with competitive rates.",
-    url: "https://memarental.com",
-    logo: "https://memarental.com/logo.jpg",
-    foundingDate: "2014",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "Rruga e Durresit 123",
-      addressLocality: "Tirana",
-      addressRegion: "Tirana",
-      postalCode: "1001",
-      addressCountry: "AL",
-    },
-    geo: { "@type": "GeoCoordinates", latitude: "41.3275", longitude: "19.8187" },
-    contactPoint: {
-      "@type": "ContactPoint",
-      telephone: "+355-4-123-4567",
-      contactType: "customer service",
-      email: "info@memarental.com",
-      availableLanguage: "English, Albanian",
-    },
-    openingHours: ["Mo-Su 08:00-20:00"],
-    priceRange: "€€",
-    areaServed: { "@type": "Country", name: "Albania" },
-    serviceArea: { "@type": "Place", name: "Tirana, Albania" },
-    sameAs: ["https://facebook.com/memarental", "https://instagram.com/memarental"],
-  }
-
   return (
     <>
       <Seo
-        title={t("seoAboutTitle") || "About MEMA Rental - Premium Car Rental in Tirana, Albania"}
-        description={t("seoAboutDescription") || "Discover MEMA Rental's story - 10+ years of excellence in car rental services in Tirana, Albania. Trusted by 1000+ customers with 4.9/5 rating."}
+        title={seoData[language]?.title || seoData.en.title}
+        description={seoData[language]?.description || seoData.en.description}
         path="/about"
         image="https://memarental.com/about-image.jpg"
-        keywords="about MEMA rental, car rental company Tirana, car rental history Albania, MEMA rental story, car rental service Tirana, trusted car rental Albania, car rental company history, MEMA rental about us, car rental service about, Tirana car rental company, Albania car rental about"
-        schema={structuredData}
+        schema={[generateLocalBusinessSchema(), aboutSchema, breadcrumbSchema]}
       />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
           {/* Ambient light rays */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
+          <div className={`absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+          <div className={`absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-2000`}></div>
+          <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-4000`}></div>
         </div>
 
         <main className="relative z-10">
@@ -117,9 +121,9 @@ const AboutPage = () => {
           <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 py-16 sm:py-20 lg:py-28">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-              <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-              <div className="absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+              <div className={`absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"}`}></div>
+              <div className={`absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"} animation-delay-2000`}></div>
+              <div className={`absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"} animation-delay-4000`}></div>
             </div>
 
             <div className="container-mobile relative z-10">
@@ -131,7 +135,7 @@ const AboutPage = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 rounded-full text-sm font-medium mb-6 shadow-sm border border-yellow-200 relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-orange-200/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Sparkles className="h-4 w-4 relative z-10 animate-pulse" />
+                  <Sparkles className={`h-4 w-4 relative z-10 ${prefersReducedMotion ? "" : "animate-pulse"}`} />
                   <span className="relative z-10">10+ Years of Excellence • 1000+ Happy Customers</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </motion.div>
@@ -142,8 +146,7 @@ const AboutPage = () => {
                   className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-tight"
                 >
                   <span className="relative">
-                    Our Story of
-                    <span className="bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent"> Excellence</span>
+                    {language === "sq" ? "Rreth MEMA Rental — Qira Makine në Tiranë" : "About MEMA Rental — Car Rental in Tirana"}
                   </span>
                 </motion.h1>
 
@@ -152,9 +155,30 @@ const AboutPage = () => {
                   transition={{ ...fadeUp.transition, delay: 0.2 }}
                   className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed"
                 >
-                  Since 2014, MEMA Rental has been the trusted choice for premium car rental services in Tirana and across Albania. 
-                  We've built our reputation on reliability, quality, and exceptional customer service.
+                  {language === "sq" 
+                    ? "Që nga viti 2014, MEMA Rental ka qenë zgjedhja e besuar për shërbimet premium të qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Kemi ndërtuar reputacionin tonë mbi besueshmërinë, cilësinë dhe shërbimin e jashtëzakonshëm të klientëve."
+                    : "Since 2014, MEMA Rental has been the trusted choice for premium car rental services in Tirana and across Albania. We've built our reputation on reliability, quality, and exceptional customer service."
+                  }
                 </motion.p>
+
+                {/* Intent paragraph with internal links */}
+                <motion.div
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: 0.3 }}
+                  className="text-base text-muted-foreground max-w-2xl mx-auto"
+                >
+                  {language === "sq" ? (
+                    <p>
+                      Kërkoni <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline">makina me qira në Tiranë</Link> ose{" "}
+                      <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline">qira makine në Rinas</Link> për eksperiencën më të mirë të udhëtimit.
+                    </p>
+                  ) : (
+                    <p>
+                      Looking for <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline">rent a car in Tirana</Link> or{" "}
+                      <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline">rent a car at Tirana airport</Link> for the best travel experience.
+                    </p>
+                  )}
+                </motion.div>
               </motion.div>
             </div>
           </section>
@@ -165,20 +189,23 @@ const AboutPage = () => {
             
             {/* Light rays for stats section */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/20 via-yellow-200/15 to-transparent animate-pulse"></div>
-              <div className="absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/15 via-orange-200/10 to-transparent animate-pulse animation-delay-1000"></div>
+              <div className={`absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/20 via-yellow-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/15 via-orange-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-1000`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance relative">
                   <span className="relative">
-                    Trusted by Thousands
+                    {language === "sq" ? "Të Besuar nga Mijëra" : "Trusted by Thousands"}
                     <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </span>
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                  Our numbers speak for themselves - we've earned the trust of customers through consistent quality and service.
+                  {language === "sq" 
+                    ? "Numrat tanë flasin vetë - kemi fituar besimin e klientëve përmes cilësisë dhe shërbimit të vazhdueshëm."
+                    : "Our numbers speak for themselves - we've earned the trust of customers through consistent quality and service."
+                  }
                 </p>
               </motion.div>
 
@@ -222,10 +249,13 @@ const AboutPage = () => {
             <div className="container-mobile">
               <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
-                  Our Journey
+                  {language === "sq" ? "Jeta Jonë" : "Our Journey"}
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                  From humble beginnings to becoming Albania's most trusted car rental service
+                  {language === "sq" 
+                    ? "Nga fillimet e thjeshta deri në bërjen e shërbimit më të besuar të qirasë së makinave në Shqipëri"
+                    : "From humble beginnings to becoming Albania's most trusted car rental service"
+                  }
                 </p>
               </motion.div>
 
@@ -238,26 +268,38 @@ const AboutPage = () => {
               >
                 <motion.div variants={fadeUp} className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="font-heading text-2xl font-bold text-foreground">How It All Started</h3>
+                    <h3 className="font-heading text-2xl font-bold text-foreground">
+                      {language === "sq" ? "Si Filloi Gjithçka" : "How It All Started"}
+                    </h3>
                     <p className="text-muted-foreground leading-relaxed">
-                      Founded in 2014, MEMA Rental began with a simple mission: to provide reliable, affordable, and 
-                      high-quality car rental services to visitors and locals in Tirana, Albania.
+                      {language === "sq"
+                        ? "E themeluar në vitin 2014, MEMA Rental filloi me një mision të thjeshtë: të ofrojë shërbime të besueshme, të përballueshme dhe me cilësi të lartë të qirasë së makinave për vizitorët dhe vendasit në Tiranë, Shqipëri."
+                        : "Founded in 2014, MEMA Rental began with a simple mission: to provide reliable, affordable, and high-quality car rental services to visitors and locals in Tirana, Albania."
+                      }
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      What started as a small fleet of 5 vehicles has grown into a comprehensive service with over 50 
-                      modern cars, serving thousands of satisfied customers every year.
+                      {language === "sq"
+                        ? "Ajo që filloi si një flotë e vogël prej 5 automjetesh është rritur në një shërbim gjithëpërfshirës me më shumë se 50 makina moderne, duke shërbyer mijëra klientë të kënaqur çdo vit."
+                        : "What started as a small fleet of 5 vehicles has grown into a comprehensive service with over 50 modern cars, serving thousands of satisfied customers every year."
+                      }
                     </p>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-heading text-2xl font-bold text-foreground">Our Growth</h3>
+                    <h3 className="font-heading text-2xl font-bold text-foreground">
+                      {language === "sq" ? "Rritja Jonë" : "Our Growth"}
+                    </h3>
                     <p className="text-muted-foreground leading-relaxed">
-                      Over the years, we've expanded our services to include airport pickup, 24/7 support, and a 
-                      diverse fleet ranging from economy cars to luxury vehicles.
+                      {language === "sq"
+                        ? "Gjatë viteve, kemi zgjeruar shërbimet tona për të përfshirë marrjen nga aeroporti, mbështetjen 24/7 dhe një flotë të larmishme që varion nga makina ekonomike deri te automjetet luksoze."
+                        : "Over the years, we've expanded our services to include airport pickup, 24/7 support, and a diverse fleet ranging from economy cars to luxury vehicles."
+                      }
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      Our commitment to customer satisfaction has earned us a 4.9/5 rating and the trust of travelers 
-                      from around the world.
+                      {language === "sq"
+                        ? "Angazhimi ynë për kënaqësinë e klientëve na ka dhënë një vlerësim 4.9/5 dhe besimin e udhëtarëve nga e gjithë bota."
+                        : "Our commitment to customer satisfaction has earned us a 4.9/5 rating and the trust of travelers from around the world."
+                      }
                     </p>
                   </div>
                 </motion.div>
@@ -271,9 +313,12 @@ const AboutPage = () => {
                       <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                         <img
                           src="/images/cars/c-class1.jpeg"
-                          alt="MEMA Rental fleet - Premium cars in Tirana"
+                          alt={language === "sq" ? "Flota MEMA Rental - Makina premium në Tiranë" : "MEMA Rental fleet - Premium cars in Tirana"}
                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           loading="lazy"
+                          width="1600"
+                          height="1200"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                         
@@ -293,17 +338,20 @@ const AboutPage = () => {
             
             {/* Light rays for values section */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
-              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent animate-pulse animation-delay-2000"></div>
+              <div className={`absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-2000`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
-                  Our Core Values
+                  {language === "sq" ? "Vlerat Tona Themelore" : "Our Core Values"}
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                  The principles that guide everything we do
+                  {language === "sq" 
+                    ? "Parimet që udhëheqin gjithçka që bëjmë"
+                    : "The principles that guide everything we do"
+                  }
                 </p>
               </motion.div>
 
@@ -347,17 +395,20 @@ const AboutPage = () => {
             
             {/* Light rays for benefits section */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
-              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent animate-pulse animation-delay-2000"></div>
+              <div className={`absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-2000`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
-                  Why Choose MEMA Rental
+                  {language === "sq" ? "Pse të Zgjidhni MEMA Rental" : "Why Choose MEMA Rental"}
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                  We go above and beyond to ensure your car rental experience is exceptional
+                  {language === "sq" 
+                    ? "Shkojmë më tej për të siguruar që përvoja juaj e qirasë së makinës të jetë e jashtëzakonshme"
+                    : "We go above and beyond to ensure your car rental experience is exceptional"
+                  }
                 </p>
               </motion.div>
 
@@ -394,6 +445,51 @@ const AboutPage = () => {
             </div>
           </section>
 
+          {/* Where to Find Us Section with NAP */}
+          <section className="py-16 lg:py-24 bg-white relative">
+            <div className="container-mobile">
+              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
+                  {language === "sq" ? "Ku të Na Gjeni" : "Where to Find Us"}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+                  {language === "sq" 
+                    ? "Na gjeni në qendër të Tiranës për shërbimet më të mira të qirasë së makinave"
+                    : "Find us in the heart of Tirana for the best car rental services"
+                  }
+                </p>
+              </motion.div>
+
+              <motion.div {...fadeUp} className="max-w-2xl mx-auto">
+                <Card className="p-8 text-center bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200">
+                  <div className="space-y-4">
+                    <h3 className="font-heading text-2xl font-bold text-foreground">
+                      {language === "sq" ? "MEMA Rental" : "MEMA Rental"}
+                    </h3>
+                    <div className="space-y-2 text-muted-foreground">
+                      <p className="flex items-center justify-center gap-2">
+                        <MapPin className="h-5 w-5 text-yellow-600" />
+                        Rruga e Durrësit 123, Tiranë 1001, Albania
+                      </p>
+                      <p className="flex items-center justify-center gap-2">
+                        <Phone className="h-5 w-5 text-yellow-600" />
+                        <a href="tel:+35541234567" className="text-yellow-600 hover:text-yellow-700 underline">
+                          +355 4 123 4567
+                        </a>
+                      </p>
+                      <p className="flex items-center justify-center gap-2">
+                        <Mail className="h-5 w-5 text-yellow-600" />
+                        <a href="mailto:info@memarental.com" className="text-yellow-600 hover:text-yellow-700 underline">
+                          info@memarental.com
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            </div>
+          </section>
+
           {/* CTA Section */}
           <section className="py-16 lg:py-24 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20"></div>
@@ -401,17 +497,20 @@ const AboutPage = () => {
             
             {/* Light rays for CTA */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
-              <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
+              <div className={`absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-1000`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center space-y-8">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-balance">
-                  Ready to Experience Excellence?
+                  {language === "sq" ? "Gati për të Eksperiencuar Ekselencën?" : "Ready to Experience Excellence?"}
                 </h2>
                 <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto text-pretty">
-                  Join thousands of satisfied customers who have chosen MEMA Rental for their Albanian adventure
+                  {language === "sq" 
+                    ? "Bashkohuni me mijëra klientë të kënaqur që kanë zgjedhur MEMA Rental për aventurën e tyre shqiptare"
+                    : "Join thousands of satisfied customers who have chosen MEMA Rental for their Albanian adventure"
+                  }
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button asChild
@@ -420,7 +519,7 @@ const AboutPage = () => {
                   >
                     <Link to="/cars">
                       <span className="flex items-center relative z-10">
-                        Browse Our Fleet
+                        {language === "sq" ? "Shfletoni Flotën Tonë" : "Browse Our Fleet"}
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -433,7 +532,7 @@ const AboutPage = () => {
                   >
                     <Link to="/contact">
                       <span className="flex items-center relative z-10">
-                        Contact Us
+                        {language === "sq" ? "Na Kontaktoni" : "Contact Us"}
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>

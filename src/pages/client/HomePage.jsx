@@ -7,9 +7,79 @@ import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useLanguage } from "../../contexts/LanguageContext"
+import Seo from "../../components/Seo"
+import { generateLocalBusinessSchema, generateWebSiteSchema } from "../../seo/structuredData"
 
 const HomePage = () => {
+  const { language } = useLanguage()
   const prefersReducedMotion = useReducedMotion()
+
+  // FAQ items for rich results
+  const faqItems = [
+    {
+      question: language === 'sq' 
+        ? "Çfarë dokumentesh më duhen për të marrë me qira një makinë?"
+        : "What documents do I need to rent a car?",
+      answer: language === 'sq'
+        ? "Ju duhet një patentë e vlefshme, pasaportë ose ID kombëtare dhe një kartë krediti. Patenta ndërkombëtare rekomandohet për qytetarët jo-EU. Mosha minimale 21 vjeç me 2+ vite përvoja në vozitje."
+        : "You'll need a valid driver's license, passport or national ID, and a credit card. International license recommended for non-EU citizens. Minimum age 21 with 2+ years driving experience."
+    },
+    {
+      question: language === 'sq'
+        ? "A ofroni marrje në aeroport?"
+        : "Do you offer airport pickup?",
+      answer: language === 'sq'
+        ? "Po! Ne ofrojmë marrje dhe dorëzim 24/7 në Aeroportin Ndërkombëtar të Tiranës. Stafi ynë do t'ju takojë në arritje me automjetin tuaj gati për të shkuar."
+        : "Yes! We provide 24/7 pickup and drop-off at Tirana International Airport. Our staff will meet you at arrivals with your vehicle ready to go."
+    },
+    {
+      question: language === 'sq'
+        ? "A është sigurimi i përfshirë?"
+        : "Is insurance included?",
+      answer: language === 'sq'
+        ? "Të gjitha qirat përfshijnë mbulim të plotë sigurimi. Ne ofrojmë opsione shtesë mbrojtje përfshirë mbrojtjen nga dëmi i përplasjes dhe asistencën rrugore."
+        : "All rentals include comprehensive insurance coverage. We offer additional protection options including collision damage waiver and roadside assistance."
+    },
+    {
+      question: language === 'sq'
+        ? "A mund të vozit në vende të tjera?"
+        : "Can I drive to other countries?",
+      answer: language === 'sq'
+        ? "Po, udhëtimi ndërkufitar në Greqi, Maqedoni të Veriut, Mal të Zi dhe Kosovë është i lejuar. Ju lutemi na informoni paraprakisht për dokumentimin e duhur."
+        : "Yes, cross-border travel to Greece, North Macedonia, Montenegro, and Kosovo is permitted. Please inform us in advance for proper documentation."
+    },
+    {
+      question: language === 'sq'
+        ? "Cila është politika juaj e anulimit?"
+        : "What is your cancellation policy?",
+      answer: language === 'sq'
+        ? "Anulim falas deri në 24 orë para marrjes. Anulimet brenda 24 orësh mund të përfshijnë një tarifë të vogël. Ne kuptojmë që ndodhin emergjenca, kështu që ju lutemi na kontaktoni sa më shpejt të jetë e mundur."
+        : "Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee. We understand emergencies happen, so please contact us as soon as possible."
+    },
+    {
+      question: language === 'sq'
+        ? "Sa kohë përpara duhet të rezervoj?"
+        : "How far in advance should I book?",
+      answer: language === 'sq'
+        ? "Ne rekomandojmë rezervimin të paktën 1-2 javë përpara, veçanërisht gjatë sezonit të lartë (Qershor-Shtator). Për marrje në aeroport ose lloje specifike automjetesh, rezervimi 2-3 javë përpara siguron disponueshmërinë."
+        : "We recommend booking at least 1-2 weeks in advance, especially during peak season (June-September). For airport pickup or specific vehicle types, booking 2-3 weeks ahead ensures availability."
+    }
+  ]
+
+  // FAQ schema for rich results
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map(({question, answer}) => ({
+      "@type": "Question",
+      "name": question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": answer
+      }
+    }))
+  }
 
   const fadeUp = {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
@@ -57,10 +127,22 @@ const HomePage = () => {
 
   return (
     <>
-      <title>MEMA Rental - Premium Car Rental in Albania | Tirana Airport Pickup</title>
-      <meta
-        name="description"
-        content="Rent premium cars in Albania with MEMA Rental. Airport pickup, fully insured vehicles, and 24/7 support. Book your Albanian adventure today!"
+      <Seo
+        title={language === 'sq' 
+          ? 'Qira Makine Tiranë | MEMA Rental (Aeroporti TIA)'
+          : 'Rent a Car in Tirana | MEMA Rental (Airport Pickup)'
+        }
+        description={language === 'sq' 
+          ? 'Qira makine në Tiranë dhe Aeroportin TIA. Makina të siguruara, mbështetje 24/7, dorëzim falas në qendër. Rezervo online për 2 minuta.'
+          : 'Premium car rental in Tirana and TIA airport. Fully insured cars, 24/7 support, free city-center delivery. Book online in minutes.'
+        }
+        path="/"
+        schema={[
+          generateLocalBusinessSchema(),
+          generateWebSiteSchema(),
+          faqSchema
+        ]}
+        language={language}
       />
 
       {/* Skip link for accessibility */}
@@ -75,9 +157,9 @@ const HomePage = () => {
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
           {/* Ambient light rays */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
+          <div className={`absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+          <div className={`absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
+          <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-4000"}`}></div>
         </div>
 
         <main id="main" className="relative z-10">
@@ -85,16 +167,16 @@ const HomePage = () => {
           <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-              <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-              <div className="absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+              <div className={`absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"}`}></div>
+              <div className={`absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob animation-delay-2000"}`}></div>
+              <div className={`absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob animation-delay-4000"}`}></div>
               
-              {/* Light rays effect */}
-              <div className="absolute top-0 left-0 w-full h-full">
-                <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-yellow-300/30 via-yellow-200/20 to-transparent animate-pulse"></div>
-                <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-orange-300/20 via-orange-200/15 to-transparent animate-pulse animation-delay-1000"></div>
-                <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-yellow-300/25 via-yellow-200/15 to-transparent animate-pulse animation-delay-2000"></div>
-              </div>
+                              {/* Light rays effect */}
+                <div className="absolute top-0 left-0 w-full h-full">
+                  <div className={`absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-yellow-300/30 via-yellow-200/20 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+                  <div className={`absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-orange-300/20 via-orange-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1000"}`}></div>
+                  <div className={`absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-yellow-300/25 via-yellow-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
+                </div>
             </div>
 
             <div className="container-mobile py-16 sm:py-20 lg:py-28 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
@@ -107,7 +189,7 @@ const HomePage = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 rounded-full text-sm font-medium mb-6 shadow-sm border border-yellow-200 relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-orange-200/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Sparkles className="h-4 w-4 relative z-10 animate-pulse" />
+                  <Sparkles className={`h-4 w-4 relative z-10 ${prefersReducedMotion ? "" : "animate-pulse"}`} />
                   <span className="relative z-10">4.9/5 Rating • 1000+ Happy Customers</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </motion.div>
@@ -117,7 +199,10 @@ const HomePage = () => {
                   className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-tight relative"
                 >
                   <span className="relative">
-                    Explore Albania with Confidence
+                    {language === 'sq' 
+                      ? 'Qira Makine në Tiranë — Marrje në Aeroport & Dorëzim në Qendër'
+                      : 'Rent a Car in Tirana — Airport Pickup & City Delivery'
+                    }
                     <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </span>
                 </motion.h1>
@@ -127,8 +212,26 @@ const HomePage = () => {
                   transition={{ ...fadeUp.transition, delay: 0.1 }}
                   className="text-lg sm:text-xl text-muted-foreground max-w-2xl text-pretty leading-relaxed"
                 >
-                  Premium car rental service in Tirana and across Albania. Fully insured vehicles, airport pickup, and
-                  transparent pricing for your perfect Albanian adventure.
+                  {language === 'sq'
+                    ? 'Shërbim premium i qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Automjete të siguruara plotësisht, marrje në aeroport dhe çmime transparente për aventurën tuaj të përsosur shqiptare.'
+                    : 'Premium car rental service in Tirana and across Albania. Fully insured vehicles, airport pickup, and transparent pricing for your perfect Albanian adventure.'
+                  }
+                </motion.p>
+
+                <motion.p
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: 0.15 }}
+                  className="text-sm text-muted-foreground max-w-2xl"
+                >
+                  {language === 'sq' ? (
+                    <>
+                      Shiko ofertat tona: <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline">Qira Makine në Tiranë</Link> dhe <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline">Qira Makine në Rinas</Link>
+                    </>
+                  ) : (
+                    <>
+                      View our offers: <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline">Rent a Car in Tirana</Link> and <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline">Rent a Car at Tirana Airport</Link>
+                    </>
+                  )}
                 </motion.p>
 
                 <motion.div
@@ -168,15 +271,15 @@ const HomePage = () => {
                   aria-label="Trust signals"
                 >
                   <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current group-hover:animate-pulse" aria-hidden="true" />
+                    <Star className={`h-4 w-4 text-yellow-500 fill-current ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
                     <span>4.9/5 rating</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Users className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" aria-hidden="true" />
+                    <Users className={`h-4 w-4 text-yellow-500 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
                     <span>1000+ happy customers</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Award className="h-4 w-4 text-yellow-500 group-hover:animate-pulse" aria-hidden="true" />
+                    <Award className={`h-4 w-4 text-yellow-500 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
                     <span>Fully insured</span>
                   </div>
                 </motion.div>
@@ -192,9 +295,13 @@ const HomePage = () => {
                     <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                       <img
                         src="/images/cars/e class1.jpeg"
-                        alt="Mercedes-Benz E-Class available for rent"
+                        alt={language === 'sq' ? 'Mercedes-Benz E-Class për qira në Tiranë' : 'Mercedes-Benz E-Class available for rent in Tirana'}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         loading="eager"
+                        fetchPriority="high"
+                        width="1600"
+                        height="1200"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                       <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg group-hover:shadow-xl transition-shadow duration-300">
@@ -216,7 +323,7 @@ const HomePage = () => {
                       </div>
 
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent group-hover:animate-pulse">€85</span>
+                        <span className={`font-heading text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`}>€85</span>
                         <span className="text-muted-foreground">/ day</span>
                       </div>
 
@@ -247,8 +354,8 @@ const HomePage = () => {
             
             {/* Light rays for features section */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/20 via-yellow-200/15 to-transparent animate-pulse"></div>
-              <div className="absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/15 via-orange-200/10 to-transparent animate-pulse animation-delay-1000"></div>
+              <div className={`absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/20 via-yellow-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/15 via-orange-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1000"}`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
@@ -339,9 +446,12 @@ const HomePage = () => {
                         <div className="relative h-48 overflow-hidden">
                           <img
                             src={destination.image}
-                            alt={`${destination.name} - ${destination.description}`}
+                            alt={language === 'sq' ? `${destination.name} në Tiranë - ${destination.description}` : `${destination.name} in Tirana - ${destination.description}`}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             loading="lazy"
+                            width="800"
+                            height="600"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                             onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
@@ -370,8 +480,8 @@ const HomePage = () => {
             
             {/* Light rays for testimonials */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent animate-pulse"></div>
-              <div className="absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent animate-pulse animation-delay-2000"></div>
+              <div className={`absolute top-1/3 left-1/4 w-px h-1/3 bg-gradient-to-b from-yellow-300/15 via-yellow-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute bottom-1/3 right-1/4 w-px h-1/3 bg-gradient-to-b from-orange-300/10 via-orange-200/8 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
             </div>
             
             <div className="container-mobile relative z-10">
@@ -449,7 +559,7 @@ const HomePage = () => {
                       <div className="relative z-10">
                         <div className="flex items-center gap-2 text-yellow-600 mb-3" aria-hidden="true">
                           {Array.from({ length: testimonial.rating }, (_, i) => (
-                            <span key={i} className="group-hover:animate-pulse">★</span>
+                            <span key={i} className={prefersReducedMotion ? "" : "group-hover:animate-pulse"}>★</span>
                           ))}
                         </div>
                         <p className="text-card-foreground mb-4 italic text-pretty leading-relaxed">"{testimonial.text}"</p>
@@ -474,84 +584,66 @@ const HomePage = () => {
           {/* FAQ */}
           <section id="faq" className="py-16 lg:py-24 bg-white relative" aria-labelledby="faq-title">
             <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white"></div>
+            
+            {/* Light rays for FAQ section */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className={`absolute top-1/4 left-0 w-px h-1/2 bg-gradient-to-b from-yellow-300/20 via-yellow-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute top-1/3 right-0 w-px h-1/2 bg-gradient-to-b from-orange-300/15 via-orange-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1000"}`}></div>
+            </div>
+            
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
-                <h2 id="faq-title" className="font-heading text-3xl sm:text-4xl font-black text-foreground">
+                <h2 id="faq-title" className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
                   Frequently Asked Questions
                 </h2>
-                <p className="text-lg text-muted-foreground">Everything you need to know about renting with us</p>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+                  Everything you need to know about renting with us
+                </p>
               </motion.div>
 
               <motion.div 
                 {...fadeUp}
-                className="mx-auto max-w-3xl"
+                className="mx-auto max-w-4xl"
               >
-                <Accordion type="single" collapsible className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 space-y-4 relative overflow-hidden group">
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  <div className="relative z-10">
-                    <AccordionItem value="q1" className="border-b border-gray-200">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        What documents do I need to rent a car?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        You'll need a valid driver's license, passport or national ID, and a credit card. International
-                        license recommended for non-EU citizens. Minimum age 21 with 2+ years driving experience.
-                      </AccordionContent>
-                    </AccordionItem>
+                <div className="grid gap-6">
+                  {faqItems.map((faq, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="group"
+                    >
+                      <Card className="p-0 hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/90 backdrop-blur-sm overflow-hidden rounded-2xl relative">
+                        {/* Glow effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    <AccordionItem value="q2" className="border-b border-gray-200">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        Do you offer airport pickup?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        Yes! We provide 24/7 pickup and drop-off at Tirana International Airport. Our staff will meet you
-                        at arrivals with your vehicle ready to go.
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="q3" className="border-b border-gray-200">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        Is insurance included?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        All rentals include comprehensive insurance coverage. We offer additional protection options
-                        including collision damage waiver and roadside assistance.
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="q4" className="border-b border-gray-200">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        Can I drive to other countries?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        Yes, cross-border travel to Greece, North Macedonia, Montenegro, and Kosovo is permitted. Please
-                        inform us in advance for proper documentation.
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="q5" className="border-b border-gray-200">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        What is your cancellation policy?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        Free cancellation up to 24 hours before pickup. Cancellations within 24 hours may incur a small fee.
-                        We understand emergencies happen, so please contact us as soon as possible.
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="q6">
-                      <AccordionTrigger className="text-left hover:text-yellow-600 transition-colors font-semibold">
-                        How far in advance should I book?
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">
-                        We recommend booking at least 1-2 weeks in advance, especially during peak season (June-September).
-                        For airport pickup or specific vehicle types, booking 2-3 weeks ahead ensures availability.
-                      </AccordionContent>
-                    </AccordionItem>
-                  </div>
-                </Accordion>
+                        <div className="relative z-10">
+                          <Accordion type="single" collapsible>
+                            <AccordionItem value={`faq-${index}`} className="border-0">
+                              <AccordionTrigger className="px-8 py-6 text-left hover:text-yellow-600 transition-colors font-semibold text-lg group-hover:bg-yellow-50/50 rounded-t-2xl">
+                                <div className="flex items-center gap-4 w-full">
+                                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold group-hover:scale-110 transition-transform duration-300">
+                                    {index + 1}
+                                  </div>
+                                  <span className="flex-1 text-left">{faq.question}</span>
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-8 pb-6 pt-0">
+                                <div className="pl-12">
+                                  <p className="text-muted-foreground leading-relaxed text-base text-pretty">
+                                    {faq.answer}
+                                  </p>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             </div>
           </section>
@@ -560,13 +652,13 @@ const HomePage = () => {
           <section className="py-16 lg:py-24 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20"></div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-            
+
             {/* Light rays for CTA */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
-              <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
+              <div className={`absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1000"}`}></div>
             </div>
-            
+
             <div className="container-mobile relative z-10">
               <motion.div {...fadeUp} className="text-center space-y-8">
                 <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-balance">
@@ -594,18 +686,41 @@ const HomePage = () => {
                       onClick={() => handleContactClick('phone')}
                       className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group"
                     >
-                      <Phone className="h-4 w-4 group-hover:animate-pulse" />
+                      <Phone className={`h-4 w-4 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} />
                       <span>+355-4-123-4567</span>
                     </button>
                     <button 
                       onClick={() => handleContactClick('email')}
                       className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group"
                     >
-                      <Mail className="h-4 w-4 group-hover:animate-pulse" />
+                      <Mail className={`h-4 w-4 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} />
                       <span>info@memarental.com</span>
                     </button>
                   </div>
                 </div>
+
+                {/* NAP Block */}
+                <motion.div
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: 0.4 }}
+                  className="mt-8 text-center text-white/90"
+                >
+                  <p className="text-sm">
+                    {language === 'sq' ? (
+                      <>
+                        <strong>MEMA Rental</strong> • Rruga Myslym Shyri, Nr. 23, Tiranë 1001, Shqipëri • 
+                        <a href="tel:+355-4-123-4567" className="hover:text-white underline">+355-4-123-4567</a> • 
+                        <a href="mailto:info@memarental.com" className="hover:text-white underline">info@memarental.com</a>
+                      </>
+                    ) : (
+                      <>
+                        <strong>MEMA Rental</strong> • Rruga Myslym Shyri, Nr. 23, Tirana 1001, Albania • 
+                        <a href="tel:+355-4-123-4567" className="hover:text-white underline">+355-4-123-4567</a> • 
+                        <a href="mailto:info@memarental.com" className="hover:text-white underline">info@memarental.com</a>
+                      </>
+                    )}
+                  </p>
+                </motion.div>
               </motion.div>
             </div>
           </section>
@@ -630,3 +745,5 @@ const HomePage = () => {
 }
 
 export default HomePage
+
+

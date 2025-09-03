@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 // Client pages
 import HomePage from '@/pages/client/HomePage';
 import CarsPage from '@/pages/client/CarsPage';
@@ -14,6 +15,11 @@ import BookingPage from '@/pages/client/BookingPage';
 import AboutPage from '@/pages/client/AboutPage';
 import ContactPage from '@/pages/client/ContactPage';
 import BookingConfirmation from '@/pages/client/BookingConfirmation';
+import RentACarTirana from '@/pages/client/RentACarTirana';
+import RentACarTiranaAirport from '@/pages/client/RentACarTiranaAirport';
+import MakinaMeQiraTirane from '@/pages/client/MakinaMeQiraTirane';
+import QiraMakineRinas from '@/pages/client/QiraMakineRinas';
+import FAQPage from '@/pages/client/FAQPage';
 // Admin pages
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminLoginPage from '@/pages/admin/AdminLoginPage';
@@ -29,6 +35,7 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <ScrollToTop />
       {!isAdminRoute && <Navbar />}
       <main className={`flex-grow ${isAdminRoute ? 'bg-white' : ''}`}>
         <Routes>
@@ -38,6 +45,13 @@ const AppContent = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/cars" element={<CarsPage />} />
           <Route path="/cars/:carId" element={<CarDetailPage />} />
+          
+          {/* SEO Landing Pages */}
+          <Route path="/rent-a-car-tirana" element={<RentACarTirana />} />
+          <Route path="/rent-a-car-tirana-airport" element={<RentACarTiranaAirport />} />
+          <Route path="/makina-me-qira-tirane" element={<MakinaMeQiraTirane />} />
+          <Route path="/qira-makine-rinas" element={<QiraMakineRinas />} />
+          <Route path="/faq" element={<FAQPage />} />
           
           {/* Booking route - accessible to all users */}
           <Route path="/booking/:carId" element={<BookingPage />} />
