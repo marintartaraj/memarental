@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
+import { BookingService } from "@/lib/bookingService"
 import CarCardWithSlider from "@/components/CarCardWithSlider"
 
 // Normalize car records for consistent UI
@@ -110,6 +111,12 @@ const CarsPage = () => {
   const [filteredCars, setFilteredCars] = useState([])
   const [selectedCar, setSelectedCar] = useState(null)
   const [showCarModal, setShowCarModal] = useState(false)
+  
+  // Date filter state
+  const [pickupDate, setPickupDate] = useState("")
+  const [returnDate, setReturnDate] = useState("")
+  const [showDateFilters, setShowDateFilters] = useState(false)
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
 
   // Animation variants
   const fadeUp = {
@@ -194,8 +201,9 @@ const CarsPage = () => {
     return Array.from(s)
   }, [cars])
 
-  // Filtering
+  // Filtering with date availability checking
   useEffect(() => {
+    const filterCars = async () => {
     const term = debouncedSearch.toLowerCase()
     console.log('Filtering cars:', { 
       totalCars: cars.length, 
@@ -205,10 +213,12 @@ const CarsPage = () => {
       categoryFilter, 
       transmissionFilter, 
       fuelFilter, 
-      seatsFilter 
+        seatsFilter,
+        pickupDate,
+        returnDate
     })
     
-    const list = cars.filter((car) => {
+      let list = cars.filter((car) => {
       const matchesSearch = !term || car.brand.toLowerCase().includes(term) || car.model.toLowerCase().includes(term)
       
       // Price filter logic
@@ -251,6 +261,31 @@ const CarsPage = () => {
       return matches
     })
 
+      // Check date availability if dates are selected
+      if (pickupDate && returnDate && list.length > 0) {
+        setCheckingAvailability(true)
+        try {
+          const availabilityChecks = await Promise.all(
+            list.map(async (car) => {
+              const isAvailable = await BookingService.checkCarAvailabilityForDates(
+                car.id, 
+                pickupDate, 
+                returnDate
+              )
+              return { ...car, availableForDates: isAvailable }
+            })
+          )
+          
+          // Filter to only show cars available for the selected dates
+          list = availabilityChecks.filter(car => car.availableForDates)
+        } catch (error) {
+          console.error('Error checking date availability:', error)
+          // If there's an error, show all cars (don't filter by dates)
+        } finally {
+          setCheckingAvailability(false)
+        }
+      }
+
     // Sorting
     const sorted = [...list]
     switch (sortBy) {
@@ -275,7 +310,10 @@ const CarsPage = () => {
         })
     }
     setFilteredCars(sorted)
-  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, transmissionFilter, fuelFilter, seatsFilter, sortBy])
+    }
+
+    filterCars()
+  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, transmissionFilter, fuelFilter, seatsFilter, sortBy, pickupDate, returnDate])
 
   const visibleCars = useMemo(() => filteredCars.slice(0, 9), [filteredCars]) // Show 9 cars per page
   const canLoadMore = filteredCars.length > 9
@@ -356,6 +394,8 @@ const CarsPage = () => {
     setFuelFilter("all")
     setSeatsFilter("all")
     setSortBy("recommended")
+    setPickupDate("")
+    setReturnDate("")
   }
 
   return (
@@ -441,8 +481,22 @@ const CarsPage = () => {
                   />
                 </div>
 
-                {/* Filter Toggle */}
-                <div className="flex justify-center">
+                {/* Filter Toggle and Date Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  {/* Date Filter Toggle */}
+                  <Button
+                    onClick={() => setShowDateFilters(!showDateFilters)}
+                    variant="outline"
+                    className="border-2 border-blue-500 text-blue-600 hover:bg-blue-50 px-6 py-3 bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-100/50 to-indigo-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <Calendar className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
+                    <span className="relative z-10">
+                      {showDateFilters ? "Hide Dates" : "Check Availability"}
+                    </span>
+                  </Button>
+                  
+                  {/* Regular Filter Toggle */}
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
@@ -455,6 +509,64 @@ const CarsPage = () => {
                     </span>
                   </Button>
                 </div>
+
+                {/* Date Filters */}
+                <AnimatePresence>
+                  {showDateFilters && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 mb-6"
+                    >
+                      <div className="text-center mb-4">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Check Car Availability</h3>
+                        <p className="text-sm text-muted-foreground">Select your dates to see which cars are available</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                        {/* Pickup Date */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">Pickup Date</label>
+                          <Input
+                            type="date"
+                            value={pickupDate}
+                            onChange={(e) => setPickupDate(e.target.value)}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </div>
+                        
+                        {/* Return Date */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">Return Date</label>
+                          <Input
+                            type="date"
+                            value={returnDate}
+                            onChange={(e) => setReturnDate(e.target.value)}
+                            min={pickupDate || new Date().toISOString().split('T')[0]}
+                            className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Clear Date Filters */}
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          onClick={() => {
+                            setPickupDate("")
+                            setReturnDate("")
+                          }}
+                          variant="outline"
+                          className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                        >
+                          Clear Dates
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Filters */}
                 <AnimatePresence>
@@ -593,10 +705,21 @@ const CarsPage = () => {
               <motion.div {...fadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                 <div>
                   <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-                    {filteredCars.length} Cars Available
+                    {checkingAvailability ? (
+                      <span className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                        Checking availability...
+                      </span>
+                    ) : (
+                      `${filteredCars.length} Cars Available`
+                    )}
                   </h2>
                   <p className="text-muted-foreground mt-1">
-                    Find the perfect car for your journey
+                    {pickupDate && returnDate ? (
+                      `Available for ${new Date(pickupDate).toLocaleDateString()} - ${new Date(returnDate).toLocaleDateString()}`
+                    ) : (
+                      "Find the perfect car for your journey"
+                    )}
                   </p>
                 </div>
 

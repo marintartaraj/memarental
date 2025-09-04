@@ -33,6 +33,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -65,6 +66,9 @@ const AdminBookings = () => {
     total_price: '',
     notes: ''
   });
+  const [bookedDates, setBookedDates] = useState([]);
+  const [loadingBookedDates, setLoadingBookedDates] = useState(false);
+  const [dateValidationErrors, setDateValidationErrors] = useState({});
 
   const loadData = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) {
@@ -325,6 +329,19 @@ const AdminBookings = () => {
   // Booking management functions
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate date overlap before submitting
+    const dateErrors = validateDateOverlap(bookingFormData.pickup_date, bookingFormData.return_date);
+    if (Object.keys(dateErrors).length > 0) {
+      setDateValidationErrors(dateErrors);
+      toast({ 
+        title: "Date Conflict", 
+        description: "The selected dates conflict with existing bookings. Please choose different dates.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
     try {
       let result;
       if (editingBooking) {
@@ -381,6 +398,11 @@ const AdminBookings = () => {
       notes: booking.notes || ''
     });
     setIsBookingDialogOpen(true);
+    
+    // Load booked dates for this car (excluding the current booking)
+    if (booking.car_id) {
+      loadBookedDatesForCar(booking.car_id, booking.id);
+    }
   };
 
   const resetBookingForm = () => {
@@ -392,6 +414,114 @@ const AdminBookings = () => {
       total_price: '',
       notes: ''
     });
+    setBookedDates([]);
+    setDateValidationErrors({});
+  };
+
+  // Load booked dates for a specific car (excluding the current booking being edited)
+  const loadBookedDatesForCar = async (carId, excludeBookingId = null) => {
+    setLoadingBookedDates(true);
+    try {
+      let query = supabase
+        .from('bookings')
+        .select('pickup_date, return_date, status')
+        .eq('car_id', carId)
+        .in('status', ['confirmed', 'active']);
+
+      // Exclude the current booking being edited
+      if (excludeBookingId) {
+        query = query.neq('id', excludeBookingId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error loading booked dates:', error);
+        return;
+      }
+
+      // Convert date ranges to individual dates
+      const dates = [];
+      (data || []).forEach(booking => {
+        const startDate = new Date(booking.pickup_date);
+        const endDate = new Date(booking.return_date);
+        const currentDate = new Date(startDate);
+        
+        while (currentDate <= endDate) {
+          dates.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      });
+      
+      setBookedDates(dates);
+    } catch (error) {
+      console.error('Error loading booked dates:', error);
+    } finally {
+      setLoadingBookedDates(false);
+    }
+  };
+
+  // Check if a date is booked
+  const isDateBooked = (dateString) => {
+    if (!dateString) return false;
+    const selectedDate = new Date(dateString);
+    return bookedDates.some(bookedDate => 
+      bookedDate.toDateString() === selectedDate.toDateString()
+    );
+  };
+
+  // Validate date overlap
+  const validateDateOverlap = (pickupDate, returnDate) => {
+    const errors = {};
+    
+    if (pickupDate && isDateBooked(pickupDate)) {
+      errors.pickup_date = 'This pickup date is already booked. Please select a different date.';
+    }
+    
+    if (returnDate && isDateBooked(returnDate)) {
+      errors.return_date = 'This return date is already booked. Please select a different date.';
+    }
+    
+    // Check if any date in the range is booked
+    if (pickupDate && returnDate) {
+      const startDate = new Date(pickupDate);
+      const endDate = new Date(returnDate);
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        if (isDateBooked(currentDate.toISOString().split('T')[0])) {
+          errors.date_range = 'Some dates in this range are already booked. Please select different dates.';
+          break;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+    
+    return errors;
+  };
+
+  // Handle date changes and clear validation errors
+  const handleDateChange = (field, value) => {
+    setBookingFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear validation errors for this field
+    if (dateValidationErrors[field]) {
+      setDateValidationErrors(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
+    
+    // Clear date range error if it exists
+    if (dateValidationErrors.date_range) {
+      setDateValidationErrors(prev => ({
+        ...prev,
+        date_range: null
+      }));
+    }
   };
 
   const handleSelectAll = () => {
@@ -1088,25 +1218,46 @@ const AdminBookings = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="pickup_date">Pickup Date</Label>
-                  <Input 
-                    id="pickup_date"
-                    type="date" 
-                    value={bookingFormData.pickup_date} 
-                    onChange={e => setBookingFormData({...bookingFormData, pickup_date: e.target.value})} 
-                    required 
+                  <DatePicker
+                    value={bookingFormData.pickup_date}
+                    onChange={(value) => handleDateChange('pickup_date', value)}
+                    placeholder="Select pickup date"
+                    minDate={new Date().toISOString().split('T')[0]}
+                    bookedDates={bookedDates}
+                    disabled={loadingBookedDates}
+                    loadingBookedDates={loadingBookedDates}
+                    className={`mt-1 ${dateValidationErrors.pickup_date ? 'border-red-500 focus:border-red-500' : ''}`}
+                    rangeStart={bookingFormData.pickup_date}
+                    rangeEnd={bookingFormData.return_date}
                   />
+                  {dateValidationErrors.pickup_date && (
+                    <p className="text-sm text-red-600 mt-1">{dateValidationErrors.pickup_date}</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="return_date">Return Date</Label>
-                  <Input 
-                    id="return_date"
-                    type="date" 
-                    value={bookingFormData.return_date} 
-                    onChange={e => setBookingFormData({...bookingFormData, return_date: e.target.value})} 
-                    required 
+                  <DatePicker
+                    value={bookingFormData.return_date}
+                    onChange={(value) => handleDateChange('return_date', value)}
+                    placeholder="Select return date"
+                    minDate={bookingFormData.pickup_date || new Date().toISOString().split('T')[0]}
+                    bookedDates={bookedDates}
+                    disabled={loadingBookedDates}
+                    loadingBookedDates={loadingBookedDates}
+                    className={`mt-1 ${dateValidationErrors.return_date ? 'border-red-500 focus:border-red-500' : ''}`}
+                    rangeStart={bookingFormData.pickup_date}
+                    rangeEnd={bookingFormData.return_date}
                   />
+                  {dateValidationErrors.return_date && (
+                    <p className="text-sm text-red-600 mt-1">{dateValidationErrors.return_date}</p>
+                  )}
                 </div>
               </div>
+              {dateValidationErrors.date_range && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">
+                  <p className="text-sm">{dateValidationErrors.date_range}</p>
+                </div>
+              )}
               <div>
                 <Label htmlFor="total_price">Total Price (€)</Label>
                 <Input 
@@ -1139,3 +1290,4 @@ const AdminBookings = () => {
 };
 
 export default AdminBookings;
+

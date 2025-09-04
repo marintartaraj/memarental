@@ -7,19 +7,26 @@ export class BookingService {
       // Get current user session
       const { data: { user } } = await supabase.auth.getUser();
       
-      // First, check if car is still available
+      // Check if car is available for the requested dates
+      const isAvailable = await this.checkCarAvailabilityForDates(
+        bookingData.carId, 
+        bookingData.pickupDate, 
+        bookingData.returnDate
+      );
+      
+      if (!isAvailable) {
+        throw new Error('Car is not available for the selected dates');
+      }
+
+      // Get car details for pricing
       const { data: car, error: carError } = await supabase
         .from('cars')
-        .select('id, status, daily_rate')
+        .select('id, daily_rate')
         .eq('id', bookingData.carId)
         .single();
 
       if (carError) {
-        throw new Error('Failed to verify car availability');
-      }
-
-      if (car.status !== 'available') {
-        throw new Error('Car is no longer available');
+        throw new Error('Failed to get car details');
       }
 
       // Calculate total price
@@ -76,16 +83,8 @@ export class BookingService {
         throw new Error('Failed to create booking');
       }
 
-      // Update car status to booked
-      const { error: updateError } = await supabase
-        .from('cars')
-        .update({ status: 'booked' })
-        .eq('id', bookingData.carId);
-
-      if (updateError) {
-        console.error('Failed to update car status:', updateError);
-        // Don't throw here as booking was created successfully
-      }
+      // Note: We don't update car status to 'booked' anymore
+      // The car remains 'available' and we check date conflicts instead
 
       return {
         success: true,
@@ -110,6 +109,55 @@ export class BookingService {
     return diffDays > 0 ? diffDays : 1; // Minimum 1 day
   }
 
+  static async checkCarAvailabilityForDates(carId, pickupDate, returnDate) {
+    try {
+      // Check if there are any existing bookings for this car that overlap with the requested dates
+      const { data: conflictingBookings, error } = await supabase
+        .from('bookings')
+        .select('id, pickup_date, return_date, status')
+        .eq('car_id', carId)
+        .in('status', ['confirmed', 'active'])
+        .or(`and(pickup_date.lte.${returnDate},return_date.gte.${pickupDate})`);
+
+      if (error) {
+        console.error('Error checking date conflicts:', error);
+        return false; // If we can't check, assume not available for safety
+      }
+
+      // If there are no conflicting bookings, the car is available
+      return !conflictingBookings || conflictingBookings.length === 0;
+    } catch (error) {
+      console.error('Date availability check failed:', error);
+      return false;
+    }
+  }
+
+  static async getCarAvailabilityForDateRange(carId, startDate, endDate) {
+    try {
+      // Get all bookings for this car in the date range
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('pickup_date, return_date, status')
+        .eq('car_id', carId)
+        .in('status', ['confirmed', 'active'])
+        .gte('pickup_date', startDate)
+        .lte('return_date', endDate);
+
+      if (error) {
+        console.error('Error getting car availability:', error);
+        return { available: false, error: error.message };
+      }
+
+      return {
+        available: !bookings || bookings.length === 0,
+        bookings: bookings || []
+      };
+    } catch (error) {
+      console.error('Car availability check failed:', error);
+      return { available: false, error: error.message };
+    }
+  }
+
   static async checkCarAvailability(carId) {
     try {
       const { data, error } = await supabase
@@ -122,6 +170,7 @@ export class BookingService {
         throw new Error('Failed to check car availability');
       }
 
+      // A car is available if its status is 'available' (not 'maintenance' or 'out_of_service')
       return {
         available: data.status === 'available',
         status: data.status
@@ -189,15 +238,8 @@ export class BookingService {
         throw new Error('Failed to cancel booking');
       }
 
-      // Update car status back to available
-      const { error: carUpdateError } = await supabase
-        .from('cars')
-        .update({ status: 'available' })
-        .eq('id', booking.car_id);
-
-      if (carUpdateError) {
-        console.error('Failed to update car status:', carUpdateError);
-      }
+      // Note: We don't need to update car status anymore
+      // The car remains 'available' and date conflicts are checked dynamically
 
       return { success: true };
     } catch (error) {

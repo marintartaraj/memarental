@@ -223,11 +223,13 @@ const CarCardWithSlider = ({ car, index }) => {
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <span className={`text-sm font-medium ${
-                  car.available ? 'text-green-600' : 'text-red-600'
+                  car.availableForDates !== false ? 'text-green-600' : 'text-red-600'
                 }`}>
-                  {car.available ? 'Available Now' : 'Currently Booked'}
+                  {car.availableForDates === false ? 'Not Available' : 
+                   car.availableForDates === true ? 'Available for Selected Dates' : 
+                   'Available Now'}
                 </span>
-                {car.available && (
+                {car.availableForDates !== false && (
                   <Link to={`/booking/${car.id}`}>
                     <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">
                       Book Now

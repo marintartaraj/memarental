@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 import { supabase } from '@/lib/customSupabaseClient';
 import { toast } from '@/components/ui/use-toast';
 import { BookingService } from '@/lib/bookingService';
@@ -39,6 +40,7 @@ import {
 } from 'lucide-react';
 // Removed HeroHeader per request
 
+
 const BookingPage = () => {
   const { carId } = useParams();
   const { t, tFormat } = useLanguage();
@@ -49,6 +51,8 @@ const BookingPage = () => {
   const [car, setCar] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [bookedDates, setBookedDates] = useState([]);
+  const [loadingBookedDates, setLoadingBookedDates] = useState(false);
   const [formData, setFormData] = useState({
     // Step 1: Dates
     pickupDate: '',
@@ -94,6 +98,49 @@ const BookingPage = () => {
     };
     loadCar();
     return () => { isMounted = false; };
+  }, [carId]);
+
+  // Fetch booked dates for the car
+  useEffect(() => {
+    if (!carId) return;
+    
+    const loadBookedDates = async () => {
+      setLoadingBookedDates(true);
+      try {
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('pickup_date, return_date, status')
+          .eq('car_id', carId)
+          .in('status', ['confirmed', 'active']);
+        
+        if (error) {
+          console.error('Failed to load booked dates:', error);
+          return;
+        }
+        
+        // Convert booking data to date ranges
+        const dates = [];
+        (data || []).forEach(booking => {
+          const startDate = new Date(booking.pickup_date);
+          const endDate = new Date(booking.return_date);
+          
+          // Add all dates in the range
+          const currentDate = new Date(startDate);
+          while (currentDate <= endDate) {
+            dates.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+        });
+        
+        setBookedDates(dates);
+      } catch (error) {
+        console.error('Error loading booked dates:', error);
+      } finally {
+        setLoadingBookedDates(false);
+      }
+    };
+    
+    loadBookedDates();
   }, [carId]);
 
   const carData = useMemo(() => {
@@ -145,6 +192,15 @@ const BookingPage = () => {
     { icon: Heart, title: 'Best Rates', description: 'Competitive pricing guaranteed' }
   ];
 
+  // Check if a date is booked
+  const isDateBooked = (dateString) => {
+    if (!dateString) return false;
+    const selectedDate = new Date(dateString);
+    return bookedDates.some(bookedDate => 
+      bookedDate.toDateString() === selectedDate.toDateString()
+    );
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -191,6 +247,17 @@ const BookingPage = () => {
   const handleNext = () => {
     // Validate current step before proceeding
     const errors = getValidationErrors(formData, currentStep);
+    
+    // Check for booked dates
+    if (currentStep === 1) {
+      if (formData.pickupDate && isDateBooked(formData.pickupDate)) {
+        errors.pickupDate = 'This date is already booked. Please select a different date.';
+      }
+      if (formData.returnDate && isDateBooked(formData.returnDate)) {
+        errors.returnDate = 'This date is already booked. Please select a different date.';
+      }
+    }
+    
     setValidationErrors(errors);
     
     if (Object.keys(errors).length === 0) {
@@ -217,6 +284,15 @@ const BookingPage = () => {
     
     // Final validation
     const errors = getValidationErrors(formData, currentStep);
+    
+    // Check for booked dates
+    if (formData.pickupDate && isDateBooked(formData.pickupDate)) {
+      errors.pickupDate = 'This date is already booked. Please select a different date.';
+    }
+    if (formData.returnDate && isDateBooked(formData.returnDate)) {
+      errors.returnDate = 'This date is already booked. Please select a different date.';
+    }
+    
     setValidationErrors(errors);
     
     if (Object.keys(errors).length > 0) {
@@ -397,14 +473,17 @@ const BookingPage = () => {
                               <Label htmlFor="pickupDate" className="flex items-center">
                                 {t('pickupDate')} <span className="text-red-500 ml-1">*</span>
                               </Label>
-                              <Input
-                                id="pickupDate"
-                                type="date"
+                              <DatePicker
                                 value={formData.pickupDate}
-                                onChange={(e) => handleInputChange('pickupDate', e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
+                                onChange={(value) => handleInputChange('pickupDate', value)}
+                                minDate={new Date().toISOString().split('T')[0]}
+                                bookedDates={bookedDates}
+                                placeholder="Add dates"
                                 className={`mt-1 ${validationErrors.pickupDate ? 'border-red-500 focus:border-red-500' : ''}`}
-                                aria-describedby={validationErrors.pickupDate ? 'pickupDate-error' : undefined}
+                                disabled={loadingBookedDates}
+                                loadingBookedDates={loadingBookedDates}
+                                rangeStart={formData.pickupDate}
+                                rangeEnd={formData.returnDate}
                               />
                               {validationErrors.pickupDate && (
                                 <p id="pickupDate-error" className="text-red-500 text-sm mt-1 flex items-center">
@@ -417,14 +496,17 @@ const BookingPage = () => {
                               <Label htmlFor="returnDate" className="flex items-center">
                                 {t('returnDate')} <span className="text-red-500 ml-1">*</span>
                               </Label>
-                              <Input
-                                id="returnDate"
-                                type="date"
+                              <DatePicker
                                 value={formData.returnDate}
-                                onChange={(e) => handleInputChange('returnDate', e.target.value)}
-                                min={formData.pickupDate || new Date().toISOString().split('T')[0]}
+                                onChange={(value) => handleInputChange('returnDate', value)}
+                                minDate={formData.pickupDate || new Date().toISOString().split('T')[0]}
+                                bookedDates={bookedDates}
+                                placeholder="Add dates"
                                 className={`mt-1 ${validationErrors.returnDate ? 'border-red-500 focus:border-red-500' : ''}`}
-                                aria-describedby={validationErrors.returnDate ? 'returnDate-error' : undefined}
+                                disabled={loadingBookedDates}
+                                loadingBookedDates={loadingBookedDates}
+                                rangeStart={formData.pickupDate}
+                                rangeEnd={formData.returnDate}
                               />
                               {validationErrors.returnDate && (
                                 <p id="returnDate-error" className="text-red-500 text-sm mt-1 flex items-center">
@@ -490,6 +572,7 @@ const BookingPage = () => {
                               )}
                             </div>
                           </div>
+                          
                         </div>
                       )}
 
