@@ -38,6 +38,25 @@ const InstagramPhotoSlider = ({
     }
   }, [isOpen, initialIndex]);
 
+  // Hide/show navbar when modal opens/closes
+  useEffect(() => {
+    const navbar = document.querySelector('header');
+    if (navbar) {
+      if (isOpen) {
+        navbar.style.display = 'none';
+      } else {
+        navbar.style.display = '';
+      }
+    }
+    
+    // Cleanup function to restore navbar when component unmounts
+    return () => {
+      if (navbar) {
+        navbar.style.display = '';
+      }
+    };
+  }, [isOpen]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -109,17 +128,18 @@ const InstagramPhotoSlider = ({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
+      onClick={onClose}
     >
       {/* Close Button */}
       {showCloseButton && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+          className="absolute top-4 right-4 z-[110] p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
           aria-label="Close"
         >
           <X size={24} />
@@ -127,7 +147,10 @@ const InstagramPhotoSlider = ({
       )}
 
       {/* Main Image Container */}
-      <div className="relative w-full h-full flex items-center justify-center p-4">
+      <div 
+        className="relative w-full h-full flex items-center justify-center p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <AnimatePresence mode="wait">
           <motion.img
             key={currentIndex}
@@ -151,14 +174,20 @@ const InstagramPhotoSlider = ({
         {showNavigation && images.length > 1 && (
           <>
             <button
-              onClick={goToPrevious}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
               className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
               disabled={isDragging}
             >
               <ChevronLeft size={24} />
             </button>
             <button
-              onClick={goToNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
               className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
               disabled={isDragging}
             >
@@ -170,11 +199,17 @@ const InstagramPhotoSlider = ({
 
       {/* Dots Navigation */}
       {showDots && images.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
+        <div 
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           {images.map((_, index) => (
             <button
               key={index}
-              onClick={() => goToSlide(index)}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToSlide(index);
+              }}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
                 index === currentIndex
                   ? 'bg-white scale-125'
