@@ -401,6 +401,10 @@ const translations = {
     serv3: 'Comprehensive insurance included',
     serv4: 'GPS navigation available',
     serv5: 'Flexible rental periods',
+    quickBooking: 'Quick Booking',
+    quickBookAvailable: 'Available cars for quick booking:',
+    browseAllCars: 'Browse All Cars',
+    noCarsAvailable: 'No cars available at the moment',
   },
   sq: {
     home: 'Kryefaqja',
@@ -788,6 +792,10 @@ const translations = {
     serv3: 'Sigurim gjithëpërfshirës',
     serv4: 'Navigim GPS i disponueshëm',
     serv5: 'Periudha fleksibël qeraje',
+    quickBooking: 'Rezervim i Shpejtë',
+    quickBookAvailable: 'Makinat e disponueshme për rezervim të shpejtë:',
+    browseAllCars: 'Shfletoni të Gjitha Makinat',
+    noCarsAvailable: 'Asnjë makinë e disponueshme për momentin',
   }
 };
 

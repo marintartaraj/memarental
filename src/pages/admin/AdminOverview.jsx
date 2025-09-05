@@ -386,8 +386,8 @@ const AdminOverview = () => {
               title: 'Total Revenue', 
               value: `€${stats.totalRevenue.toFixed(2)}`, 
               icon: DollarSign, 
-              color: 'bg-green-50 border-l-4 border-green-500',
-              iconColor: 'text-green-600',
+              color: 'bg-yellow-50 border-l-4 border-yellow-500',
+              iconColor: 'text-yellow-600',
               trend: stats.revenueTrend,
               subtitle: selectedPeriod === 'all' ? 'All time earnings' : 'Last 30 days'
             },
@@ -395,8 +395,8 @@ const AdminOverview = () => {
               title: 'Active Bookings', 
               value: stats.activeBookings, 
               icon: Calendar, 
-              color: 'bg-blue-50 border-l-4 border-blue-500',
-              iconColor: 'text-blue-600',
+              color: 'bg-orange-50 border-l-4 border-orange-500',
+              iconColor: 'text-orange-600',
               trend: stats.bookingsTrend,
               subtitle: 'Currently active'
             },
@@ -413,8 +413,8 @@ const AdminOverview = () => {
               title: 'Total Users', 
               value: stats.totalUsers, 
               icon: Users, 
-              color: 'bg-purple-50 border-l-4 border-purple-500',
-              iconColor: 'text-purple-600',
+              color: 'bg-yellow-50 border-l-4 border-yellow-500',
+              iconColor: 'text-yellow-600',
               trend: stats.usersTrend,
               subtitle: 'Registered users'
             },
@@ -520,7 +520,7 @@ const AdminOverview = () => {
                       <div className="flex items-center gap-1 mt-1">
                         {getStatusIcon(booking.status)}
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          booking.status === 'confirmed' ? 'bg-yellow-100 text-yellow-800' :
                           booking.status === 'active' ? 'bg-blue-100 text-blue-800' :
                           booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                           'bg-gray-100 text-gray-800'

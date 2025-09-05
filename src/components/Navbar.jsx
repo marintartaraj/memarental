@@ -15,11 +15,53 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
+  
+  // Scroll behavior state
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Handle scroll behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show navbar when at top of page
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide navbar when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+    };
+  }, [lastScrollY]);
 
   const handleLogout = async () => {
     try {
@@ -41,7 +83,9 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+    <header className={`fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 transition-all duration-300 ease-in-out ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -108,10 +152,11 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden p-2 text-gray-600 hover:text-yellow-600"
+            className="md:hidden p-2 rounded-lg text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 transition-all duration-200 relative group"
             aria-label="Open menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
+            <div className="absolute inset-0 bg-yellow-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
           </button>
         </div>
       </div>

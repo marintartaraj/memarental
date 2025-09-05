@@ -4,6 +4,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ===== Brand Color Variables ===== */
+:root {
+  --brand-primary: #f59e0b; /* yellow-500 */
+  --brand-primary-hover: #d97706; /* yellow-600 */
+  --brand-primary-light: #fef3c7; /* yellow-100 */
+  --brand-secondary: #f97316; /* orange-500 */
+  --brand-secondary-hover: #ea580c; /* orange-600 */
+  --brand-secondary-light: #fed7aa; /* orange-100 */
+  --brand-gradient: linear-gradient(to right, #f59e0b, #f97316);
+  --brand-gradient-hover: linear-gradient(to right, #d97706, #ea580c);
+}
+
 /* ===== Enhanced Scrollbar ===== */
 .custom-scrollbar {
   scrollbar-width: thin;

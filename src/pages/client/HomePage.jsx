@@ -3,7 +3,7 @@
 import React from "react"
 import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
-import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Play, Sparkles, MessageCircle } from "lucide-react"
+import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -97,10 +97,90 @@ const HomePage = () => {
   }
 
   const destinations = [
-    { name: "Tirana City Center", emoji: "🏛️", description: "Explore Albania's vibrant capital with ease", image: "/images/cars/c-class1.jpeg" },
-    { name: "Durres Beach", emoji: "🌊", description: "Drive to the stunning Adriatic coastline", image: "/images/cars/santa fe1.jpeg" },
-    { name: "Albanian Alps", emoji: "⛰️", description: "Adventure through breathtaking mountain roads", image: "/images/cars/xc601.jpeg" },
-    { name: "Historical Sites", emoji: "🏰", description: "Visit ancient castles and UNESCO sites", image: "/images/cars/passat1.jpeg" },
+    { 
+      name: "Tirana City Center", 
+      emoji: "🏛️", 
+      description: "Vibrant capital with museums, Blloku nightlife, and easy day trips.", 
+      image: "/images/cars/tirana.png",
+      link: "https://en.wikivoyage.org/wiki/Tirana"
+    },
+    { 
+      name: "Berat & Gjirokastër (UNESCO)", 
+      emoji: "🏰", 
+      description: "Ottoman-era townscapes, castles, and stone houses.", 
+      image: "/images/cars/berat.png",
+      link: "https://whc.unesco.org/en/list/569"
+    },
+    { 
+      name: "Butrint National Park (UNESCO)", 
+      emoji: "🏛️", 
+      description: "Ancient city amid lagoons and forests near Sarandë.", 
+      image: "/images/cars/butrint.png",
+      link: "https://whc.unesco.org/en/list/570"
+    },
+    { 
+      name: "Ksamil & Islets", 
+      emoji: "🏝️", 
+      description: "Iconic turquoise waters and tiny islands.", 
+      image: "/images/cars/ksamil.png",
+      link: "https://en.wikivoyage.org/wiki/Ksamil"
+    },
+    { 
+      name: "Valbona Valley National Park", 
+      emoji: "⛰️", 
+      description: "Alpine valley, clear river, classic hiking base.", 
+      image: "/images/cars/valbona.png",
+      link: "https://en.wikivoyage.org/wiki/Valbona_Valley_National_Park"
+    },
+    { 
+      name: "Theth National Park", 
+      emoji: "🏔️", 
+      description: "Rugged mountains, waterfalls, and stone towers.", 
+      image: "/images/cars/theth.png",
+      link: "https://en.wikivoyage.org/wiki/Theth"
+    },
+    { 
+      name: "Albanian Riviera", 
+      emoji: "🌊", 
+      description: "Himarë–Dhërmi coastline, beaches, and coves.", 
+      image: "/images/cars/albaniariveria.png",
+      link: "https://en.wikivoyage.org/wiki/Albanian_Riviera"
+    },
+    { 
+      name: "Gjipe Beach", 
+      emoji: "🏖️", 
+      description: "Spectacular secluded cove between cliffs.", 
+      image: "/images/cars/gjipe.png",
+      link: "https://en.wikivoyage.org/wiki/Dhërmi"
+    },
+    { 
+      name: "Krujë Castle & Skanderbeg Museum", 
+      emoji: "🏰", 
+      description: "Historic fortress, museum, and Ottoman bazaar.", 
+      image: "/images/cars/kruja.png",
+      link: "https://en.wikivoyage.org/wiki/Krujë"
+    },
+    { 
+      name: "Shkodër & Rozafa Castle", 
+      emoji: "🏯", 
+      description: "Hilltop fortress with river and city views.", 
+      image: "/images/cars/shkodra.png",
+      link: "https://en.wikivoyage.org/wiki/Shkodër"
+    },
+    { 
+      name: "Lake Ohrid (Pogradec)", 
+      emoji: "🏞️", 
+      description: "Ancient UNESCO lake with unique biodiversity.", 
+      image: "/images/cars/pogradeci.png",
+      link: "https://whc.unesco.org/en/list/99"
+    },
+    { 
+      name: "Durrës & Ancient Amphitheater", 
+      emoji: "🏛️", 
+      description: "Historic port city with Roman amphitheater and Adriatic beaches.", 
+      image: "/images/cars/durres.png",
+      link: "https://en.wikivoyage.org/wiki/Durrës"
+    }
   ]
 
   const benefits = [
@@ -112,10 +192,6 @@ const HomePage = () => {
     { icon: CreditCard, title: "Flexible Payment", description: "Multiple payment options available", color: "from-indigo-500 to-indigo-600" },
   ]
 
-  const handleVideoClick = () => {
-    // You can replace this with actual video modal or YouTube link
-    alert("Video feature coming soon! In the meantime, explore our car fleet.")
-  }
 
   const handleContactClick = (type) => {
     if (type === 'phone') {
@@ -172,52 +248,72 @@ const HomePage = () => {
         <main id="main" className="relative z-10">
           {/* Hero Section */}
           <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
-            {/* Background decorative elements */}
+            {/* Enhanced Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className={`absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"}`}></div>
-              <div className={`absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob animation-delay-2000"}`}></div>
-              <div className={`absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob animation-delay-4000"}`}></div>
+              {/* Main floating orbs */}
+              <div className={`absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-br from-yellow-300/25 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+              <div className={`absolute -bottom-20 -left-20 w-80 h-80 bg-gradient-to-br from-orange-300/25 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
               
-                              {/* Light rays effect */}
-                <div className="absolute top-0 left-0 w-full h-full">
-                  <div className={`absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-yellow-300/30 via-yellow-200/20 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
-                  <div className={`absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-orange-300/20 via-orange-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1000"}`}></div>
-                  <div className={`absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-yellow-300/25 via-yellow-200/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
-                </div>
+              {/* Additional subtle orbs */}
+              <div className={`absolute top-1/3 right-1/4 w-40 h-40 bg-gradient-to-br from-yellow-200/15 to-transparent rounded-full blur-2xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-3000"}`}></div>
+              <div className={`absolute bottom-1/3 left-1/3 w-32 h-32 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-2xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1500"}`}></div>
+              
+              {/* Subtle light rays */}
+              <div className="absolute top-0 left-0 w-full h-full">
+                <div className={`absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-yellow-300/20 via-yellow-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
+                <div className={`absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-orange-300/15 via-orange-200/8 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
+              </div>
+              
+              {/* Subtle grid pattern overlay */}
+              <div className="absolute inset-0 opacity-[0.015] bg-[radial-gradient(circle_at_1px_1px,rgb(251,191,36)_1px,transparent_0)] bg-[length:32px_32px]"></div>
             </div>
 
-            <div className="container-mobile py-16 sm:py-20 lg:py-28 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
+            <div className="container-mobile py-6 sm:py-8 lg:py-16 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
               {/* Hero Content */}
-              <div className="space-y-6">
+              <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 rounded-full text-sm font-medium mb-6 shadow-sm border border-yellow-200 relative overflow-hidden group"
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4 shadow-sm"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-orange-200/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Sparkles className={`h-4 w-4 relative z-10 ${prefersReducedMotion ? "" : "animate-pulse"}`} />
-                  <span className="relative z-10">4.9/5 Rating • 1000+ Happy Customers</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>4.9/5 Rating • 1000+ Happy Customers</span>
                 </motion.div>
 
                 <motion.h1
                   {...fadeUp}
-                  className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-tight relative"
+                  className="font-heading text-2xl sm:text-3xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-[1.1] relative group"
                 >
                   <span className="relative">
-                    {language === 'sq' 
-                      ? 'Qira Makine në Tiranë — Marrje në Aeroport & Dorëzim në Qendër'
-                      : 'Rent a Car in Tirana — Airport Pickup & City Delivery'
-                    }
-                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    {language === 'sq' ? (
+                      <>
+                        <span className="block">Qira Makine në</span>
+                        <span className="block bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                          Tiranë
+                        </span>
+                        <span className="block text-sm sm:text-lg lg:text-4xl font-semibold text-muted-foreground mt-1 sm:mt-2">
+                          Marrje në Aeroport & Dorëzim në Qendër
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="block">Rent a Car in</span>
+                        <span className="block bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                          Tirana
+                        </span>
+                        <span className="block text-sm sm:text-lg lg:text-4xl font-semibold text-muted-foreground mt-1 sm:mt-2">
+                          Airport Pickup & City Delivery
+                        </span>
+                      </>
+                    )}
                   </span>
                 </motion.h1>
 
                 <motion.p
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.1 }}
-                  className="text-lg sm:text-xl text-muted-foreground max-w-2xl text-pretty leading-relaxed"
+                  className="text-sm sm:text-base lg:text-xl text-muted-foreground max-w-2xl text-pretty leading-relaxed"
                 >
                   {language === 'sq'
                     ? 'Shërbim premium i qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Automjete të siguruara plotësisht, marrje në aeroport dhe çmime transparente për aventurën tuaj të përsosur shqiptare.'
@@ -228,7 +324,7 @@ const HomePage = () => {
                 <motion.p
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.15 }}
-                  className="text-sm text-muted-foreground max-w-2xl"
+                  className="text-xs sm:text-sm text-muted-foreground max-w-2xl"
                 >
                   {language === 'sq' ? (
                     <>
@@ -244,61 +340,46 @@ const HomePage = () => {
                 <motion.div
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.2 }}
-                  className="flex flex-col sm:flex-row gap-4"
+                  className="flex justify-start"
                 >
                   <Button asChild
                     size="lg"
-                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 relative overflow-hidden group"
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-5 sm:px-8 py-3 sm:py-6 text-sm sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >
                     <Link to="/cars">
-                      <span className="relative z-10 flex items-center">
+                      <span className="flex items-center">
                         Find Your Car
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-5 sm:w-5" />
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                     </Link>
-                  </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8 py-6 text-lg bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                    onClick={handleVideoClick}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
-                    <span className="relative z-10">Watch Video</span>
                   </Button>
                 </motion.div>
 
                 <motion.div
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.3 }}
-                  className="flex flex-wrap gap-6 items-center text-sm text-muted-foreground pt-4"
+                  className="flex flex-wrap gap-2 sm:gap-3 items-center text-xs sm:text-sm text-muted-foreground pt-3 sm:pt-4"
                   aria-label="Trust signals"
                 >
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Star className={`h-4 w-4 text-yellow-500 fill-current ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
-                    <span>4.9/5 rating</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 fill-current" />
+                    <span className="text-xs sm:text-sm">4.9/5 rating</span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Users className={`h-4 w-4 text-yellow-500 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
-                    <span>1000+ happy customers</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+                    <span className="text-xs sm:text-sm">1000+ customers</span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-                    <Award className={`h-4 w-4 text-yellow-500 ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`} aria-hidden="true" />
-                    <span>Fully insured</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
+                    <Award className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+                    <span className="text-xs sm:text-sm">Fully insured</span>
                   </div>
                 </motion.div>
               </div>
 
               {/* Featured Car Card */}
               <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }}>
-                <Card className="p-0 shadow-2xl border-0 bg-white/95 backdrop-blur rounded-3xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group relative">
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 via-orange-400/20 to-yellow-400/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  <div className="flex flex-col relative z-10">
+                <Card className="p-0 shadow-xl border rounded-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 group">
+                  <div className="flex flex-col">
                     <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                       <img
                         src="/images/cars/e class1.jpeg"
@@ -311,41 +392,32 @@ const HomePage = () => {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-                      <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
                         Featured
                       </div>
-                      <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900 shadow-sm">
+                      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold text-gray-900 shadow-sm">
                         Available Now
                       </div>
-                      
-                      {/* Light overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
 
-                    <div className="p-6 space-y-4">
+                    <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                       <div>
                         <p className="text-xs uppercase tracking-wider text-yellow-700 font-semibold mb-1">Premium Selection</p>
-                        <h3 className="font-heading text-2xl font-bold text-card-foreground">Mercedes-Benz E-Class</h3>
-                        <p className="text-muted-foreground">Executive • Automatic • Premium</p>
+                        <h3 className="font-heading text-lg sm:text-2xl font-bold text-card-foreground">Mercedes-Benz E-Class</h3>
+                        <p className="text-sm sm:text-base text-muted-foreground">Executive • Automatic • Premium</p>
                       </div>
 
                       <div className="flex items-baseline gap-2">
-                        <span className={`font-heading text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent ${prefersReducedMotion ? "" : "group-hover:animate-pulse"}`}>€85</span>
-                        <span className="text-muted-foreground">/ day</span>
+                        <span className="font-heading text-2xl sm:text-3xl font-black text-yellow-600">€85</span>
+                        <span className="text-sm sm:text-base text-muted-foreground">/ day</span>
                       </div>
 
-                      <div className="flex gap-3">
-                        <Button asChild className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden">
-                          <Link to="/cars">
-                            <span className="relative z-10">Book Now</span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                          </Link>
+                      <div className="flex gap-2 sm:gap-3">
+                        <Button asChild className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base py-2 sm:py-3">
+                          <Link to="/cars">Book Now</Link>
                         </Button>
-                        <Button asChild variant="outline" className="flex-1 bg-transparent border-yellow-500 text-yellow-600 hover:bg-yellow-50 group relative overflow-hidden">
-                          <Link to="/cars">
-                            <span className="relative z-10">View Details</span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </Link>
+                        <Button asChild variant="outline" className="flex-1 border-yellow-500 text-yellow-600 hover:bg-yellow-50 text-sm sm:text-base py-2 sm:py-3">
+                          <Link to="/cars">View Details</Link>
                         </Button>
                       </div>
                     </div>
@@ -396,7 +468,7 @@ const HomePage = () => {
                     whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
                     className="group"
                   >
-                    <Card className="p-6 hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 overflow-hidden relative h-full">
+                    <Card className="p-6 hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 overflow-hidden relative h-full group-hover:scale-105">
                       {/* Glow effect */}
                       <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       
@@ -436,7 +508,7 @@ const HomePage = () => {
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
               >
                 {destinations.map((destination, index) => (
                   <motion.div
@@ -445,35 +517,43 @@ const HomePage = () => {
                     whileHover={prefersReducedMotion ? undefined : { y: -8, scale: 1.02 }}
                     className="group"
                   >
-                    <Card className="p-0 hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white overflow-hidden rounded-2xl relative">
+                    <Card className="p-0 hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white overflow-hidden rounded-2xl relative group-hover:scale-105">
                       {/* Glow effect */}
                       <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/10 via-orange-400/10 to-yellow-400/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       
-                      <div className="relative z-10">
-                        <div className="relative h-48 overflow-hidden">
-                          <img
-                            src={destination.image}
-                            alt={language === 'sq' ? `${destination.name} në Tiranë - ${destination.description}` : `${destination.name} in Tirana - ${destination.description}`}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            loading="lazy"
-                            width="800"
-                            height="600"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                            onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                          <div className="absolute bottom-4 left-4 text-4xl group-hover:scale-110 transition-transform duration-300" aria-hidden="true">
-                            {destination.emoji}
+                      <a
+                        href={destination.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full h-full cursor-pointer"
+                        aria-label={`Learn more about ${destination.name}`}
+                      >
+                        <div className="relative z-10">
+                          <div className="relative h-32 lg:h-48 overflow-hidden">
+                            <img
+                              src={destination.image}
+                              alt={language === 'sq' ? `${destination.name} në Shqipëri - ${destination.description}` : `${destination.name} in Albania - ${destination.description}`}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                              loading="lazy"
+                              width="800"
+                              height="600"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                              onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+                            <div className="absolute bottom-2 left-2 lg:bottom-4 lg:left-4 text-2xl lg:text-4xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 ease-out pointer-events-none" aria-hidden="true">
+                              {destination.emoji}
+                            </div>
+                            
+                            {/* Light overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                           </div>
-                          
-                          {/* Light overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          <div className="p-3 lg:p-6">
+                            <h3 className="font-heading text-sm lg:text-lg font-bold text-card-foreground mb-1 lg:mb-2 line-clamp-2">{destination.name}</h3>
+                            <p className="text-muted-foreground text-xs lg:text-sm text-pretty line-clamp-3">{destination.description}</p>
+                          </div>
                         </div>
-                        <div className="p-6">
-                          <h3 className="font-heading text-lg font-bold text-card-foreground mb-2">{destination.name}</h3>
-                          <p className="text-muted-foreground text-sm text-pretty">{destination.description}</p>
-                        </div>
-                      </div>
+                      </a>
                     </Card>
                   </motion.div>
                 ))}

@@ -466,9 +466,15 @@ const CarsPage = () => {
           </section>
 
           {/* Search and Filters Section */}
-          <section className="py-8 bg-white/80 backdrop-blur-sm border-b border-gray-100">
-            <div className="container-mobile">
-              <motion.div {...fadeUp} className="space-y-6">
+          <section className="py-12 bg-white/90 backdrop-blur-md border-b border-gray-200/50 relative overflow-hidden">
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-0 left-1/4 w-64 h-64 bg-yellow-400 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-orange-400 rounded-full blur-2xl"></div>
+            </div>
+            
+            <div className="container-mobile relative z-10">
+              <motion.div {...fadeUp} className="space-y-8">
                 {/* Search Bar */}
                 <div className="relative max-w-2xl mx-auto">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -487,9 +493,9 @@ const CarsPage = () => {
                   <Button
                     onClick={() => setShowDateFilters(!showDateFilters)}
                     variant="outline"
-                    className="border-2 border-blue-500 text-blue-600 hover:bg-blue-50 px-6 py-3 bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
+                    className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-6 py-3 bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-100/50 to-indigo-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <Calendar className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
                     <span className="relative z-10">
                       {showDateFilters ? "Hide Dates" : "Check Availability"}
@@ -534,7 +540,7 @@ const CarsPage = () => {
                             value={pickupDate}
                             onChange={(e) => setPickupDate(e.target.value)}
                             min={new Date().toISOString().split('T')[0]}
-                            className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                            className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
                           />
                         </div>
                         
@@ -546,7 +552,7 @@ const CarsPage = () => {
                             value={returnDate}
                             onChange={(e) => setReturnDate(e.target.value)}
                             min={pickupDate || new Date().toISOString().split('T')[0]}
-                            className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                            className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
                           />
                         </div>
                       </div>

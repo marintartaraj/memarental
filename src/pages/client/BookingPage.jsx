@@ -779,9 +779,9 @@ const BookingPage = () => {
                           </div>
 
                           {/* Payment Information */}
-                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                             <div className="flex items-center space-x-2 mb-3">
-                              <CreditCard className="h-5 w-5 text-blue-600" />
+                              <CreditCard className="h-5 w-5 text-yellow-600" />
                               <h4 className="font-semibold text-gray-800">Cash Payment</h4>
                             </div>
                             <p className="text-gray-700 text-sm">
@@ -835,7 +835,7 @@ const BookingPage = () => {
                           <Button
                             onClick={handleSubmit}
                             disabled={!formData.acceptTerms || carUnavailable || submitting}
-                            className="flex items-center space-x-2 bg-green-500 hover:bg-green-600"
+                            className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
                           >
                             {submitting ? (
                               <>

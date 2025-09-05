@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import BookNowButton from '@/components/BookNowButton';
 // Client pages
 import HomePage from '@/pages/client/HomePage';
 import CarsPage from '@/pages/client/CarsPage';
@@ -39,7 +40,7 @@ const AppContent = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <ScrollToTop />
       {!isAdminRoute && <Navbar />}
-      <main className={`flex-grow ${isAdminRoute ? 'bg-white' : ''}`}>
+      <main className={`flex-grow ${isAdminRoute ? 'bg-white' : 'pt-16'}`}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<HomePage />} />
@@ -88,6 +89,7 @@ function App() {
               <MobileMenuProvider>
                 <AppContent />
                 <WhatsAppButton />
+                <BookNowButton />
               </MobileMenuProvider>
             </AuthProvider>
           </LanguageProvider>
