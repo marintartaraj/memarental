@@ -10,6 +10,7 @@ import { Link } from "react-router-dom"
 import { Users, Award, Shield, Clock, MapPin, Phone, Mail, Star, Heart, Zap, Car, CheckCircle, Globe, Target, TrendingUp, Sparkles, ArrowRight } from "lucide-react"
 import HeroHeader from "@/components/HeroHeader"
 import { generateLocalBusinessSchema } from "@/seo/structuredData"
+import EnhancedCTA from "@/components/EnhancedCTA"
 
 const AboutPage = () => {
   const { t, language } = useLanguage()
@@ -490,58 +491,19 @@ const AboutPage = () => {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="py-16 lg:py-24 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20"></div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-            
-            {/* Light rays for CTA */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className={`absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
-              <div className={`absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"} animation-delay-1000`}></div>
-            </div>
-            
-            <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="text-center space-y-8">
-                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-balance">
-                  {language === "sq" ? "Gati për të Eksperiencuar Ekselencën?" : "Ready to Experience Excellence?"}
-                </h2>
-                <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto text-pretty">
-                  {language === "sq" 
-                    ? "Bashkohuni me mijëra klientë të kënaqur që kanë zgjedhur MEMA Rental për aventurën e tyre shqiptare"
-                    : "Join thousands of satisfied customers who have chosen MEMA Rental for their Albanian adventure"
-                  }
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button asChild
-                    size="lg"
-                    className="bg-white text-yellow-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                  >
-                    <Link to="/cars">
-                      <span className="flex items-center relative z-10">
-                        {language === "sq" ? "Shfletoni Flotën Tonë" : "Browse Our Fleet"}
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </Link>
-                  </Button>
-                  <Button asChild
-                    size="lg"
-                    variant="outline"
-                    className="border-2 border-white text-white hover:bg-white hover:text-yellow-600 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                  >
-                    <Link to="/contact">
-                      <span className="flex items-center relative z-10">
-                        {language === "sq" ? "Na Kontaktoni" : "Contact Us"}
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </Link>
-                  </Button>
-                </div>
-              </motion.div>
-            </div>
-          </section>
+          {/* Enhanced CTA */}
+          <EnhancedCTA 
+            title={language === "sq" ? "Gati për të Eksperiencuar Ekselencën?" : "Ready to Experience Excellence?"}
+            subtitle={language === "sq" 
+              ? "Bashkohuni me mijëra klientë të kënaqur që kanë zgjedhur MEMA Rental për aventurën e tyre shqiptare"
+              : "Join thousands of satisfied customers who have chosen MEMA Rental for their Albanian adventure"
+            }
+            secondaryButton={{
+              text: language === "sq" ? "Shfletoni Flotën" : "Browse Our Fleet",
+              link: "/cars",
+              icon: Car
+            }}
+          />
         </main>
       </div>
     </>

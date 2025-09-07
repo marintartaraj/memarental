@@ -27,11 +27,13 @@ import {
   Heart,
   Sparkles,
   ArrowRight,
+  Phone,
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
 import { BookingService } from "@/lib/bookingService"
 import CarCardWithSlider from "@/components/CarCardWithSlider"
+import EnhancedCTA from "@/components/EnhancedCTA"
 
 // Normalize car records for consistent UI
 const normalizeCarRecord = (record) => {
@@ -799,53 +801,16 @@ const CarsPage = () => {
         </main>
       </div>
 
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600 relative overflow-hidden">
-        {/* Light effects for CTA */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
-          <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div {...fadeUp} className="text-center">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 relative">
-              <span className="relative z-10">Ready to Start Your Journey?</span>
-              <div className="absolute -inset-2 bg-gradient-to-r from-white/10 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            </h2>
-            <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">Book your perfect rental car today and experience the freedom of the open road. Our team is here to help you find the ideal vehicle for your needs.</p>
-            <motion.div
-              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.45, delay: 0.15 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            >
-              <Button
-                asChild
-                size="lg"
-                className="w-full sm:w-auto bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl group relative overflow-hidden"
-              >
-                <Link to="/cars">
-                  <span className="relative z-10 flex items-center">
-                    <Sparkles className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                    Book Now
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent group relative overflow-hidden"
-              >
-                <Link to="/contact">Get In Touch</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Enhanced CTA Section */}
+      <EnhancedCTA 
+        title="Ready to Start Your Journey?"
+        subtitle="Book your perfect rental car today and experience the freedom of the open road."
+        secondaryButton={{
+          text: "Book Now",
+          link: "/cars",
+          icon: Calendar
+        }}
+      />
     </>
   )
 }
