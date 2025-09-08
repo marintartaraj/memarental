@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Seo from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,8 +43,19 @@ import {
 
 const BookingPage = () => {
   const { carId } = useParams();
+  const [searchParams] = useSearchParams();
   const { t, tFormat } = useLanguage();
   const navigate = useNavigate();
+
+  // Helper function to get today's date in YYYY-MM-DD format using European timezone
+  const getTodayString = () => {
+    const today = new Date();
+    const europeanToday = new Date(today.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    const year = europeanToday.getFullYear();
+    const month = String(europeanToday.getMonth() + 1).padStart(2, '0');
+    const day = String(europeanToday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -54,9 +65,9 @@ const BookingPage = () => {
   const [bookedDates, setBookedDates] = useState([]);
   const [loadingBookedDates, setLoadingBookedDates] = useState(false);
   const [formData, setFormData] = useState({
-    // Step 1: Dates
-    pickupDate: '',
-    returnDate: '',
+    // Step 1: Dates - pre-fill from URL parameters if available
+    pickupDate: searchParams.get('pickupDate') || '',
+    returnDate: searchParams.get('returnDate') || '',
     pickupTime: '',
     returnTime: '',
     
@@ -77,6 +88,20 @@ const BookingPage = () => {
     // Terms acceptance
     acceptTerms: false
   });
+
+  // Update form data when URL parameters change
+  useEffect(() => {
+    const urlPickupDate = searchParams.get('pickupDate');
+    const urlReturnDate = searchParams.get('returnDate');
+    
+    if (urlPickupDate || urlReturnDate) {
+      setFormData(prev => ({
+        ...prev,
+        pickupDate: urlPickupDate || prev.pickupDate,
+        returnDate: urlReturnDate || prev.returnDate,
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -400,9 +425,9 @@ const BookingPage = () => {
         {loading ? (
           <div className="text-center py-8 text-gray-500">{t('loading') || 'Loading...'}</div>
         ) : fetchError || !carData ? (
-          <div className="text-center py-8 text-red-600">{fetchError || 'Car not found'}</div>
+          <div className="text-center py-8 text-brand-error">{fetchError || 'Car not found'}</div>
         ) : null}
-        <div className="container-mobile py-6 sm:py-8">
+        <div className="container-mobile py-4 sm:py-6">
           {/* Header */}
           {carData && (
             <motion.div 
@@ -425,13 +450,13 @@ const BookingPage = () => {
               <Card className="shadow-xl border-0">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <Calendar className="h-6 w-6 text-yellow-600" />
+                    <Calendar className="h-6 w-6 text-brand-primary" />
                     <span>{t('bookingDetails')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   {carUnavailable && (
-                    <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200">
+                    <div className="mb-6 p-4 rounded-lg bg-brand-error/10 text-brand-error border border-brand-error/20">
                       {t('notAvailable') || 'This car is currently booked and not available.'}
                     </div>
                   )}
@@ -471,22 +496,22 @@ const BookingPage = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                               <Label htmlFor="pickupDate" className="flex items-center">
-                                {t('pickupDate')} <span className="text-red-500 ml-1">*</span>
+                                {t('pickupDate')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <DatePicker
                                 value={formData.pickupDate}
                                 onChange={(value) => handleInputChange('pickupDate', value)}
-                                minDate={new Date().toISOString().split('T')[0]}
+                                minDate={getTodayString()}
                                 bookedDates={bookedDates}
                                 placeholder="Add dates"
-                                className={`mt-1 ${validationErrors.pickupDate ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.pickupDate ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 disabled={loadingBookedDates}
                                 loadingBookedDates={loadingBookedDates}
                                 rangeStart={formData.pickupDate}
                                 rangeEnd={formData.returnDate}
                               />
                               {validationErrors.pickupDate && (
-                                <p id="pickupDate-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="pickupDate-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.pickupDate}
                                 </p>
@@ -494,22 +519,22 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="returnDate" className="flex items-center">
-                                {t('returnDate')} <span className="text-red-500 ml-1">*</span>
+                                {t('returnDate')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <DatePicker
                                 value={formData.returnDate}
                                 onChange={(value) => handleInputChange('returnDate', value)}
-                                minDate={formData.pickupDate || new Date().toISOString().split('T')[0]}
+                                minDate={formData.pickupDate || getTodayString()}
                                 bookedDates={bookedDates}
                                 placeholder="Add dates"
-                                className={`mt-1 ${validationErrors.returnDate ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.returnDate ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 disabled={loadingBookedDates}
                                 loadingBookedDates={loadingBookedDates}
                                 rangeStart={formData.pickupDate}
                                 rangeEnd={formData.returnDate}
                               />
                               {validationErrors.returnDate && (
-                                <p id="returnDate-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="returnDate-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.returnDate}
                                 </p>
@@ -517,10 +542,10 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="pickupTime" className="flex items-center">
-                                {t('pickupTime')} <span className="text-red-500 ml-1">*</span>
+                                {t('pickupTime')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Select value={formData.pickupTime} onValueChange={(value) => handleInputChange('pickupTime', value)}>
-                                <SelectTrigger className={`mt-1 ${validationErrors.pickupTime ? 'border-red-500 focus:border-red-500' : ''}`}>
+                                <SelectTrigger className={`mt-1 ${validationErrors.pickupTime ? 'border-brand-error focus:border-brand-error' : ''}`}>
                                   <SelectValue placeholder={t('selectPickupTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -537,7 +562,7 @@ const BookingPage = () => {
                                 </SelectContent>
                               </Select>
                               {validationErrors.pickupTime && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                <p className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.pickupTime}
                                 </p>
@@ -545,10 +570,10 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="returnTime" className="flex items-center">
-                                {t('returnTime')} <span className="text-red-500 ml-1">*</span>
+                                {t('returnTime')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Select value={formData.returnTime} onValueChange={(value) => handleInputChange('returnTime', value)}>
-                                <SelectTrigger className={`mt-1 ${validationErrors.returnTime ? 'border-red-500 focus:border-red-500' : ''}`}>
+                                <SelectTrigger className={`mt-1 ${validationErrors.returnTime ? 'border-brand-error focus:border-brand-error' : ''}`}>
                                   <SelectValue placeholder={t('selectReturnTime')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -565,7 +590,7 @@ const BookingPage = () => {
                                 </SelectContent>
                               </Select>
                               {validationErrors.returnTime && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                <p className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.returnTime}
                                 </p>
@@ -583,17 +608,17 @@ const BookingPage = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                               <Label htmlFor="firstName" className="flex items-center">
-                                {t('firstName')} <span className="text-red-500 ml-1">*</span>
+                                {t('firstName')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="firstName"
                                 value={formData.firstName}
                                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                                className={`mt-1 ${validationErrors.firstName ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.firstName ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.firstName ? 'firstName-error' : undefined}
                               />
                               {validationErrors.firstName && (
-                                <p id="firstName-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="firstName-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.firstName}
                                 </p>
@@ -601,17 +626,17 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="lastName" className="flex items-center">
-                                {t('lastName')} <span className="text-red-500 ml-1">*</span>
+                                {t('lastName')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="lastName"
                                 value={formData.lastName}
                                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                                className={`mt-1 ${validationErrors.lastName ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.lastName ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.lastName ? 'lastName-error' : undefined}
                               />
                               {validationErrors.lastName && (
-                                <p id="lastName-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="lastName-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.lastName}
                                 </p>
@@ -619,18 +644,18 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="email" className="flex items-center">
-                                Email <span className="text-red-500 ml-1">*</span>
+                                Email <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="email"
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleInputChange('email', e.target.value)}
-                                className={`mt-1 ${validationErrors.email ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.email ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.email ? 'email-error' : undefined}
                               />
                               {validationErrors.email && (
-                                <p id="email-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="email-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.email}
                                 </p>
@@ -638,18 +663,18 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="phone" className="flex items-center">
-                                {t('phoneNumber')} <span className="text-red-500 ml-1">*</span>
+                                {t('phoneNumber')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="phone"
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                                className={`mt-1 ${validationErrors.phone ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.phone ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.phone ? 'phone-error' : undefined}
                               />
                               {validationErrors.phone && (
-                                <p id="phone-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="phone-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.phone}
                                 </p>
@@ -657,17 +682,17 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="licenseNumber" className="flex items-center">
-                                {t('driversLicenseNumber')} <span className="text-red-500 ml-1">*</span>
+                                {t('driversLicenseNumber')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="licenseNumber"
                                 value={formData.licenseNumber}
                                 onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
-                                className={`mt-1 ${validationErrors.licenseNumber ? 'border-red-500 focus:border-red-500' : ''}`}
+                                className={`mt-1 ${validationErrors.licenseNumber ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.licenseNumber ? 'licenseNumber-error' : undefined}
                               />
                               {validationErrors.licenseNumber && (
-                                <p id="licenseNumber-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="licenseNumber-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.licenseNumber}
                                 </p>
@@ -675,19 +700,19 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="licenseExpiry" className="flex items-center">
-                                {t('licenseExpiry')} <span className="text-red-500 ml-1">*</span>
+                                {t('licenseExpiry')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Input
                                 id="licenseExpiry"
                                 type="date"
                                 value={formData.licenseExpiry}
                                 onChange={(e) => handleInputChange('licenseExpiry', e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
-                                className={`mt-1 ${validationErrors.licenseExpiry ? 'border-red-500 focus:border-red-500' : ''}`}
+                                min={getTodayString()}
+                                className={`mt-1 ${validationErrors.licenseExpiry ? 'border-brand-error focus:border-brand-error' : ''}`}
                                 aria-describedby={validationErrors.licenseExpiry ? 'licenseExpiry-error' : undefined}
                               />
                               {validationErrors.licenseExpiry && (
-                                <p id="licenseExpiry-error" className="text-red-500 text-sm mt-1 flex items-center">
+                                <p id="licenseExpiry-error" className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.licenseExpiry}
                                 </p>
@@ -704,10 +729,10 @@ const BookingPage = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                               <Label htmlFor="pickupLocation" className="flex items-center">
-                                {t('pickupLocationLabel')} <span className="text-red-500 ml-1">*</span>
+                                {t('pickupLocationLabel')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Select value={formData.pickupLocation} onValueChange={(value) => handleInputChange('pickupLocation', value)}>
-                                <SelectTrigger className={`mt-1 ${validationErrors.pickupLocation ? 'border-red-500 focus:border-red-500' : ''}`}>
+                                <SelectTrigger className={`mt-1 ${validationErrors.pickupLocation ? 'border-brand-error focus:border-brand-error' : ''}`}>
                                   <SelectValue placeholder={t('selectPickupLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -717,7 +742,7 @@ const BookingPage = () => {
                                 </SelectContent>
                               </Select>
                               {validationErrors.pickupLocation && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                <p className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.pickupLocation}
                                 </p>
@@ -725,10 +750,10 @@ const BookingPage = () => {
                             </div>
                             <div>
                               <Label htmlFor="returnLocation" className="flex items-center">
-                                {t('returnLocationLabel')} <span className="text-red-500 ml-1">*</span>
+                                {t('returnLocationLabel')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               <Select value={formData.returnLocation} onValueChange={(value) => handleInputChange('returnLocation', value)}>
-                                <SelectTrigger className={`mt-1 ${validationErrors.returnLocation ? 'border-red-500 focus:border-red-500' : ''}`}>
+                                <SelectTrigger className={`mt-1 ${validationErrors.returnLocation ? 'border-brand-error focus:border-brand-error' : ''}`}>
                                   <SelectValue placeholder={t('selectReturnLocation')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -738,7 +763,7 @@ const BookingPage = () => {
                                 </SelectContent>
                               </Select>
                               {validationErrors.returnLocation && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                <p className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.returnLocation}
                                 </p>
@@ -760,7 +785,7 @@ const BookingPage = () => {
                                     <Label htmlFor={extra.id} className="font-medium">{extra.name}</Label>
                                     <p className="text-sm text-gray-600">{extra.description}</p>
                                   </div>
-                                  <span className="text-yellow-600 font-semibold">€{extra.price}{t('perDayLower')}</span>
+                                  <span className="text-brand-primary font-semibold">€{extra.price}{t('perDayLower')}</span>
                                 </div>
                               ))}
                             </div>
@@ -779,9 +804,9 @@ const BookingPage = () => {
                           </div>
 
                           {/* Payment Information */}
-                          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <div className="p-4 bg-brand-info/10 rounded-lg border border-brand-info/20">
                             <div className="flex items-center space-x-2 mb-3">
-                              <CreditCard className="h-5 w-5 text-yellow-600" />
+                              <CreditCard className="h-5 w-5 text-brand-info" />
                               <h4 className="font-semibold text-gray-800">Cash Payment</h4>
                             </div>
                             <p className="text-gray-700 text-sm">
@@ -797,10 +822,10 @@ const BookingPage = () => {
                             />
                             <div className="flex-1">
                               <Label htmlFor="acceptTerms" className="text-sm flex items-start">
-                                {t('acceptTerms')} <span className="text-red-500 ml-1">*</span>
+                                {t('acceptTerms')} <span className="text-brand-error ml-1">*</span>
                               </Label>
                               {validationErrors.acceptTerms && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center">
+                                <p className="text-brand-error text-sm mt-1 flex items-center">
                                   <AlertCircle className="h-4 w-4 mr-1" />
                                   {validationErrors.acceptTerms}
                                 </p>
@@ -835,7 +860,7 @@ const BookingPage = () => {
                           <Button
                             onClick={handleSubmit}
                             disabled={!formData.acceptTerms || carUnavailable || submitting}
-                            className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                            className="flex items-center space-x-2 bg-green-500 hover:bg-green-600"
                           >
                             {submitting ? (
                               <>
@@ -862,7 +887,7 @@ const BookingPage = () => {
               <Card className="shadow-xl border-0 sticky top-8">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <Car className="h-6 w-6 text-yellow-600" />
+                    <Car className="h-6 w-6 text-brand-primary" />
                     <span>{t('carSummary')}</span>
                   </CardTitle>
                 </CardHeader>
@@ -881,7 +906,7 @@ const BookingPage = () => {
                         </div>
                       )}
                       <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                        <Star className="h-4 w-4 text-brand-primary fill-current" />
                         <span className="text-sm font-semibold">{carData.rating}</span>
                       </div>
                     </div>
@@ -893,19 +918,19 @@ const BookingPage = () => {
                       </h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4 text-blue-500" />
+                          <Users className="h-4 w-4 text-brand-info" />
                           <span>{carData.seats} {t('seatsLower')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Fuel className="h-4 w-4 text-green-500" />
+                          <Fuel className="h-4 w-4 text-brand-success" />
                           <span>{carData.fuel}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Zap className="h-4 w-4 text-purple-500" />
+                          <Zap className="h-4 w-4 text-brand-primary" />
                           <span>{carData.transmission}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Shield className="h-4 w-4 text-yellow-500" />
+                          <Shield className="h-4 w-4 text-brand-primary" />
                            <span>{t('insured')}</span>
                         </div>
                       </div>
@@ -925,7 +950,7 @@ const BookingPage = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Status</span>
-                          <span className={`font-medium ${carUnavailable ? 'text-red-600' : 'text-green-600'}`}>
+                          <span className={`font-medium ${carUnavailable ? 'text-brand-error' : 'text-brand-success'}`}>
                             {carUnavailable ? (t('notAvailable') || 'Booked') : (t('available') || 'Available')}
                           </span>
                         </div>
@@ -958,8 +983,8 @@ const BookingPage = () => {
                       <div className="space-y-3">
                         {localBenefits.map((benefit, index) => (
                           <div key={index} className="flex items-center space-x-3">
-                            <div className="p-1 bg-yellow-100 rounded-full">
-                              <benefit.icon className="h-4 w-4 text-yellow-600" />
+                            <div className="p-1 bg-brand-primary/10 rounded-full">
+                              <benefit.icon className="h-4 w-4 text-brand-primary" />
                             </div>
                             <div>
                               <div className="font-medium text-sm">{benefit.title}</div>
@@ -975,15 +1000,15 @@ const BookingPage = () => {
                       <h4 className="font-semibold text-gray-800 mb-3">{t('needHelp')}</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center space-x-2">
-                          <Phone className="h-4 w-4 text-green-600" />
+                          <Phone className="h-4 w-4 text-brand-success" />
                           <span>+355 4 123 4567</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Mail className="h-4 w-4 text-blue-600" />
+                          <Mail className="h-4 w-4 text-brand-info" />
                           <span>info@memarental.com</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4 text-red-600" />
+                          <MapPin className="h-4 w-4 text-brand-error" />
                           <span>Tirana City Center</span>
                         </div>
                       </div>
@@ -998,7 +1023,7 @@ const BookingPage = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-brand-primary to-brand-secondary">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -1019,12 +1044,12 @@ const BookingPage = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button asChild size="lg" className="bg-white text-yellow-600 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300">
+              <Button asChild size="lg" className="bg-white text-brand-primary hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Link to="/cars">
                   Book Your Car Now
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-yellow-600 text-lg px-8 py-4">
+              <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-brand-primary text-lg px-8 py-4">
                 <Link to="/contact">
                   Get in Touch
                 </Link>

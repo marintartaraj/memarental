@@ -102,6 +102,47 @@ module.exports = {
 				DEFAULT: 'var(--card)',
 				foreground: 'var(--card-foreground)',
 			},
+			// Brand Colors - Harmonious Warm Palette
+			brand: {
+				primary: {
+					DEFAULT: 'var(--brand-primary)',
+					hover: 'var(--brand-primary-hover)',
+					light: 'var(--brand-primary-light)',
+					dark: 'var(--brand-primary-dark)',
+				},
+				secondary: {
+					DEFAULT: 'var(--brand-secondary)',
+					hover: 'var(--brand-secondary-hover)',
+					light: 'var(--brand-secondary-light)',
+					dark: 'var(--brand-secondary-dark)',
+				},
+				accent: {
+					DEFAULT: 'var(--brand-accent)',
+					hover: 'var(--brand-accent-hover)',
+					light: 'var(--brand-accent-light)',
+				},
+				neutral: {
+					DEFAULT: 'var(--brand-neutral)',
+					light: 'var(--brand-neutral-light)',
+					dark: 'var(--brand-neutral-dark)',
+				},
+				success: {
+					DEFAULT: 'var(--brand-success)',
+					light: 'var(--brand-success-light)',
+				},
+				warning: {
+					DEFAULT: 'var(--brand-warning)',
+					light: 'var(--brand-warning-light)',
+				},
+				error: {
+					DEFAULT: 'var(--brand-error)',
+					light: 'var(--brand-error-light)',
+				},
+				info: {
+					DEFAULT: 'var(--brand-info)',
+					light: 'var(--brand-info-light)',
+				},
+			},
 			},
 			keyframes: {
 				'accordion-down': {

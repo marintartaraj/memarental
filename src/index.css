@@ -6,14 +6,43 @@
 
 /* ===== Brand Color Variables ===== */
 :root {
+  /* Primary Brand Colors - Warm Golden Palette */
   --brand-primary: #f59e0b; /* yellow-500 */
   --brand-primary-hover: #d97706; /* yellow-600 */
   --brand-primary-light: #fef3c7; /* yellow-100 */
+  --brand-primary-dark: #b45309; /* yellow-700 */
+  
+  /* Secondary Brand Colors - Warm Orange Palette */
   --brand-secondary: #f97316; /* orange-500 */
   --brand-secondary-hover: #ea580c; /* orange-600 */
   --brand-secondary-light: #fed7aa; /* orange-100 */
+  --brand-secondary-dark: #c2410c; /* orange-700 */
+  
+  /* Tertiary Colors - Harmonious Warm Accents */
+  --brand-accent: #f59e0b; /* golden accent */
+  --brand-accent-hover: #d97706;
+  --brand-accent-light: #fef3c7;
+  
+  /* Supporting Colors - Warm Neutrals */
+  --brand-neutral: #f3f4f6; /* gray-100 */
+  --brand-neutral-light: #f9fafb; /* gray-50 */
+  --brand-neutral-dark: #6b7280; /* gray-500 */
+  
+  /* Status Colors - Harmonized with Warm Palette */
+  --brand-success: #059669; /* emerald-600 - warmer green */
+  --brand-success-light: #d1fae5; /* emerald-100 */
+  --brand-warning: #d97706; /* amber-600 - matches brand */
+  --brand-warning-light: #fef3c7; /* amber-100 */
+  --brand-error: #dc2626; /* red-600 - warm red */
+  --brand-error-light: #fee2e2; /* red-100 */
+  --brand-info: #0891b2; /* cyan-600 - warmer blue */
+  --brand-info-light: #cffafe; /* cyan-100 */
+  
+  /* Gradients */
   --brand-gradient: linear-gradient(to right, #f59e0b, #f97316);
   --brand-gradient-hover: linear-gradient(to right, #d97706, #ea580c);
+  --brand-gradient-subtle: linear-gradient(to right, #fef3c7, #fed7aa);
+  --brand-gradient-soft: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
 }
 
 /* ===== Enhanced Scrollbar ===== */

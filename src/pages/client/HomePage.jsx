@@ -269,7 +269,7 @@ const HomePage = () => {
               <div className="absolute inset-0 opacity-[0.015] bg-[radial-gradient(circle_at_1px_1px,rgb(251,191,36)_1px,transparent_0)] bg-[length:32px_32px]"></div>
             </div>
 
-            <div className="container-mobile py-6 sm:py-8 lg:py-16 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
+            <div className="container-mobile py-4 sm:py-6 lg:py-8 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
               {/* Hero Content */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <motion.div

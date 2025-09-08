@@ -207,7 +207,7 @@ const RentACarTiranaAirport = () => {
               </div>
             </div>
 
-            <div className="container-mobile py-16 sm:py-20 lg:py-28 text-center relative z-10">
+            <div className="container-mobile py-8 sm:py-12 lg:py-16 text-center relative z-10">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
