@@ -159,6 +159,22 @@ const CarsPage = () => {
         return
       }
 
+      // Validate dates
+      const pickup = new Date(pickupDate)
+      const returnDateObj = new Date(returnDate)
+      
+      if (isNaN(pickup.getTime()) || isNaN(returnDateObj.getTime())) {
+        console.error('Invalid dates provided:', { pickupDate, returnDate })
+        setCarAvailability({})
+        return
+      }
+
+      if (pickup >= returnDateObj) {
+        console.error('Pickup date must be before return date:', { pickupDate, returnDate })
+        setCarAvailability({})
+        return
+      }
+
       setCheckingAvailability(true)
       const availability = {}
 
@@ -167,13 +183,18 @@ const CarsPage = () => {
         
         // Check availability for each car using bookings table
         const availabilityPromises = cars.map(async (car) => {
-          const isAvailable = await BookingService.checkCarAvailabilityForDates(
-            car.id,
-            pickupDate,
-            returnDate
-          )
-          console.log(`Car ${car.id} (${car.brand} ${car.model}) availability:`, isAvailable)
-          return { carId: car.id, available: isAvailable }
+          try {
+            const isAvailable = await BookingService.checkCarAvailabilityForDates(
+              car.id,
+              pickupDate,
+              returnDate
+            )
+            console.log(`Car ${car.id} (${car.brand} ${car.model}) availability:`, isAvailable)
+            return { carId: car.id, available: isAvailable }
+          } catch (error) {
+            console.error(`Error checking availability for car ${car.id}:`, error)
+            return { carId: car.id, available: false } // Default to not available on error
+          }
         })
 
         const results = await Promise.all(availabilityPromises)

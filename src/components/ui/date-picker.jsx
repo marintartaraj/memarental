@@ -20,11 +20,24 @@ const DatePicker = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (value) {
+      const [year, month, day] = value.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return null;
+  });
 
   // Update selected date when value prop changes
   useEffect(() => {
-    setSelectedDate(value ? new Date(value) : null);
+    if (value) {
+      // Parse the date string and create a local date object
+      const [year, month, day] = value.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      setSelectedDate(localDate);
+    } else {
+      setSelectedDate(null);
+    }
   }, [value]);
 
   // Set current month to selected date or today
@@ -38,7 +51,11 @@ const DatePicker = ({
 
   const formatDate = (date) => {
     if (!date) return '';
-    return date.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const formatDisplayDate = (date) => {
@@ -60,9 +77,21 @@ const DatePicker = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    if (date < today) return true;
-    if (minDate && date < new Date(minDate)) return true;
-    if (maxDate && date > new Date(maxDate)) return true;
+    // Create a copy of the date and set time to midnight for accurate comparison
+    const dateToCheck = new Date(date);
+    dateToCheck.setHours(0, 0, 0, 0);
+    
+    if (dateToCheck < today) return true;
+    if (minDate) {
+      const minDateObj = new Date(minDate);
+      minDateObj.setHours(0, 0, 0, 0);
+      if (dateToCheck < minDateObj) return true;
+    }
+    if (maxDate) {
+      const maxDateObj = new Date(maxDate);
+      maxDateObj.setHours(0, 0, 0, 0);
+      if (dateToCheck > maxDateObj) return true;
+    }
     return false;
   };
 
@@ -90,8 +119,10 @@ const DatePicker = ({
   const handleDateSelect = (date) => {
     if (isDateBooked(date) || isDateDisabled(date)) return;
     
-    setSelectedDate(date);
-    onChange(formatDate(date));
+    // Create a new date object to avoid timezone issues
+    const selectedDateObj = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    setSelectedDate(selectedDateObj);
+    onChange(formatDate(selectedDateObj));
     setIsOpen(false);
   };
 
