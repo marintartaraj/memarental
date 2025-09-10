@@ -1,7 +1,25 @@
 import { supabase } from './customSupabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
+const BLOCKING_STATUSES = ["confirmed", "active"]; // adjust if needed
+
+function asDateOnly(input) {
+  if (!input) return null;
+  if (typeof input === "string" && /^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+  const d = new Date(input);
+  if (isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Half-open ranges: [start, end)
+ * Conflict when: booking.start < selectedEnd AND booking.end > selectedStart
+ */
 export class BookingService {
+  static asDateOnly = asDateOnly;
   static async createBooking(bookingData) {
     try {
       // Get current user session
@@ -110,26 +128,53 @@ export class BookingService {
   }
 
   static async checkCarAvailabilityForDates(carId, pickupDate, returnDate) {
-    try {
-      // Check if there are any existing bookings for this car that overlap with the requested dates
-      const { data: conflictingBookings, error } = await supabase
-        .from('bookings')
-        .select('id, pickup_date, return_date, status')
-        .eq('car_id', carId)
-        .in('status', ['confirmed', 'active'])
-        .or(`and(pickup_date.lte.${returnDate},return_date.gte.${pickupDate})`);
+    const start = asDateOnly(pickupDate);
+    const end = asDateOnly(returnDate);
+    if (!start || !end) return true;
 
-      if (error) {
-        console.error('Error checking date conflicts:', error);
-        return false; // If we can't check, assume not available for safety
-      }
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("id, car_id, pickup_date, return_date, status")
+      .eq("car_id", carId)
+      .in("status", BLOCKING_STATUSES)
+      .lt("pickup_date", end)   // booking.start < selectedEnd
+      .gt("return_date", start); // booking.end   > selectedStart
 
-      // If there are no conflicting bookings, the car is available
-      return !conflictingBookings || conflictingBookings.length === 0;
-    } catch (error) {
-      console.error('Date availability check failed:', error);
+    if (error) {
+      console.error("checkCarAvailabilityForDates error:", error);
+      // Fail-safe: unavailable if we can't verify
       return false;
     }
+    return (data?.length ?? 0) === 0;
+  }
+
+  /**
+   * Batch availability for multiple cars to reduce N+1 queries.
+   * Returns a map { [carId]: boolean }
+   */
+  static async getAvailabilityForCars(carIds, pickupDate, returnDate) {
+    const start = asDateOnly(pickupDate);
+    const end = asDateOnly(returnDate);
+    if (!start || !end || !carIds?.length) return {};
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("car_id, pickup_date, return_date, status")
+      .in("car_id", carIds)
+      .in("status", BLOCKING_STATUSES)
+      .lt("pickup_date", end)
+      .gt("return_date", start);
+
+    if (error) {
+      console.error("getAvailabilityForCars error:", error);
+      // Pessimistic default on error: mark all as unavailable
+      return Object.fromEntries(carIds.map((id) => [id, false]));
+    }
+
+    const blocked = new Set((data ?? []).map((b) => b.car_id));
+    const map = {};
+    for (const id of carIds) map[id] = !blocked.has(id);
+    return map;
   }
 
   static async getCarAvailabilityForDateRange(carId, startDate, endDate) {
@@ -245,6 +290,58 @@ export class BookingService {
     } catch (error) {
       console.error('Booking cancellation failed:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  static async testAvailabilityLogic() {
+    try {
+      console.log('🧪 Testing availability logic...');
+      
+      // Get all cars
+      const { data: cars, error: carsError } = await supabase
+        .from('cars')
+        .select('id, brand, model')
+        .limit(10);
+
+      if (carsError) {
+        console.error('Error fetching cars for test:', carsError);
+        return;
+      }
+
+      // Get all bookings
+      const { data: bookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('car_id, pickup_date, return_date, status')
+        .in('status', ['confirmed', 'active']);
+
+      if (bookingsError) {
+        console.error('Error fetching bookings for test:', bookingsError);
+        return;
+      }
+
+      console.log('📊 Test data:', {
+        cars: cars?.length || 0,
+        bookings: bookings?.length || 0,
+        sampleBookings: bookings?.slice(0, 5)
+      });
+
+      // Test availability for September 2025 dates (based on the user's booking data)
+      const testPickupDate = '2025-09-20';
+      const testReturnDate = '2025-09-22';
+
+      console.log(`🔍 Testing availability for ${testPickupDate} to ${testReturnDate}:`);
+      
+      for (const car of cars || []) {
+        const isAvailable = await this.checkCarAvailabilityForDates(
+          car.id,
+          testPickupDate,
+          testReturnDate
+        );
+        console.log(`📋 Test Result: Car ${car.id} (${car.brand} ${car.model}) availability: ${isAvailable ? '✅ Available' : '❌ Not Available'}`);
+      }
+
+    } catch (error) {
+      console.error('❌ Availability logic test failed:', error);
     }
   }
 }

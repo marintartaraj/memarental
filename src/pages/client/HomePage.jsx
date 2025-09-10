@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
 import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Sparkles, MessageCircle } from "lucide-react"
@@ -11,10 +11,90 @@ import { useLanguage } from "../../contexts/LanguageContext"
 import Seo from "../../components/Seo"
 import { generateLocalBusinessSchema, generateWebSiteSchema } from "../../seo/structuredData"
 import EnhancedCTA from "../../components/EnhancedCTA"
+import { supabase } from "../../lib/customSupabaseClient"
 
 const HomePage = () => {
   const { language } = useLanguage()
   const prefersReducedMotion = useReducedMotion()
+  const [featuredCar, setFeaturedCar] = useState(null)
+  const [loadingCar, setLoadingCar] = useState(true)
+
+  // Fetch Mercedes-Benz E-Class car data
+  useEffect(() => {
+    const fetchFeaturedCar = async () => {
+      try {
+        setLoadingCar(true)
+        console.log('Fetching Mercedes-Benz E-Class car...')
+        
+        // First try to find E350 4MATIC specifically
+        let { data, error } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('brand', 'Mercedes-Benz')
+          .eq('model', 'E350 4MATIC')
+          .single()
+
+        // If not found, try to find any Mercedes-Benz E-Class
+        if (error || !data) {
+          console.log('E350 4MATIC not found, trying any Mercedes-Benz E-Class...')
+          const { data: eClassData, error: eClassError } = await supabase
+            .from('cars')
+            .select('*')
+            .eq('brand', 'Mercedes-Benz')
+            .ilike('model', '%E%')
+            .single()
+          
+          if (!eClassError && eClassData) {
+            data = eClassData
+            error = null
+          } else {
+            error = eClassError
+          }
+        }
+
+        // If still not found, get any Mercedes-Benz car
+        if (error || !data) {
+          console.log('E-Class not found, trying any Mercedes-Benz...')
+          const { data: mercedesData, error: mercedesError } = await supabase
+            .from('cars')
+            .select('*')
+            .eq('brand', 'Mercedes-Benz')
+            .single()
+          
+          if (!mercedesError && mercedesData) {
+            data = mercedesData
+            error = null
+          } else {
+            error = mercedesError
+          }
+        }
+
+        if (error) {
+          console.error('Error fetching featured car:', error)
+          // Don't set a fallback car - let the buttons redirect to /cars
+          setFeaturedCar(null)
+          return
+        }
+
+        if (data) {
+          console.log('Featured car found:', data)
+          setFeaturedCar(data)
+        } else {
+          console.log('No Mercedes-Benz car found in database')
+          // Don't set a fallback car - let the buttons redirect to /cars
+          setFeaturedCar(null)
+        }
+      } catch (err) {
+        console.error('Error fetching featured car:', err)
+        // Don't set a fallback car - let the buttons redirect to /cars
+        setFeaturedCar(null)
+      } finally {
+        setLoadingCar(false)
+      }
+    }
+
+    fetchFeaturedCar()
+  }, [])
 
   // FAQ items for rich results
   const faqItems = [
@@ -269,7 +349,7 @@ const HomePage = () => {
               <div className="absolute inset-0 opacity-[0.015] bg-[radial-gradient(circle_at_1px_1px,rgb(251,191,36)_1px,transparent_0)] bg-[length:32px_32px]"></div>
             </div>
 
-            <div className="container-mobile py-6 sm:py-8 lg:py-16 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
+            <div className="container-mobile py-4 sm:py-6 lg:py-8 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
               {/* Hero Content */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <motion.div
@@ -409,16 +489,22 @@ const HomePage = () => {
                       </div>
 
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-2xl sm:text-3xl font-black text-yellow-600">€85</span>
+                        <span className="font-heading text-2xl sm:text-3xl font-black text-yellow-600">
+                          €{featuredCar ? featuredCar.daily_rate : '75'}
+                        </span>
                         <span className="text-sm sm:text-base text-muted-foreground">/ day</span>
                       </div>
 
                       <div className="flex gap-2 sm:gap-3">
                         <Button asChild className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base py-2 sm:py-3">
-                          <Link to="/cars">Book Now</Link>
+                          <Link to={featuredCar ? `/booking/${featuredCar.id}` : "/cars"}>
+                            {featuredCar ? "Book Now" : "View Cars"}
+                          </Link>
                         </Button>
                         <Button asChild variant="outline" className="flex-1 border-yellow-500 text-yellow-600 hover:bg-yellow-50 text-sm sm:text-base py-2 sm:py-3">
-                          <Link to="/cars">View Details</Link>
+                          <Link to={featuredCar ? `/cars/${featuredCar.id}` : "/cars"}>
+                            {featuredCar ? "View Details" : "Browse Fleet"}
+                          </Link>
                         </Button>
                       </div>
                     </div>

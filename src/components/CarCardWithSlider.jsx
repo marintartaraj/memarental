@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import InstagramPhotoSlider from './InstagramPhotoSlider';
 import { getAvailableCarImages } from '@/lib/addCarsToDatabase';
 
-const CarCardWithSlider = ({ car, index }) => {
+const CarCardWithSlider = ({ car, index, selectedDates }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
@@ -223,14 +223,12 @@ const CarCardWithSlider = ({ car, index }) => {
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <span className={`text-sm font-medium ${
-                  car.availableForDates !== false ? 'text-green-600' : 'text-red-600'
+                  car.available ? 'text-green-600' : 'text-red-600'
                 }`}>
-                  {car.availableForDates === false ? 'Not Available' : 
-                   car.availableForDates === true ? 'Available for Selected Dates' : 
-                   'Available Now'}
+                  {car.available ? 'Available Now' : 'Currently Unavailable'}
                 </span>
-                {car.availableForDates !== false && (
-                  <Link to={`/booking/${car.id}`}>
+                {car.available && (
+                  <Link to={selectedDates ? `/booking/${car.id}?pickup=${selectedDates.pickupDate}&return=${selectedDates.returnDate}` : `/booking/${car.id}`}>
                     <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">
                       Book Now
                     </Button>

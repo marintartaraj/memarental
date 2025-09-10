@@ -188,7 +188,7 @@ const ContactPage = () => {
 
         <main className="relative z-10">
           {/* Hero Section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 py-16 sm:py-20 lg:py-28">
+          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8 sm:py-12 lg:py-16">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
