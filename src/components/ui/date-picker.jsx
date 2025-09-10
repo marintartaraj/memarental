@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';
 
@@ -38,7 +38,12 @@ const DatePicker = ({
 
   const formatDate = (date) => {
     if (!date) return '';
-    return date.toISOString().split('T')[0];
+    // Use European timezone (CET/CEST) for date formatting
+    const europeanDate = new Date(date.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    const year = europeanDate.getFullYear();
+    const month = String(europeanDate.getMonth() + 1).padStart(2, '0');
+    const day = String(europeanDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const formatDisplayDate = (date) => {
@@ -51,23 +56,36 @@ const DatePicker = ({
   };
 
   const isDateBooked = (date) => {
-    return bookedDates.some(bookedDate => 
-      bookedDate.toDateString() === date.toDateString()
-    );
+    return bookedDates.some(bookedDate => {
+      // Compare dates in European timezone
+      const europeanBooked = new Date(bookedDate.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+      const europeanDate = new Date(date.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+      return europeanBooked.toDateString() === europeanDate.toDateString();
+    });
+  };
+
+  const isDateUnavailable = (date) => {
+    return isDateBooked(date) || isDateDisabled(date);
   };
 
   const isDateDisabled = (date) => {
+    // Get today's date in European timezone
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const europeanToday = new Date(today.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    europeanToday.setHours(0, 0, 0, 0);
     
-    if (date < today) return true;
+    if (date < europeanToday) return true;
     if (minDate && date < new Date(minDate)) return true;
     if (maxDate && date > new Date(maxDate)) return true;
     return false;
   };
 
   const isDateSelected = (date) => {
-    return selectedDate && selectedDate.toDateString() === date.toDateString();
+    if (!selectedDate) return false;
+    // Compare dates in European timezone
+    const europeanSelected = new Date(selectedDate.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    const europeanDate = new Date(date.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    return europeanSelected.toDateString() === europeanDate.toDateString();
   };
 
   const isInRange = (date) => {
@@ -88,7 +106,7 @@ const DatePicker = ({
   };
 
   const handleDateSelect = (date) => {
-    if (isDateBooked(date) || isDateDisabled(date)) return;
+    if (isDateUnavailable(date)) return;
     
     setSelectedDate(date);
     onChange(formatDate(date));
@@ -162,39 +180,39 @@ const DatePicker = ({
       </div>
 
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 min-w-[320px] animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-6 min-w-[340px] animate-in fade-in-0 zoom-in-95 duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => navigateMonth(-1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center group"
             >
-              <ChevronLeft className="h-4 w-4 text-gray-600" />
+              <ChevronLeft className="h-4 w-4 text-gray-600 group-hover:text-gray-900" />
             </button>
             
-            <h3 className="font-semibold text-gray-900 text-base">
+            <h3 className="font-semibold text-gray-900 text-lg">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h3>
             
             <button
               onClick={() => navigateMonth(1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center group"
             >
-              <ChevronRight className="h-4 w-4 text-gray-600" />
+              <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-gray-900" />
             </button>
           </div>
 
           {/* Day names */}
-          <div className="grid grid-cols-7 gap-0 mb-2">
+          <div className="grid grid-cols-7 gap-0 mb-3">
             {dayNames.map(day => (
-              <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+              <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-0 relative">
+          <div className="grid grid-cols-7 gap-1 relative">
             {loadingBookedDates && (
               <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-10 rounded-lg">
                 <div className="flex items-center space-x-2 text-gray-600">
@@ -205,11 +223,12 @@ const DatePicker = ({
             )}
             {days.map((day, index) => {
               if (!day) {
-                return <div key={index} className="h-10" />;
+                return <div key={index} className="h-11" />;
               }
 
               const isBooked = isDateBooked(day);
               const isDisabled = isDateDisabled(day);
+              const isUnavailable = isDateUnavailable(day);
               const isSelected = isDateSelected(day);
               const isToday = day.toDateString() === new Date().toDateString();
               const inRange = isInRange(day);
@@ -220,30 +239,61 @@ const DatePicker = ({
                 <button
                   key={index}
                   onClick={() => handleDateSelect(day)}
-                  disabled={isBooked || isDisabled}
+                  disabled={isUnavailable}
                   className={cn(
-                    "h-10 w-full text-sm transition-colors duration-150 font-normal relative flex items-center justify-center",
-                    "hover:bg-gray-100 focus:outline-none",
+                    "h-11 w-full text-sm transition-all duration-200 font-normal relative flex items-center justify-center group",
+                    "focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1",
                     // Selected date (single selection)
-                    isSelected && "bg-black text-white hover:bg-gray-800",
+                    isSelected && "bg-yellow-500 text-white hover:bg-yellow-600 rounded-full shadow-sm",
                     // Range selection
-                    rangeStart && "bg-black text-white hover:bg-gray-800 rounded-l-full",
-                    rangeEnd && "bg-black text-white hover:bg-gray-800 rounded-r-full",
-                    inRange && !rangeStart && !rangeEnd && "bg-gray-100 text-black",
+                    rangeStart && "bg-yellow-500 text-white hover:bg-yellow-600 rounded-l-full shadow-sm",
+                    rangeEnd && "bg-yellow-500 text-white hover:bg-yellow-600 rounded-r-full shadow-sm",
+                    inRange && !rangeStart && !rangeEnd && "bg-yellow-100 text-yellow-800",
                     // Today
-                    isToday && !isSelected && !rangeStart && !rangeEnd && "text-black font-medium",
-                    // Booked dates
-                    isBooked && "text-gray-400 cursor-not-allowed hover:bg-transparent line-through",
-                    // Disabled dates
-                    isDisabled && !isBooked && "text-gray-300 cursor-not-allowed hover:bg-transparent",
+                    isToday && !isSelected && !rangeStart && !rangeEnd && !isUnavailable && "text-yellow-600 font-semibold bg-yellow-50 rounded-full",
+                    // Unavailable dates (Airbnb style)
+                    isUnavailable && "text-gray-300 cursor-not-allowed hover:bg-transparent relative",
                     // Available dates
-                    !isBooked && !isDisabled && !isSelected && !inRange && "text-gray-700 hover:bg-gray-100"
+                    !isUnavailable && !isSelected && !inRange && "text-gray-700 hover:bg-gray-100 hover:rounded-full",
+                    // Hover effects for available dates
+                    !isUnavailable && !isSelected && !inRange && "hover:shadow-sm"
                   )}
+                  title={isBooked ? "This date is already booked" : isDisabled ? "This date is not available" : ""}
                 >
-                  {day.getDate()}
+                  <span className="relative z-10">{day.getDate()}</span>
+                  {/* Unavailable date indicator */}
+                  {isUnavailable && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <X className="h-3 w-3 text-gray-300" />
+                    </div>
+                  )}
+                  {/* Booked date strikethrough */}
+                  {isBooked && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-full h-px bg-gray-300 transform rotate-12"></div>
+                    </div>
+                  )}
                 </button>
               );
             })}
+          </div>
+
+          {/* Legend */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-center space-x-8 text-xs text-gray-500">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-sm"></div>
+                <span className="font-medium">Selected</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-yellow-100 rounded-full border border-yellow-200"></div>
+                <span className="font-medium">Range</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <X className="h-3 w-3 text-gray-400" />
+                <span className="font-medium">Unavailable</span>
+              </div>
+            </div>
           </div>
 
         </div>

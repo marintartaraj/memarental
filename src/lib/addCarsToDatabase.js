@@ -38,7 +38,7 @@ const carsData = [
     seats: 5,
     fuel_type: "diesel",
     status: "available",
-    image_url: "/images/cars/e class1.jpeg",
+    image_url: "/images/cars/e%20class1.jpeg",
     location: "Tirana",
     luggage: 4,
     engine: "Diesel"
@@ -80,7 +80,7 @@ const carsData = [
     seats: 7,
     fuel_type: "diesel",
     status: "available",
-    image_url: "/images/cars/santa fe1.jpeg",
+    image_url: "/images/cars/santa%20fe1.jpeg",
     location: "Tirana",
     luggage: 5,
     engine: "2.0 Diesel"
@@ -178,8 +178,8 @@ export function getAvailableCarImages() {
       '/images/cars/c-class3.jpeg',
       '/images/cars/c-class4.jpeg',
       '/images/cars/c-class5.jpeg',
-      '/images/cars/e class1.jpeg',
-      '/images/cars/e class2.jpeg'
+      '/images/cars/e%20class1.jpeg',
+      '/images/cars/e%20class2.jpeg'
     ],
     'Volkswagen': [
       '/images/cars/jetta1.jpeg',
@@ -194,13 +194,13 @@ export function getAvailableCarImages() {
       '/images/cars/passat4.jpeg'
     ],
     'Hyundai': [
-      '/images/cars/santa fe1.jpeg',
-      '/images/cars/santa fe2.jpeg',
-      '/images/cars/santa fe3.jpeg',
-      '/images/cars/santa fe4.jpeg',
-      '/images/cars/santa fe5.jpeg',
-      '/images/cars/santa fe6.jpeg',
-      '/images/cars/santa fe7.jpeg'
+      '/images/cars/santa%20fe1.jpeg',
+      '/images/cars/santa%20fe2.jpeg',
+      '/images/cars/santa%20fe3.jpeg',
+      '/images/cars/santa%20fe4.jpeg',
+      '/images/cars/santa%20fe5.jpeg',
+      '/images/cars/santa%20fe6.jpeg',
+      '/images/cars/santa%20fe7.jpeg'
     ],
     'Volvo': [
       '/images/cars/xc601.jpeg',

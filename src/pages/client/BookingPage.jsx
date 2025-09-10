@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Seo from '@/components/Seo';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,8 +43,19 @@ import {
 
 const BookingPage = () => {
   const { carId } = useParams();
+  const [searchParams] = useSearchParams();
   const { t, tFormat } = useLanguage();
   const navigate = useNavigate();
+
+  // Helper function to get today's date in YYYY-MM-DD format using European timezone
+  const getTodayString = () => {
+    const today = new Date();
+    const europeanToday = new Date(today.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+    const year = europeanToday.getFullYear();
+    const month = String(europeanToday.getMonth() + 1).padStart(2, '0');
+    const day = String(europeanToday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -54,9 +65,9 @@ const BookingPage = () => {
   const [bookedDates, setBookedDates] = useState([]);
   const [loadingBookedDates, setLoadingBookedDates] = useState(false);
   const [formData, setFormData] = useState({
-    // Step 1: Dates
-    pickupDate: '',
-    returnDate: '',
+    // Step 1: Dates - pre-fill from URL parameters if available
+    pickupDate: searchParams.get('pickupDate') || '',
+    returnDate: searchParams.get('returnDate') || '',
     pickupTime: '',
     returnTime: '',
     
@@ -77,6 +88,20 @@ const BookingPage = () => {
     // Terms acceptance
     acceptTerms: false
   });
+
+  // Update form data when URL parameters change
+  useEffect(() => {
+    const urlPickupDate = searchParams.get('pickupDate');
+    const urlReturnDate = searchParams.get('returnDate');
+    
+    if (urlPickupDate || urlReturnDate) {
+      setFormData(prev => ({
+        ...prev,
+        pickupDate: urlPickupDate || prev.pickupDate,
+        returnDate: urlReturnDate || prev.returnDate,
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -476,7 +501,7 @@ const BookingPage = () => {
                               <DatePicker
                                 value={formData.pickupDate}
                                 onChange={(value) => handleInputChange('pickupDate', value)}
-                                minDate={new Date().toISOString().split('T')[0]}
+                                minDate={getTodayString()}
                                 bookedDates={bookedDates}
                                 placeholder="Add dates"
                                 className={`mt-1 ${validationErrors.pickupDate ? 'border-red-500 focus:border-red-500' : ''}`}
@@ -499,7 +524,7 @@ const BookingPage = () => {
                               <DatePicker
                                 value={formData.returnDate}
                                 onChange={(value) => handleInputChange('returnDate', value)}
-                                minDate={formData.pickupDate || new Date().toISOString().split('T')[0]}
+                                minDate={formData.pickupDate || getTodayString()}
                                 bookedDates={bookedDates}
                                 placeholder="Add dates"
                                 className={`mt-1 ${validationErrors.returnDate ? 'border-red-500 focus:border-red-500' : ''}`}
@@ -682,7 +707,7 @@ const BookingPage = () => {
                                 type="date"
                                 value={formData.licenseExpiry}
                                 onChange={(e) => handleInputChange('licenseExpiry', e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
+                                min={getTodayString()}
                                 className={`mt-1 ${validationErrors.licenseExpiry ? 'border-red-500 focus:border-red-500' : ''}`}
                                 aria-describedby={validationErrors.licenseExpiry ? 'licenseExpiry-error' : undefined}
                               />
@@ -779,9 +804,9 @@ const BookingPage = () => {
                           </div>
 
                           {/* Payment Information */}
-                          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div className="flex items-center space-x-2 mb-3">
-                              <CreditCard className="h-5 w-5 text-yellow-600" />
+                              <CreditCard className="h-5 w-5 text-blue-600" />
                               <h4 className="font-semibold text-gray-800">Cash Payment</h4>
                             </div>
                             <p className="text-gray-700 text-sm">
@@ -835,7 +860,7 @@ const BookingPage = () => {
                           <Button
                             onClick={handleSubmit}
                             disabled={!formData.acceptTerms || carUnavailable || submitting}
-                            className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                            className="flex items-center space-x-2 bg-green-500 hover:bg-green-600"
                           >
                             {submitting ? (
                               <>

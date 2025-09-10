@@ -15,7 +15,6 @@ import {
   Star,
   Users,
   Fuel,
-  Calendar,
   ChevronDown,
   ChevronUp,
   X,
@@ -27,13 +26,14 @@ import {
   Heart,
   Sparkles,
   ArrowRight,
-  Phone,
+  Calendar,
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
 import { BookingService } from "@/lib/bookingService"
+import { DatePicker } from "@/components/ui/date-picker"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import CarCardWithSlider from "@/components/CarCardWithSlider"
-import EnhancedCTA from "@/components/EnhancedCTA"
 
 // Normalize car records for consistent UI
 const normalizeCarRecord = (record) => {
@@ -54,7 +54,7 @@ const normalizeCarRecord = (record) => {
     } else if (brandLower.includes('toyota')) {
       return "/images/cars/yaris1.jpeg"
     } else if (brandLower.includes('hyundai')) {
-      return "/images/cars/santa fe1.jpeg"
+      return "/images/cars/santa%20fe1.jpeg"
     } else if (brandLower.includes('volvo')) {
       return "/images/cars/xc601.jpeg"
     } else {
@@ -117,8 +117,10 @@ const CarsPage = () => {
   // Date filter state
   const [pickupDate, setPickupDate] = useState("")
   const [returnDate, setReturnDate] = useState("")
-  const [showDateFilters, setShowDateFilters] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
+  const [carAvailability, setCarAvailability] = useState({})
+  const [isDateDialogOpen, setIsDateDialogOpen] = useState(false)
+  
 
   // Animation variants
   const fadeUp = {
@@ -148,6 +150,64 @@ const CarsPage = () => {
     const tId = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 250)
     return () => clearTimeout(tId)
   }, [searchTerm])
+
+  // Check car availability when dates are selected
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!pickupDate || !returnDate || cars.length === 0) {
+        setCarAvailability({})
+        return
+      }
+
+      setCheckingAvailability(true)
+      const availability = {}
+
+      try {
+        console.log('Checking availability for dates:', { pickupDate, returnDate, totalCars: cars.length })
+        
+        // Check availability for each car using bookings table
+        const availabilityPromises = cars.map(async (car) => {
+          const isAvailable = await BookingService.checkCarAvailabilityForDates(
+            car.id,
+            pickupDate,
+            returnDate
+          )
+          console.log(`Car ${car.id} (${car.brand} ${car.model}) availability:`, isAvailable)
+          return { carId: car.id, available: isAvailable }
+        })
+
+        const results = await Promise.all(availabilityPromises)
+        
+        // Convert results to object for easy lookup
+        results.forEach(({ carId, available }) => {
+          availability[carId] = available
+        })
+
+        console.log('Final availability results:', availability)
+        console.log('Availability summary:', {
+          total: cars.length,
+          available: Object.values(availability).filter(v => v === true).length,
+          unavailable: Object.values(availability).filter(v => v === false).length,
+          undefined: Object.values(availability).filter(v => v === undefined).length
+        })
+        
+        // Test the availability logic with known booking data
+        if (pickupDate && returnDate) {
+          console.log('Running availability logic test...')
+          await BookingService.testAvailabilityLogic()
+        }
+        
+        setCarAvailability(availability)
+      } catch (error) {
+        console.error('Error checking car availability:', error)
+        setCarAvailability({})
+      } finally {
+        setCheckingAvailability(false)
+      }
+    }
+
+    checkAvailability()
+  }, [pickupDate, returnDate, cars])
 
   // Load cars
   useEffect(() => {
@@ -203,122 +263,137 @@ const CarsPage = () => {
     return Array.from(s)
   }, [cars])
 
-  // Filtering with date availability checking
+  // Filtering cars
   useEffect(() => {
-    const filterCars = async () => {
-    const term = debouncedSearch.toLowerCase()
-    console.log('Filtering cars:', { 
-      totalCars: cars.length, 
-      searchTerm: term, 
-      priceFilter, 
-      brandFilter, 
-      categoryFilter, 
-      transmissionFilter, 
-      fuelFilter, 
+    const filterCars = () => {
+      const term = debouncedSearch.toLowerCase()
+      console.log('Filtering cars:', { 
+        totalCars: cars.length, 
+        searchTerm: term, 
+        priceFilter, 
+        brandFilter, 
+        categoryFilter, 
+        transmissionFilter, 
+        fuelFilter, 
         seatsFilter,
         pickupDate,
-        returnDate
-    })
-    
+        returnDate,
+        checkingAvailability,
+        availabilityDataReady: Object.keys(carAvailability).length > 0
+      })
+      
+      // If dates are selected but we're still checking availability, don't show any cars
+      if (pickupDate && returnDate && checkingAvailability) {
+        console.log('Still checking availability, showing no cars')
+        setFilteredCars([])
+        return
+      }
+      
       let list = cars.filter((car) => {
-      const matchesSearch = !term || car.brand.toLowerCase().includes(term) || car.model.toLowerCase().includes(term)
-      
-      // Price filter logic
-      let matchesPrice = true
-      if (priceFilter && priceFilter !== "all") {
-        if (priceFilter === "0-30") {
-          matchesPrice = car.price <= 30
-        } else if (priceFilter === "30-50") {
-          matchesPrice = car.price > 30 && car.price <= 50
-        } else if (priceFilter === "50-70") {
-          matchesPrice = car.price > 50 && car.price <= 70
-        } else if (priceFilter === "70+") {
-          matchesPrice = car.price > 70
+        const matchesSearch = !term || car.brand.toLowerCase().includes(term) || car.model.toLowerCase().includes(term)
+        
+        // Price filter logic
+        let matchesPrice = true
+        if (priceFilter && priceFilter !== "all") {
+          if (priceFilter === "0-30") {
+            matchesPrice = car.price <= 30
+          } else if (priceFilter === "30-50") {
+            matchesPrice = car.price > 30 && car.price <= 50
+          } else if (priceFilter === "50-70") {
+            matchesPrice = car.price > 50 && car.price <= 70
+          } else if (priceFilter === "70+") {
+            matchesPrice = car.price > 70
+          }
         }
-      }
-      
-      // Brand filter logic
-      const matchesBrand = brandFilter === 'all' || car.brand.toLowerCase() === brandFilter.toLowerCase()
-      
-      // Category filter logic
-      const matchesCategory = categoryFilter === 'all' || car.category.toLowerCase() === categoryFilter.toLowerCase()
-      
-      // Transmission filter logic
-      const matchesTransmission = transmissionFilter === 'all' || car.transmission.toLowerCase() === transmissionFilter.toLowerCase()
-      
-      // Fuel filter logic
-      const matchesFuel = fuelFilter === 'all' || car.fuel.toLowerCase() === fuelFilter.toLowerCase()
-      
-      // Seats filter logic
-      const matchesSeats = seatsFilter === 'all' || car.seats.toString() === seatsFilter
-      
-      const matches = matchesSearch && matchesPrice && matchesBrand && matchesCategory && matchesTransmission && matchesFuel && matchesSeats
-      
-      if (!matches) {
-        console.log('Car filtered out:', car.brand, car.model, {
-          matchesSearch, matchesPrice, matchesBrand, matchesCategory, matchesTransmission, matchesFuel, matchesSeats
-        })
-      }
-      
-      return matches
-    })
-
-      // Check date availability if dates are selected
-      if (pickupDate && returnDate && list.length > 0) {
-        setCheckingAvailability(true)
-        try {
-          const availabilityChecks = await Promise.all(
-            list.map(async (car) => {
-              const isAvailable = await BookingService.checkCarAvailabilityForDates(
-                car.id, 
-                pickupDate, 
-                returnDate
-              )
-              return { ...car, availableForDates: isAvailable }
-            })
-          )
-          
-          // Filter to only show cars available for the selected dates
-          list = availabilityChecks.filter(car => car.availableForDates)
-        } catch (error) {
-          console.error('Error checking date availability:', error)
-          // If there's an error, show all cars (don't filter by dates)
-        } finally {
-          setCheckingAvailability(false)
+        
+        // Brand filter logic
+        const matchesBrand = brandFilter === 'all' || car.brand.toLowerCase() === brandFilter.toLowerCase()
+        
+        // Category filter logic
+        const matchesCategory = categoryFilter === 'all' || car.category.toLowerCase() === categoryFilter.toLowerCase()
+        
+        // Transmission filter logic
+        const matchesTransmission = transmissionFilter === 'all' || car.transmission.toLowerCase() === transmissionFilter.toLowerCase()
+        
+        // Fuel filter logic
+        const matchesFuel = fuelFilter === 'all' || car.fuel.toLowerCase() === fuelFilter.toLowerCase()
+        
+        // Seats filter logic
+        const matchesSeats = seatsFilter === 'all' || car.seats.toString() === seatsFilter
+        
+        // Date availability filter logic - only show cars that are available for selected dates
+        // If dates are selected but we don't have availability data yet, don't show any cars
+        const matchesDates = !pickupDate || !returnDate || 
+          (Object.keys(carAvailability).length > 0 && carAvailability[car.id] === true)
+        
+        const matches = matchesSearch && matchesPrice && matchesBrand && matchesCategory && matchesTransmission && matchesFuel && matchesSeats && matchesDates
+        
+        // Enhanced debugging for availability
+        if (pickupDate && returnDate) {
+          console.log(`Car ${car.id} (${car.brand} ${car.model}):`, {
+            availability: carAvailability[car.id],
+            matchesDates,
+            willShow: matches,
+            allFilters: {
+              matchesSearch, matchesPrice, matchesBrand, matchesCategory, 
+              matchesTransmission, matchesFuel, matchesSeats, matchesDates
+            }
+          })
         }
-      }
+        
+        if (!matches) {
+          console.log('Car filtered out:', car.brand, car.model, {
+            matchesSearch, matchesPrice, matchesBrand, matchesCategory, matchesTransmission, matchesFuel, matchesSeats, matchesDates
+          })
+        }
+        
+        return matches
+      })
 
-    // Sorting
-    const sorted = [...list]
-    switch (sortBy) {
-      case "price-low":
-        sorted.sort((a, b) => a.price - b.price)
-        break
-      case "price-high":
-        sorted.sort((a, b) => b.price - a.price)
-        break
-      case "rating":
-        sorted.sort((a, b) => b.rating - a.rating)
-        break
-      case "popular":
-        sorted.sort((a, b) => (a.popular ? -1 : 1))
-        break
-      default:
-        // recommended: popular first, then rating, then price
-        sorted.sort((a, b) => {
-          if (a.popular !== b.popular) return a.popular ? -1 : 1
-          if (a.rating !== b.rating) return b.rating - a.rating
-          return a.price - b.price
-        })
-    }
-    setFilteredCars(sorted)
+      // Sorting
+      const sorted = [...list]
+      switch (sortBy) {
+        case "price-low":
+          sorted.sort((a, b) => a.price - b.price)
+          break
+        case "price-high":
+          sorted.sort((a, b) => b.price - a.price)
+          break
+        case "rating":
+          sorted.sort((a, b) => b.rating - a.rating)
+          break
+        case "popular":
+          sorted.sort((a, b) => (a.popular ? -1 : 1))
+          break
+        default:
+          // recommended: popular first, then rating, then price
+          sorted.sort((a, b) => {
+            if (a.popular !== b.popular) return a.popular ? -1 : 1
+            if (a.rating !== b.rating) return b.rating - a.rating
+            return a.price - b.price
+          })
+      }
+      setFilteredCars(sorted)
     }
 
     filterCars()
-  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, transmissionFilter, fuelFilter, seatsFilter, sortBy, pickupDate, returnDate])
+  }, [cars, debouncedSearch, priceFilter, brandFilter, categoryFilter, transmissionFilter, fuelFilter, seatsFilter, sortBy, pickupDate, returnDate, carAvailability, checkingAvailability])
 
   const visibleCars = useMemo(() => filteredCars.slice(0, 9), [filteredCars]) // Show 9 cars per page
   const canLoadMore = filteredCars.length > 9
+
+  // Calculate availability statistics
+  const availabilityStats = useMemo(() => {
+    if (!pickupDate || !returnDate || Object.keys(carAvailability).length === 0) {
+      return { available: cars.length, total: cars.length, unavailable: 0 }
+    }
+    
+    const available = cars.filter(car => carAvailability[car.id] === true).length
+    const unavailable = cars.filter(car => carAvailability[car.id] === false).length
+    const total = cars.length
+    
+    return { available, total, unavailable }
+  }, [cars, carAvailability, pickupDate, returnDate])
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -400,6 +475,36 @@ const CarsPage = () => {
     setReturnDate("")
   }
 
+  const handleDateSelection = () => {
+    if (pickupDate && returnDate) {
+      setIsDateDialogOpen(false)
+    }
+  }
+
+  const formatDateRange = () => {
+    if (!pickupDate || !returnDate) return "📅 Select Dates"
+    
+    // Parse dates in European timezone
+    const pickup = new Date(pickupDate + 'T00:00:00').toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short',
+      timeZone: 'Europe/Rome'
+    })
+    const returnDateFormatted = new Date(returnDate + 'T00:00:00').toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short',
+      timeZone: 'Europe/Rome'
+    })
+    
+    // Calculate duration
+    const pickupDateObj = new Date(pickupDate);
+    const returnDateObj = new Date(returnDate);
+    const diffTime = returnDateObj - pickupDateObj;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return `${pickup} → ${returnDateFormatted} (${diffDays} day${diffDays !== 1 ? 's' : ''})`
+  }
+
   return (
     <>
       <Seo
@@ -468,15 +573,9 @@ const CarsPage = () => {
           </section>
 
           {/* Search and Filters Section */}
-          <section className="py-12 bg-white/90 backdrop-blur-md border-b border-gray-200/50 relative overflow-hidden">
-            {/* Subtle background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 left-1/4 w-64 h-64 bg-yellow-400 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-orange-400 rounded-full blur-2xl"></div>
-            </div>
-            
-            <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="space-y-8">
+          <section className="py-8 bg-white/80 backdrop-blur-sm border-b border-gray-100">
+            <div className="container-mobile">
+              <motion.div {...fadeUp} className="space-y-6">
                 {/* Search Bar */}
                 <div className="relative max-w-2xl mx-auto">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -489,22 +588,214 @@ const CarsPage = () => {
                   />
                 </div>
 
-                {/* Filter Toggle and Date Filters */}
+                {/* Date Filter and Filter Toggle */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  {/* Date Filter Toggle */}
-                  <Button
-                    onClick={() => setShowDateFilters(!showDateFilters)}
-                    variant="outline"
-                    className="border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-6 py-3 bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <Calendar className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
-                    <span className="relative z-10">
-                      {showDateFilters ? "Hide Dates" : "Check Availability"}
-                    </span>
-                  </Button>
-                  
-                  {/* Regular Filter Toggle */}
+                  {/* Enhanced Select Dates Button */}
+                  <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      >
+                        <Button
+                          variant="outline"
+                          className="border-2 border-blue-500 text-blue-600 hover:bg-blue-50 px-8 py-4 bg-white/90 backdrop-blur-sm transform transition-all duration-300 group relative overflow-hidden shadow-lg hover:shadow-xl"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                          <Calendar className="mr-3 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
+                          <span className="relative z-10 font-semibold">
+                            {formatDateRange()}
+                          </span>
+                          {pickupDate && returnDate && (
+                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+                          )}
+                        </Button>
+                      </motion.div>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+                      <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50">
+                        <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                          <DialogTitle className="text-xl font-bold flex items-center">
+                            <Calendar className="mr-3 h-6 w-6" />
+                            Select Your Rental Dates
+                          </DialogTitle>
+                          <p className="text-blue-100 text-sm mt-1">
+                            Choose your pickup and return dates to see available cars
+                          </p>
+                        </DialogHeader>
+                        
+                        <div className="px-6 py-6 space-y-6">
+                          {/* Date Selection Cards */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Pickup Date Card */}
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 }}
+                              className="relative"
+                            >
+                              <div className="absolute -top-2 -left-2 h-4 w-4 bg-green-500 rounded-full animate-pulse"></div>
+                              <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                                <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center">
+                                  <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+                                  Pickup Date
+                                </label>
+                                <DatePicker
+                                  value={pickupDate}
+                                  onChange={setPickupDate}
+                                  placeholder="Select pickup date"
+                                  minDate={(() => {
+                                    const today = new Date();
+                                    const europeanToday = new Date(today.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+                                    const year = europeanToday.getFullYear();
+                                    const month = String(europeanToday.getMonth() + 1).padStart(2, '0');
+                                    const day = String(europeanToday.getDate()).padStart(2, '0');
+                                    return `${year}-${month}-${day}`;
+                                  })()}
+                                  className="w-full"
+                                />
+                                {pickupDate && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-2 text-xs text-green-600 font-medium"
+                                  >
+                                    ✓ Pickup date selected
+                                  </motion.div>
+                                )}
+                              </div>
+                            </motion.div>
+
+                            {/* Return Date Card */}
+                            <motion.div
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.2 }}
+                              className="relative"
+                            >
+                              <div className="absolute -top-2 -left-2 h-4 w-4 bg-orange-500 rounded-full animate-pulse"></div>
+                              <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                                <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center">
+                                  <div className="h-2 w-2 bg-orange-500 rounded-full mr-2"></div>
+                                  Return Date
+                                </label>
+                                <DatePicker
+                                  value={returnDate}
+                                  onChange={setReturnDate}
+                                  placeholder="Select return date"
+                                  minDate={pickupDate || (() => {
+                                    const today = new Date();
+                                    const europeanToday = new Date(today.toLocaleString("en-US", {timeZone: "Europe/Rome"}));
+                                    const year = europeanToday.getFullYear();
+                                    const month = String(europeanToday.getMonth() + 1).padStart(2, '0');
+                                    const day = String(europeanToday.getDate()).padStart(2, '0');
+                                    return `${year}-${month}-${day}`;
+                                  })()}
+                                  className="w-full"
+                                />
+                                {returnDate && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-2 text-xs text-orange-600 font-medium"
+                                  >
+                                    ✓ Return date selected
+                                  </motion.div>
+                                )}
+                              </div>
+                            </motion.div>
+                          </div>
+
+                          {/* Date Range Summary */}
+                          {pickupDate && returnDate && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border border-green-200"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <div className="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center">
+                                    <Calendar className="h-5 w-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-gray-800">Rental Period</p>
+                                    <p className="text-sm text-gray-600">{formatDateRange()}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600">Duration</p>
+                                  <p className="font-bold text-green-600">
+                                    {(() => {
+                                      const pickup = new Date(pickupDate);
+                                      const returnDateObj = new Date(returnDate);
+                                      const diffTime = returnDateObj - pickup;
+                                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                      return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+                                    })()}
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="flex gap-3 pt-2"
+                          >
+                            <Button
+                              onClick={handleDateSelection}
+                              disabled={!pickupDate || !returnDate}
+                              className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              Apply Dates
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setPickupDate("")
+                                setReturnDate("")
+                              }}
+                              variant="outline"
+                              className="flex-1 py-3 font-semibold border-2 hover:bg-gray-50 transition-all duration-300"
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Clear All
+                            </Button>
+                          </motion.div>
+
+                          {/* Helpful Tips */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-blue-50 rounded-lg p-4 border border-blue-200"
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className="h-6 w-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-white text-xs font-bold">i</span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-blue-800 mb-1">Pro Tips</p>
+                                <ul className="text-xs text-blue-700 space-y-1">
+                                  <li>• Select dates to see real-time availability</li>
+                                  <li>• Unavailable dates are marked with an X</li>
+                                  <li>• Minimum rental period is 1 day</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Filter Toggle */}
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
@@ -518,63 +809,29 @@ const CarsPage = () => {
                   </Button>
                 </div>
 
-                {/* Date Filters */}
-                <AnimatePresence>
-                  {showDateFilters && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 mb-6"
-                    >
-                      <div className="text-center mb-4">
-                        <h3 className="text-lg font-semibold text-foreground mb-2">Check Car Availability</h3>
-                        <p className="text-sm text-muted-foreground">Select your dates to see which cars are available</p>
+                {/* Availability Status */}
+                {checkingAvailability && (
+                  <div className="flex justify-center">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-200">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></div>
+                      <span>Checking availability against booking data...</span>
+                    </div>
+                  </div>
+                )}
+                {pickupDate && returnDate && !checkingAvailability && (
+                  <div className="flex justify-center">
+                    <div className="text-sm text-green-600 font-medium bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span>Showing {availabilityStats.available} available cars</span>
+                        <span className="text-xs text-green-500">
+                          ({availabilityStats.unavailable} cars are booked for {formatDateRange()})
+                        </span>
                       </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        {/* Pickup Date */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Pickup Date</label>
-                          <Input
-                            type="date"
-                            value={pickupDate}
-                            onChange={(e) => setPickupDate(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
-                            className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
-                          />
-                        </div>
-                        
-                        {/* Return Date */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Return Date</label>
-                          <Input
-                            type="date"
-                            value={returnDate}
-                            onChange={(e) => setReturnDate(e.target.value)}
-                            min={pickupDate || new Date().toISOString().split('T')[0]}
-                            className="border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Clear Date Filters */}
-                      <div className="flex justify-center mt-4">
-                        <Button
-                          onClick={() => {
-                            setPickupDate("")
-                            setReturnDate("")
-                          }}
-                          variant="outline"
-                          className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                        >
-                          Clear Dates
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+                  </div>
+                )}
+
 
                 {/* Filters */}
                 <AnimatePresence>
@@ -713,18 +970,23 @@ const CarsPage = () => {
               <motion.div {...fadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                 <div>
                   <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-                    {checkingAvailability ? (
-                      <span className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                        Checking availability...
-                      </span>
+                    {pickupDate && returnDate ? (
+                      <>
+                        {filteredCars.length} of {availabilityStats.total} Cars Available
+                        <span className="text-lg font-normal text-muted-foreground ml-2">
+                          for {formatDateRange()}
+                        </span>
+                      </>
                     ) : (
                       `${filteredCars.length} Cars Available`
                     )}
                   </h2>
                   <p className="text-muted-foreground mt-1">
                     {pickupDate && returnDate ? (
-                      `Available for ${new Date(pickupDate).toLocaleDateString()} - ${new Date(returnDate).toLocaleDateString()}`
+                      <>
+                        {availabilityStats.available} available, {availabilityStats.unavailable} booked
+                        <span className="text-xs text-blue-500 ml-2">(real-time booking data)</span>
+                      </>
                     ) : (
                       "Find the perfect car for your journey"
                     )}
@@ -758,8 +1020,18 @@ const CarsPage = () => {
                 </motion.div>
               )}
 
+              {/* Availability Checking State */}
+              {!isLoading && pickupDate && returnDate && checkingAvailability && (
+                <motion.div {...fadeUp} className="text-center py-16">
+                  <div className="inline-flex items-center gap-2 text-muted-foreground">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                    <span>Checking availability against booking data...</span>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Cars Grid */}
-              {!isLoading && (
+              {!isLoading && !(pickupDate && returnDate && checkingAvailability) && (
                 <motion.div
                   variants={staggerContainer}
                   initial="initial"
@@ -771,6 +1043,7 @@ const CarsPage = () => {
                       key={car.id}
                       car={car}
                       index={index}
+                      selectedDates={pickupDate && returnDate ? { pickupDate, returnDate } : null}
                     />
                   ))}
                 </motion.div>
@@ -782,17 +1055,39 @@ const CarsPage = () => {
                   <div className="max-w-md mx-auto">
                     <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-heading text-xl font-semibold text-foreground mb-2">
-                      No cars found
+                      {pickupDate && returnDate ? "No cars available for these dates" : "No cars found"}
                     </h3>
                     <p className="text-muted-foreground mb-6">
-                      Try adjusting your filters or search terms to find more cars.
+                      {pickupDate && returnDate ? (
+                        <>
+                          All {availabilityStats.total} cars in our fleet are booked for {formatDateRange()}.
+                          <br />
+                          Try selecting different dates or adjusting your filters to find available cars.
+                        </>
+                      ) : (
+                        "Try adjusting your filters or search terms to find more cars."
+                      )}
                     </p>
-                    <Button
-                      onClick={clearAll}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
-                    >
-                      Clear All Filters
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        onClick={clearAll}
+                        className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+                      >
+                        Clear All Filters
+                      </Button>
+                      {pickupDate && returnDate && (
+                        <Button
+                          onClick={() => {
+                            setPickupDate("")
+                            setReturnDate("")
+                          }}
+                          variant="outline"
+                          className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                        >
+                          Clear Dates
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -801,16 +1096,53 @@ const CarsPage = () => {
         </main>
       </div>
 
-      {/* Enhanced CTA Section */}
-      <EnhancedCTA 
-        title="Ready to Start Your Journey?"
-        subtitle="Book your perfect rental car today and experience the freedom of the open road."
-        secondaryButton={{
-          text: "Book Now",
-          link: "/cars",
-          icon: Calendar
-        }}
-      />
+      {/* CTA Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600 relative overflow-hidden">
+        {/* Light effects for CTA */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
+          <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div {...fadeUp} className="text-center">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 relative">
+              <span className="relative z-10">Ready to Start Your Journey?</span>
+              <div className="absolute -inset-2 bg-gradient-to-r from-white/10 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </h2>
+            <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-3xl mx-auto">Book your perfect rental car today and experience the freedom of the open road. Our team is here to help you find the ideal vehicle for your needs.</p>
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.45, delay: 0.15 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            >
+              <Button
+                asChild
+                size="lg"
+                className="w-full sm:w-auto bg-white text-yellow-700 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl group relative overflow-hidden"
+              >
+                <Link to="/cars">
+                  <span className="relative z-10 flex items-center">
+                    <Sparkles className="mr-2 h-5 w-5 group-hover:animate-pulse" />
+                    Book Now
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-yellow-700 text-lg px-8 py-4 bg-transparent group relative overflow-hidden"
+              >
+                <Link to="/contact">Get In Touch</Link>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
     </>
   )
 }
