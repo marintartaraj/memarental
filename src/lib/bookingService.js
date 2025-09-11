@@ -14,10 +14,6 @@ function asDateOnly(input) {
   return `${y}-${m}-${day}`;
 }
 
-/**
- * Half-open ranges: [start, end)
- * Conflict when: booking.start < selectedEnd AND booking.end > selectedStart
- */
 export class BookingService {
   static asDateOnly = asDateOnly;
   static async createBooking(bookingData) {
@@ -127,6 +123,10 @@ export class BookingService {
     return diffDays > 0 ? diffDays : 1; // Minimum 1 day
   }
 
+  /**
+   * Half-open ranges: [start, end)
+   * Conflict when: booking.start < selectedEnd AND booking.end > selectedStart
+   */
   static async checkCarAvailabilityForDates(carId, pickupDate, returnDate) {
     const start = asDateOnly(pickupDate);
     const end = asDateOnly(returnDate);
@@ -157,6 +157,9 @@ export class BookingService {
     const end = asDateOnly(returnDate);
     if (!start || !end || !carIds?.length) return {};
 
+    // Debug logging (can be removed in production)
+    console.log("🔍 Batch checking availability for", carIds.length, "cars:", { pickupDate, returnDate });
+
     const { data, error } = await supabase
       .from("bookings")
       .select("car_id, pickup_date, return_date, status")
@@ -165,8 +168,15 @@ export class BookingService {
       .lt("pickup_date", end)
       .gt("return_date", start);
 
-    if (error) {
+      if (error) {
       console.error("getAvailabilityForCars error:", error);
+      
+      // Check if this is an RLS/permission error
+      if (error.message?.includes('permission') || error.message?.includes('RLS') || error.code === 'PGRST301') {
+        console.warn("🚨 RLS/Permission error detected. Availability check failed. This might be due to Row Level Security policies.");
+        console.warn("💡 Solution: Run the fix_bookings_rls.sql script in your Supabase SQL editor to allow public read access to bookings for availability checks.");
+      }
+      
       // Pessimistic default on error: mark all as unavailable
       return Object.fromEntries(carIds.map((id) => [id, false]));
     }
@@ -174,6 +184,11 @@ export class BookingService {
     const blocked = new Set((data ?? []).map((b) => b.car_id));
     const map = {};
     for (const id of carIds) map[id] = !blocked.has(id);
+    
+    const available = Object.entries(map).filter(([, v]) => v === true).length;
+    const unavailable = Object.entries(map).filter(([, v]) => v === false).length;
+    console.log("🎯 Availability:", { available, unavailable, total: carIds.length });
+    
     return map;
   }
 

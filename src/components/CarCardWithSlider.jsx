@@ -228,7 +228,7 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                   {car.available ? 'Available Now' : 'Currently Unavailable'}
                 </span>
                 {car.available && (
-                  <Link to={selectedDates ? `/booking/${car.id}?pickup=${selectedDates.pickupDate}&return=${selectedDates.returnDate}` : `/booking/${car.id}`}>
+                  <Link to={selectedDates ? `/booking/${car.id}?pickupDate=${selectedDates.pickupDate}&returnDate=${selectedDates.returnDate}` : `/booking/${car.id}`}>
                     <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">
                       Book Now
                     </Button>
