@@ -9,7 +9,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import BookNowButton from '@/components/BookNowButton';
 // Client pages
 import HomePage from '@/pages/client/HomePage';
 import CarsPage from '@/pages/client/CarsPage';
@@ -89,7 +88,6 @@ function App() {
               <MobileMenuProvider>
                 <AppContent />
                 <WhatsAppButton />
-                <BookNowButton />
               </MobileMenuProvider>
             </AuthProvider>
           </LanguageProvider>

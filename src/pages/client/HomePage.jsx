@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
-import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Phone, Mail, MapPin, Calendar, CheckCircle, ArrowRight, Sparkles, MessageCircle } from "lucide-react"
+import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Mail, Calendar, CheckCircle, ArrowRight, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLanguage } from "../../contexts/LanguageContext"
 import Seo from "../../components/Seo"
-import { generateLocalBusinessSchema, generateWebSiteSchema } from "../../seo/structuredData"
+import { generateLocalBusinessSchema, generateWebSiteSchema, generateBreadcrumbSchema } from "../../seo/structuredData"
 import EnhancedCTA from "../../components/EnhancedCTA"
 import { supabase } from "../../lib/customSupabaseClient"
 
@@ -145,6 +145,30 @@ const HomePage = () => {
       answer: language === 'sq'
         ? "Ne rekomandojmë rezervimin të paktën 1-2 javë përpara, veçanërisht gjatë sezonit të lartë (Qershor-Shtator). Për marrje në aeroport ose lloje specifike automjetesh, rezervimi 2-3 javë përpara siguron disponueshmërinë."
         : "We recommend booking at least 1-2 weeks in advance, especially during peak season (June-September). For airport pickup or specific vehicle types, booking 2-3 weeks ahead ensures availability."
+    },
+    {
+      question: language === 'sq'
+        ? "A mund të marr makinën në Aeroportin e Tiranës?"
+        : "Can I pick up my car at Tirana Airport?",
+      answer: language === 'sq'
+        ? "Po! Ne ofrojmë marrje dhe dorëzim direkt në Aeroportin Ndërkombëtar të Tiranës (TIA). Stafi ynë do t'ju presë në terminalin e arritjeve me automjetin tuaj gati për të shkuar."
+        : "Yes! We provide direct pickup and drop-off at Tirana International Airport (TIA). Our staff will meet you at the arrivals terminal with your vehicle ready to go."
+    },
+    {
+      question: language === 'sq'
+        ? "Çfarë lloj makinash ofroni në Tiranë?"
+        : "What types of cars do you offer in Tirana?",
+      answer: language === 'sq'
+        ? "Ne ofrojmë një gamë të gjerë automjetesh nga ekonomike deri te luksoze: sedan, SUV, hatchback, dhe makina premium si Mercedes-Benz E-Class. Të gjitha makinat janë të reja dhe të mirëmbajtura."
+        : "We offer a wide range of vehicles from economy to luxury: sedans, SUVs, hatchbacks, and premium cars like Mercedes-Benz E-Class. All vehicles are new and well-maintained."
+    },
+    {
+      question: language === 'sq'
+        ? "A është e sigurt të vozit në Shqipëri?"
+        : "Is it safe to drive in Albania?",
+      answer: language === 'sq'
+        ? "Po, vozitja në Shqipëri është e sigurt. Rrugët kryesore janë në gjendje të mirë dhe ne ofrojmë GPS falas për navigim të lehtë. Rekomandojmë vozitje të kujdesshme në zonat malore."
+        : "Yes, driving in Albania is safe. Main roads are in good condition and we provide free GPS for easy navigation. We recommend careful driving in mountainous areas."
     }
   ]
 
@@ -161,6 +185,70 @@ const HomePage = () => {
       }
     }))
   }
+
+  // Reviews schema for rich results
+  const reviewsSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "MEMA Rental",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "1000",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": "Maria K."
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5",
+          "bestRating": "5"
+        },
+        "reviewBody": "Perfect experience! Car was spotless and the staff provided excellent local recommendations. Made our Albanian road trip unforgettable.",
+        "datePublished": "2024-01-15"
+      },
+      {
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": "Ahmed S."
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5",
+          "bestRating": "5"
+        },
+        "reviewBody": "Excellent service from start to finish. The SUV was perfect for our mountain adventure. Professional and reliable!",
+        "datePublished": "2024-01-10"
+      },
+      {
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": "Sarah L."
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5",
+          "bestRating": "5"
+        },
+        "reviewBody": "Amazing experience! Seamless airport pickup and the car was in perfect condition. Highly recommend MEMA Rental.",
+        "datePublished": "2024-01-05"
+      }
+    ]
+  }
+
+  // Breadcrumb schema
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: language === 'sq' ? 'Ballina' : 'Home', url: '/' },
+    { name: language === 'sq' ? 'Qira Makine Tiranë' : 'Car Rental Tirana', url: '/' }
+  ])
 
   const fadeUp = {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
@@ -282,12 +370,6 @@ const HomePage = () => {
     }
   }
 
-  const handleWhatsAppClick = () => {
-    const phoneNumber = '+355-4-123-4567'
-    const message = 'Hello! I would like to inquire about car rental services in Tirana.'
-    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\s/g, '')}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
-  }
 
   return (
     <>
@@ -304,7 +386,9 @@ const HomePage = () => {
         schema={[
           generateLocalBusinessSchema(),
           generateWebSiteSchema(),
-          faqSchema
+          faqSchema,
+          reviewsSchema,
+          breadcrumbSchema
         ]}
         language={language}
       />
@@ -317,84 +401,60 @@ const HomePage = () => {
         Skip to content
       </a>
 
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                {language === 'sq' ? 'Ballina' : 'Home'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              {language === 'sq' ? 'Qira Makine Tiranë' : 'Car Rental Tirana'}
+            </li>
+          </ol>
+        </div>
+      </nav>
+
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
           {/* Ambient light rays */}
-          <div className={`absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
-          <div className={`absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
-          <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-4000"}`}></div>
+          <div className={`absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "md:animate-pulse"}`}></div>
+          <div className={`absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "md:animate-pulse"}`}></div>
+          <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl hidden sm:block ${prefersReducedMotion ? "" : "md:animate-pulse"}`}></div>
         </div>
 
-        <main id="main" className="relative z-10">
+        <main id="main" className="relative z-10 pb-24 sm:pb-0">
           {/* Hero Section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
-            {/* Enhanced Background decorative elements */}
+          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8 sm:py-12 lg:py-16">
+            {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
-              {/* Main floating orbs */}
-              <div className={`absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-br from-yellow-300/25 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
-              <div className={`absolute -bottom-20 -left-20 w-80 h-80 bg-gradient-to-br from-orange-300/25 to-transparent rounded-full blur-3xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
-              
-              {/* Additional subtle orbs */}
-              <div className={`absolute top-1/3 right-1/4 w-40 h-40 bg-gradient-to-br from-yellow-200/15 to-transparent rounded-full blur-2xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-3000"}`}></div>
-              <div className={`absolute bottom-1/3 left-1/3 w-32 h-32 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-2xl ${prefersReducedMotion ? "" : "animate-pulse animation-delay-1500"}`}></div>
-              
-              {/* Subtle light rays */}
-              <div className="absolute top-0 left-0 w-full h-full">
-                <div className={`absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-yellow-300/20 via-yellow-200/10 to-transparent ${prefersReducedMotion ? "" : "animate-pulse"}`}></div>
-                <div className={`absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-orange-300/15 via-orange-200/8 to-transparent ${prefersReducedMotion ? "" : "animate-pulse animation-delay-2000"}`}></div>
-              </div>
-              
-              {/* Subtle grid pattern overlay */}
-              <div className="absolute inset-0 opacity-[0.015] bg-[radial-gradient(circle_at_1px_1px,rgb(251,191,36)_1px,transparent_0)] bg-[length:32px_32px]"></div>
+              <div className={`absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"}`}></div>
+              <div className={`absolute -bottom-40 -left-40 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"} animation-delay-2000`}></div>
+              <div className={`absolute top-40 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"} animation-delay-4000`}></div>
             </div>
 
-            <div className="container-mobile py-4 sm:py-6 lg:py-8 grid gap-4 lg:grid-cols-[1.1fr_0.9fr] items-center relative z-10">
+            <div className="container-mobile relative z-10">
+              <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               {/* Hero Content */}
-              <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4 shadow-sm"
-                >
-                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>4.9/5 Rating • 1000+ Happy Customers</span>
-                </motion.div>
-
+                <div className="space-y-4 sm:space-y-6 lg:space-y-8 text-center lg:text-left">
                 <motion.h1
                   {...fadeUp}
-                  className="font-heading text-2xl sm:text-3xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-[1.1] relative group"
+                    transition={{ ...fadeUp.transition, delay: 0.1 }}
+                    className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-tight"
                 >
                   <span className="relative">
-                    {language === 'sq' ? (
-                      <>
-                        <span className="block">Qira Makine në</span>
-                        <span className="block bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                          Tiranë
-                        </span>
-                        <span className="block text-sm sm:text-lg lg:text-4xl font-semibold text-muted-foreground mt-1 sm:mt-2">
-                          Marrje në Aeroport & Dorëzim në Qendër
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="block">Rent a Car in</span>
-                        <span className="block bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                          Tirana
-                        </span>
-                        <span className="block text-sm sm:text-lg lg:text-4xl font-semibold text-muted-foreground mt-1 sm:mt-2">
-                          Airport Pickup & City Delivery
-                        </span>
-                      </>
-                    )}
+                      {language === 'sq' ? 'Qira Makine në Tiranë' : 'Rent a Car in Tirana'}
                   </span>
                 </motion.h1>
 
                 <motion.p
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.1 }}
-                  className="text-sm sm:text-base lg:text-xl text-muted-foreground max-w-2xl text-pretty leading-relaxed"
+                    transition={{ ...fadeUp.transition, delay: 0.2 }}
+                    className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto lg:mx-0 text-pretty leading-relaxed"
                 >
                   {language === 'sq'
                     ? 'Shërbim premium i qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Automjete të siguruara plotësisht, marrje në aeroport dhe çmime transparente për aventurën tuaj të përsosur shqiptare.'
@@ -402,76 +462,42 @@ const HomePage = () => {
                   }
                 </motion.p>
 
-                <motion.p
+                  {/* Intent paragraph with internal links */}
+                  <motion.div
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.15 }}
-                  className="text-xs sm:text-sm text-muted-foreground max-w-2xl"
+                    transition={{ ...fadeUp.transition, delay: 0.3 }}
+                    className="text-base text-muted-foreground max-w-2xl mx-auto lg:mx-0"
                 >
                   {language === 'sq' ? (
                     <>
-                      Shiko ofertat tona: <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline">Qira Makine në Tiranë</Link> dhe <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline">Qira Makine në Rinas</Link>
+                        Looking for <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Tiranë</Link> or <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Rinas</Link> for the best travel experience
                     </>
                   ) : (
                     <>
-                      View our offers: <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline">Rent a Car in Tirana</Link> and <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline">Rent a Car at Tirana Airport</Link>
+                        Looking for <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car in Tirana</Link> or <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car at Tirana airport</Link> for the best travel experience
                     </>
                   )}
-                </motion.p>
-
-                <motion.div
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.2 }}
-                  className="flex justify-start"
-                >
-                  <Button asChild
-                    size="lg"
-                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-5 sm:px-8 py-3 sm:py-6 text-sm sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                  >
-                    <Link to="/cars">
-                      <span className="flex items-center">
-                        Find Your Car
-                        <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-5 sm:w-5" />
-                      </span>
-                    </Link>
-                  </Button>
                 </motion.div>
 
-                <motion.div
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.3 }}
-                  className="flex flex-wrap gap-2 sm:gap-3 items-center text-xs sm:text-sm text-muted-foreground pt-3 sm:pt-4"
-                  aria-label="Trust signals"
-                >
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
-                    <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 fill-current" />
-                    <span className="text-xs sm:text-sm">4.9/5 rating</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
-                    <Users className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
-                    <span className="text-xs sm:text-sm">1000+ customers</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm border">
-                    <Award className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
-                    <span className="text-xs sm:text-sm">Fully insured</span>
-                  </div>
-                </motion.div>
               </div>
 
               {/* Featured Car Card */}
-              <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }}>
-                <Card className="p-0 shadow-xl border rounded-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 group">
+               <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }} className="order-last lg:order-none">
+                 <Card className="p-0 shadow-xl border rounded-3xl overflow-hidden transform hover:scale-105 transition-all duration-300 group">
                   <div className="flex flex-col">
                     <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                      <img
-                        src="/images/cars/e%20class1.jpeg"
-                        alt={language === 'sq' ? 'Mercedes-Benz E-Class për qira në Tiranë' : 'Mercedes-Benz E-Class available for rent in Tirana'}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        loading="eager"
-                        fetchPriority="high"
-                        width="1600"
-                        height="1200"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                      />
+                       <img
+                         src="/images/cars/e%20class1.jpeg"
+                         alt={language === 'sq' 
+                           ? 'Mercedes-Benz E-Class sedan luksoze për qira në Tiranë, Shqipëri - Automjet premium me sigurim të plotë dhe marrje në aeroport' 
+                           : 'Premium Mercedes-Benz E-Class luxury sedan for rent in Tirana, Albania - Executive car with full insurance and airport pickup service'}
+                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                         loading="eager"
+                         fetchPriority="high"
+                         width="1600"
+                         height="1200"
+                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                       <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
                         Featured
@@ -496,12 +522,12 @@ const HomePage = () => {
                       </div>
 
                       <div className="flex gap-2 sm:gap-3">
-                        <Button asChild className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base py-2 sm:py-3">
+                        <Button asChild className="flex-1 min-h-[44px] bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                           <Link to={featuredCar ? `/booking/${featuredCar.id}` : "/cars"}>
                             {featuredCar ? "Book Now" : "View Cars"}
                           </Link>
                         </Button>
-                        <Button asChild variant="outline" className="flex-1 border-yellow-500 text-yellow-600 hover:bg-yellow-50 text-sm sm:text-base py-2 sm:py-3">
+                        <Button asChild variant="outline" className="flex-1 min-h-[44px] border-yellow-500 text-yellow-600 hover:bg-yellow-50 text-sm sm:text-base py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                           <Link to={featuredCar ? `/cars/${featuredCar.id}` : "/cars"}>
                             {featuredCar ? "View Details" : "Browse Fleet"}
                           </Link>
@@ -511,6 +537,7 @@ const HomePage = () => {
                   </div>
                 </Card>
               </motion.div>
+              </div>
             </div>
           </section>
 
@@ -595,7 +622,7 @@ const HomePage = () => {
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
-                className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
               >
                 {destinations.map((destination, index) => (
                   <motion.div
@@ -612,7 +639,7 @@ const HomePage = () => {
                         href={destination.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block w-full h-full cursor-pointer"
+                        className="block w-full h-full cursor-pointer min-h-[44px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                         aria-label={`Learn more about ${destination.name}`}
                       >
                         <div className="relative z-10">
@@ -624,7 +651,7 @@ const HomePage = () => {
                               loading="lazy"
                               width="800"
                               height="600"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                               onError={(e) => { e.currentTarget.src = "/images/cars/placeholder-car.jpg"; }}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
@@ -636,8 +663,8 @@ const HomePage = () => {
                             <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/10 via-transparent to-orange-200/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                           </div>
                           <div className="p-3 lg:p-6">
-                            <h3 className="font-heading text-sm lg:text-lg font-bold text-card-foreground mb-1 lg:mb-2 line-clamp-2">{destination.name}</h3>
-                            <p className="text-muted-foreground text-xs lg:text-sm text-pretty line-clamp-3">{destination.description}</p>
+                            <h3 className="font-heading text-base lg:text-lg font-bold text-card-foreground mb-1 lg:mb-2 line-clamp-2">{destination.name}</h3>
+                            <p className="text-muted-foreground text-sm text-pretty line-clamp-3">{destination.description}</p>
                           </div>
                         </div>
                       </a>
@@ -673,7 +700,7 @@ const HomePage = () => {
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
-                className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                className="overflow-x-auto snap-x snap-mandatory -mx-4 px-4 sm:overflow-visible sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"
               >
                 {[
                   {
@@ -695,7 +722,7 @@ const HomePage = () => {
                   {
                     name: "Sarah L.",
                     location: "UK",
-                    rating: 5,
+                    rating: 4.5,
                     text: "Amazing experience! Seamless airport pickup and the car was in perfect condition. Highly recommend MEMA Rental.",
                     date: "3 weeks ago",
                     avatar: "🇬🇧"
@@ -711,7 +738,7 @@ const HomePage = () => {
                   {
                     name: "Elena M.",
                     location: "Greece",
-                    rating: 5,
+                    rating: 4,
                     text: "Perfect for our road trip through Albania! The car was in excellent condition, fuel-efficient, and the staff provided great recommendations.",
                     date: "2 months ago",
                     avatar: "🇬🇷"
@@ -723,9 +750,33 @@ const HomePage = () => {
                     text: "Outstanding service! Rented for 10 days to explore the country. Car was reliable, GPS worked perfectly, and the team was always available.",
                     date: "1 month ago",
                     avatar: "🇺🇸"
+                  },
+                  {
+                    name: "Sophie M.",
+                    location: "France",
+                    rating: 5,
+                    text: "Fantastic car rental experience in Tirana! The Mercedes-Benz was luxurious and comfortable. Airport pickup was seamless and the staff was very helpful.",
+                    date: "3 weeks ago",
+                    avatar: "🇫🇷"
+                  },
+                  {
+                    name: "Marco R.",
+                    location: "Italy",
+                    rating: 5,
+                    text: "Best car rental service in Tirana! Clean cars, fair prices, and excellent customer service. Will definitely use MEMA Rental again on my next visit.",
+                    date: "1 month ago",
+                    avatar: "🇮🇹"
+                  },
+                  {
+                    name: "Anna K.",
+                    location: "Poland",
+                    rating: 5,
+                    text: "Highly recommended! The car was perfect for exploring Albania's beautiful coastline. Great value and professional service throughout our trip.",
+                    date: "2 weeks ago",
+                    avatar: "🇵🇱"
                   }
                 ].map((testimonial, i) => (
-                  <motion.div key={i} variants={fadeUp} whileHover={{ y: -4 }}>
+                  <motion.div key={i} variants={fadeUp} whileHover={{ y: -4 }} className="snap-start min-w-[85%] sm:min-w-0">
                     <Card className="p-6 h-full bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
                       {/* Glow effect */}
                       <div className="absolute -inset-1 bg-gradient-to-br from-yellow-400/5 via-orange-400/5 to-yellow-400/5 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -796,7 +847,7 @@ const HomePage = () => {
                         <div className="relative z-10">
                           <Accordion type="single" collapsible>
                             <AccordionItem value={`faq-${index}`} className="border-0">
-                              <AccordionTrigger className="px-8 py-6 text-left hover:text-yellow-600 transition-colors font-semibold text-lg group-hover:bg-yellow-50/50 rounded-t-2xl">
+                              <AccordionTrigger className="px-8 py-6 text-left hover:text-yellow-600 transition-colors font-semibold text-lg group-hover:bg-yellow-50/50 rounded-t-2xl min-h-[44px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                 <div className="flex items-center gap-4 w-full">
                                   <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold group-hover:scale-110 transition-transform duration-300">
                                     {index + 1}
@@ -832,6 +883,20 @@ const HomePage = () => {
               icon: Calendar
             }}
           />
+
+          {/* Sticky Bottom CTA (mobile only) */}
+          <div className="fixed inset-x-0 bottom-0 z-50 sm:hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 border-t">
+            <div className="max-w-screen-xl mx-auto px-4 py-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button asChild className="min-h-[44px] w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                  <Link to="/cars" aria-label="Book a car now">Book Now</Link>
+                </Button>
+                <Button asChild variant="outline" className="min-h-[44px] w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                  <Link to="/cars" aria-label="View our cars">View Cars</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
         </main>
 
       </div>
