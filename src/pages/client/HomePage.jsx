@@ -10,7 +10,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useLanguage } from "../../contexts/LanguageContext"
 import Seo from "../../components/Seo"
 import { generateLocalBusinessSchema, generateWebSiteSchema, generateBreadcrumbSchema } from "../../seo/structuredData"
-import EnhancedCTA from "../../components/EnhancedCTA"
 import { supabase } from "../../lib/customSupabaseClient"
 
 const HomePage = () => {
@@ -24,33 +23,15 @@ const HomePage = () => {
     const fetchFeaturedCar = async () => {
       try {
         setLoadingCar(true)
-        console.log('Fetching Mercedes-Benz E-Class car...')
+        console.log('Fetching featured Mercedes-Benz car...')
         
-        // First try to find E350 4MATIC specifically
+        // Try to find any Mercedes-Benz E-Class first (most likely to exist)
         let { data, error } = await supabase
           .from('cars')
           .select('*')
           .eq('brand', 'Mercedes-Benz')
-          .eq('model', 'E350 4MATIC')
+          .ilike('model', '%E%')
           .single()
-
-        // If not found, try to find any Mercedes-Benz E-Class
-        if (error || !data) {
-          console.log('E350 4MATIC not found, trying any Mercedes-Benz E-Class...')
-          const { data: eClassData, error: eClassError } = await supabase
-            .from('cars')
-            .select('*')
-            .eq('brand', 'Mercedes-Benz')
-            .ilike('model', '%E%')
-            .single()
-          
-          if (!eClassError && eClassData) {
-            data = eClassData
-            error = null
-          } else {
-            error = eClassError
-          }
-        }
 
         // If still not found, get any Mercedes-Benz car
         if (error || !data) {
@@ -66,6 +47,23 @@ const HomePage = () => {
             error = null
           } else {
             error = mercedesError
+          }
+        }
+
+        // If still not found, get any premium car
+        if (error || !data) {
+          console.log('Mercedes-Benz not found, trying any premium car...')
+          const { data: premiumData, error: premiumError } = await supabase
+            .from('cars')
+            .select('*')
+            .in('brand', ['Mercedes-Benz', 'BMW', 'Audi'])
+            .single()
+          
+          if (!premiumError && premiumData) {
+            data = premiumData
+            error = null
+          } else {
+            error = premiumError
           }
         }
 
@@ -427,9 +425,9 @@ const HomePage = () => {
           <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl hidden sm:block ${prefersReducedMotion ? "" : "md:animate-pulse"}`}></div>
         </div>
 
-        <main id="main" className="relative z-10 pb-24 sm:pb-0">
+        <main id="main" className="relative z-10">
           {/* Hero Section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8 sm:py-12 lg:py-16">
+          <section className="relative overflow-hidden bg-white pt-8 pb-8 sm:pt-12 sm:pb-12 lg:pt-16 lg:pb-12">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
               <div className={`absolute -top-40 -right-40 w-80 h-80 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 ${prefersReducedMotion ? "" : "animate-blob"}`}></div>
@@ -438,112 +436,143 @@ const HomePage = () => {
             </div>
 
             <div className="container-mobile relative z-10">
-              <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+              <div className="flex flex-col gap-8 sm:gap-10 lg:grid lg:grid-cols-12 lg:items-start lg:gap-16">
               {/* Hero Content */}
-                <div className="space-y-4 sm:space-y-6 lg:space-y-8 text-center lg:text-left">
-                <motion.h1
-                  {...fadeUp}
+                <div className="lg:col-span-7 space-y-4 sm:space-y-5 lg:space-y-6 text-center lg:text-left">
+                  <motion.div
+                    {...fadeUp}
                     transition={{ ...fadeUp.transition, delay: 0.1 }}
-                    className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground text-balance leading-tight"
-                >
-                  <span className="relative">
-                      {language === 'sq' ? 'Qira Makine në Tiranë' : 'Rent a Car in Tirana'}
-                  </span>
-                </motion.h1>
-
-                <motion.p
-                  {...fadeUp}
-                    transition={{ ...fadeUp.transition, delay: 0.2 }}
-                    className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto lg:mx-0 text-pretty leading-relaxed"
-                >
-                  {language === 'sq'
-                    ? 'Shërbim premium i qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Automjete të siguruara plotësisht, marrje në aeroport dhe çmime transparente për aventurën tuaj të përsosur shqiptare.'
-                    : 'Premium car rental service in Tirana and across Albania. Fully insured vehicles, airport pickup, and transparent pricing for your perfect Albanian adventure.'
-                  }
-                </motion.p>
+                    className="space-y-3 sm:space-y-4"
+                  >
+                    <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-foreground text-balance leading-tight">
+                      <span className="relative">
+                        {language === 'sq' ? 'Qira Makine në Tiranë' : 'Rent a Car in Tirana'}
+                      </span>
+                    </h1>
+                    
+                    <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto lg:mx-0 text-pretty leading-relaxed">
+                      {language === 'sq'
+                        ? 'Shërbim premium i qirasë së makinave në Tiranë dhe në të gjithë Shqipërinë. Automjete të siguruara plotësisht, marrje në aeroport dhe çmime transparente për aventurën tuaj të përsosur shqiptare.'
+                        : 'Premium car rental service in Tirana and across Albania. Fully insured vehicles, airport pickup, and transparent pricing for your perfect Albanian adventure.'
+                      }
+                    </p>
+                  </motion.div>
 
                   {/* Intent paragraph with internal links */}
                   <motion.div
-                  {...fadeUp}
-                    transition={{ ...fadeUp.transition, delay: 0.3 }}
-                    className="text-base text-muted-foreground max-w-2xl mx-auto lg:mx-0"
-                >
-                  {language === 'sq' ? (
-                    <>
-                        Looking for <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Tiranë</Link> or <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Rinas</Link> for the best travel experience
-                    </>
-                  ) : (
-                    <>
-                        Looking for <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car in Tirana</Link> or <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car at Tirana airport</Link> for the best travel experience
-                    </>
-                  )}
-                </motion.div>
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.2 }}
+                    className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto lg:mx-0"
+                  >
+                    {language === 'sq' ? (
+                      <>
+                          Looking for <Link to="/makina-me-qira-tirane" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Tiranë</Link> or <Link to="/qira-makine-rinas" className="text-yellow-600 hover:text-yellow-700 underline font-medium">qira makine në Rinas</Link> for the best travel experience
+                      </>
+                    ) : (
+                      <>
+                          Looking for <Link to="/rent-a-car-tirana" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car in Tirana</Link> or <Link to="/rent-a-car-tirana-airport" className="text-yellow-600 hover:text-yellow-700 underline font-medium">rent a car at Tirana airport</Link> for the best travel experience
+                      </>
+                    )}
+                  </motion.div>
 
-              </div>
+                  {/* Quick Action Buttons */}
+                  <motion.div
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.3 }}
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2"
+                  >
+                    <Link 
+                      to={featuredCar ? `/booking/${featuredCar.id}` : "/cars"}
+                      className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-full px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 font-semibold text-sm sm:text-base"
+                    >
+                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                      {featuredCar ? "Book Now" : "View Cars"}
+                    </Link>
+                    <Link 
+                      to="/cars"
+                      className="inline-flex items-center justify-center gap-2 border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white rounded-full px-6 py-3 transition-all duration-300 ease-in-out transform hover:scale-105 font-semibold text-sm sm:text-base"
+                    >
+                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                      Our Cars
+                    </Link>
+                  </motion.div>
+                </div>
 
               {/* Featured Car Card */}
-               <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.15 }} className="order-last lg:order-none">
-                 <Card className="p-0 shadow-xl border rounded-3xl overflow-hidden transform hover:scale-105 transition-all duration-300 group">
-                  <div className="flex flex-col">
-                    <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                       <img
-                         src="/images/cars/e%20class1.jpeg"
-                         alt={language === 'sq' 
-                           ? 'Mercedes-Benz E-Class sedan luksoze për qira në Tiranë, Shqipëri - Automjet premium me sigurim të plotë dhe marrje në aeroport' 
-                           : 'Premium Mercedes-Benz E-Class luxury sedan for rent in Tirana, Albania - Executive car with full insurance and airport pickup service'}
-                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                         loading="eager"
-                         fetchPriority="high"
-                         width="1600"
-                         height="1200"
-                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-                      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
-                        Featured
-                      </div>
-                      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold text-gray-900 shadow-sm">
-                        Available Now
-                      </div>
-                    </div>
-
-                    <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-wider text-yellow-700 font-semibold mb-1">Premium Selection</p>
-                        <h3 className="font-heading text-lg sm:text-2xl font-bold text-card-foreground">Mercedes-Benz E-Class</h3>
-                        <p className="text-sm sm:text-base text-muted-foreground">Executive • Automatic • Premium</p>
-                      </div>
-
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-2xl sm:text-3xl font-black text-yellow-600">
-                          €{featuredCar ? featuredCar.daily_rate : '75'}
-                        </span>
-                        <span className="text-sm sm:text-base text-muted-foreground">/ day</span>
-                      </div>
-
-                      <div className="flex gap-2 sm:gap-3">
-                        <Button asChild className="flex-1 min-h-[44px] bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                          <Link to={featuredCar ? `/booking/${featuredCar.id}` : "/cars"}>
-                            {featuredCar ? "Book Now" : "View Cars"}
-                          </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="flex-1 min-h-[44px] border-yellow-500 text-yellow-600 hover:bg-yellow-50 text-sm sm:text-base py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                          <Link to={featuredCar ? `/cars/${featuredCar.id}` : "/cars"}>
-                            {featuredCar ? "View Details" : "Browse Fleet"}
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
+              <motion.div 
+                {...fadeUp} 
+                transition={{ ...fadeUp.transition, delay: 0.15 }} 
+                className="lg:col-span-5 order-last lg:order-none"
+              >
+                <div className="relative">
+                  {/* Featured Badge */}
+                  <div className="absolute -top-2 -right-2 z-20 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                    Featured
                   </div>
-                </Card>
+                  
+                  <Card className="p-0 shadow-2xl border-0 rounded-3xl overflow-hidden transform hover:scale-105 transition-all duration-500 group bg-white">
+                    <div className="flex flex-col">
+                      {/* Car Image */}
+                      <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                        <img
+                          src="/images/cars/e%20class1.jpeg"
+                          alt={language === 'sq' 
+                            ? 'Mercedes-Benz E-Class sedan luksoze për qira në Tiranë, Shqipëri - Automjet premium me sigurim të plotë dhe marrje në aeroport' 
+                            : 'Premium Mercedes-Benz E-Class luxury sedan for rent in Tirana, Albania - Executive car with full insurance and airport pickup service'}
+                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                           loading="eager"
+                           width="1600"
+                           height="1200"
+                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        
+                        {/* Status Badge */}
+                        <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-full text-sm font-semibold text-gray-900 shadow-lg">
+                          Available Now
+                        </div>
+                      </div>
+
+                      {/* Car Details */}
+                      <div className="p-6 space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            <p className="text-xs uppercase tracking-wider text-yellow-700 font-bold">Premium Selection</p>
+                          </div>
+                          <h3 className="font-heading text-xl lg:text-2xl font-bold text-card-foreground">Mercedes-Benz E-Class</h3>
+                          <p className="text-sm text-muted-foreground">Executive • Automatic • Premium</p>
+                        </div>
+
+                        {/* Price */}
+                        <div className="flex items-baseline gap-2 pt-2">
+                          <span className="font-heading text-3xl lg:text-4xl font-black text-yellow-600">
+                            €{featuredCar ? featuredCar.daily_rate : '85'}
+                          </span>
+                          <span className="text-base text-muted-foreground">/ day</span>
+                        </div>
+
+                        {/* Action Button - Hidden on Desktop */}
+                        <div className="pt-2 lg:hidden">
+                          <Link 
+                            to={featuredCar ? `/booking/${featuredCar.id}` : "/cars"}
+                            className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-full px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 font-semibold text-base"
+                          >
+                            <Calendar className="h-5 w-5" />
+                            {featuredCar ? "Book This Car" : "View All Cars"}
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
               </motion.div>
               </div>
             </div>
           </section>
 
           {/* Features Section */}
-          <section id="why-us" className="py-16 lg:py-24 bg-white relative" aria-labelledby="why-us-title">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white"></div>
+          <section id="why-us" className="pt-12 pb-12 lg:pt-16 lg:pb-16 bg-gray-50 relative" aria-labelledby="why-us-title">
             
             {/* Light rays for features section */}
             <div className="absolute inset-0 overflow-hidden">
@@ -552,7 +581,7 @@ const HomePage = () => {
             </div>
             
             <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+              <motion.div {...fadeUp} className="text-center mb-12 lg:mb-16 space-y-4">
                 <h2
                   id="why-us-title"
                   className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance relative"
@@ -573,7 +602,7 @@ const HomePage = () => {
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
               >
                 {benefits.map((benefit, index) => (
                   <motion.div
@@ -603,9 +632,9 @@ const HomePage = () => {
           </section>
 
           {/* Popular Destinations */}
-          <section id="destinations" className="py-16 lg:py-24 bg-gradient-to-br from-gray-50 to-white relative" aria-labelledby="destinations-title">
+          <section id="destinations" className="pt-12 pb-12 lg:pt-16 lg:pb-16 bg-white relative" aria-labelledby="destinations-title">
             <div className="container-mobile">
-              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+              <motion.div {...fadeUp} className="text-center mb-12 lg:mb-16 space-y-4">
                 <h2
                   id="destinations-title"
                   className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance"
@@ -676,7 +705,7 @@ const HomePage = () => {
           </section>
 
           {/* Testimonials */}
-          <section id="testimonials" className="py-16 lg:py-24 bg-gradient-to-br from-gray-50 via-white to-gray-100 relative" aria-labelledby="testimonials-title">
+          <section id="testimonials" className="pt-12 pb-12 lg:pt-16 lg:pb-16 bg-gray-50 relative" aria-labelledby="testimonials-title">
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/30 to-orange-50/30"></div>
             
             {/* Light rays for testimonials */}
@@ -686,7 +715,7 @@ const HomePage = () => {
             </div>
             
             <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+              <motion.div {...fadeUp} className="text-center mb-12 lg:mb-16 space-y-4">
                 <h2 id="testimonials-title" className="font-heading text-3xl sm:text-4xl font-black text-foreground">
                   Trusted by Travelers Worldwide
                 </h2>
@@ -807,8 +836,7 @@ const HomePage = () => {
           </section>
 
           {/* FAQ */}
-          <section id="faq" className="py-16 lg:py-24 bg-white relative" aria-labelledby="faq-title">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white"></div>
+          <section id="faq" className="pt-12 pb-12 lg:pt-16 lg:pb-16 bg-white relative" aria-labelledby="faq-title">
             
             {/* Light rays for FAQ section */}
             <div className="absolute inset-0 overflow-hidden">
@@ -817,7 +845,7 @@ const HomePage = () => {
             </div>
             
             <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="text-center mb-16 space-y-4">
+              <motion.div {...fadeUp} className="text-center mb-12 lg:mb-16 space-y-4">
                 <h2 id="faq-title" className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-foreground text-balance">
                   Frequently Asked Questions
                 </h2>
@@ -873,30 +901,8 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* Enhanced CTA */}
-          <EnhancedCTA 
-            title="Ready to Explore Albania?"
-            subtitle="Book your premium rental car today and discover the beauty of Albania with complete confidence and comfort."
-            secondaryButton={{
-              text: "Book Your Car Now",
-              link: "/cars",
-              icon: Calendar
-            }}
-          />
 
-          {/* Sticky Bottom CTA (mobile only) */}
-          <div className="fixed inset-x-0 bottom-0 z-50 sm:hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 border-t">
-            <div className="max-w-screen-xl mx-auto px-4 py-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Button asChild className="min-h-[44px] w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                  <Link to="/cars" aria-label="Book a car now">Book Now</Link>
-                </Button>
-                <Button asChild variant="outline" className="min-h-[44px] w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                  <Link to="/cars" aria-label="View our cars">View Cars</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+
         </main>
 
       </div>

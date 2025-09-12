@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import Seo from "@/components/Seo"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { Button } from "@/components/ui/button"
@@ -479,6 +480,31 @@ const CarsPage = () => {
         schema={structuredData}
       />
 
+      {/* Skip link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                {t('home') || 'Home'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              {t('cars') || 'Cars'}
+            </li>
+          </ol>
+        </div>
+      </nav>
+
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
@@ -541,13 +567,13 @@ const CarsPage = () => {
               <motion.div {...fadeUp} className="space-y-6">
                 {/* Search Bar */}
                 <div className="relative max-w-2xl mx-auto">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     type="text"
                     placeholder="Search cars by brand, model, or features..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-4 py-3 text-lg border-2 border-gray-200 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 rounded-xl transition-all duration-200 bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md"
+                    className="pl-12 pr-4 py-4 text-lg border-2 border-gray-200 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 rounded-xl transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                   />
                 </div>
 
@@ -562,24 +588,23 @@ const CarsPage = () => {
                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                       >
                         <Button
-                          variant="outline"
-                          className="border-2 border-brand-info text-brand-info hover:bg-brand-info/10 px-6 sm:px-8 py-3 sm:py-4 bg-white/90 backdrop-blur-sm transform transition-all duration-300 group relative overflow-hidden shadow-lg hover:shadow-xl touch-manipulation"
+                          variant="default"
+                          size="lg"
+                          className="px-6 sm:px-8 py-3 sm:py-4 group relative overflow-hidden"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-brand-info/10 to-brand-info/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                          <Calendar className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform relative z-10" />
-                          <span className="relative z-10 font-semibold">
+                          <Calendar className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform duration-300" />
+                          <span className="font-semibold">
                             {formatDateRange()}
                           </span>
                           {pickupDate && returnDate && (
-                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-brand-success rounded-full animate-pulse"></div>
+                            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
                           )}
                         </Button>
                       </motion.div>
                     </DialogTrigger>
                     <DialogContent className="w-[95vw] sm:w-auto sm:max-w-3xl p-0 overflow-hidden max-h-[95vh] overflow-y-auto">
-                      <div className="bg-gradient-to-br from-brand-info/5 via-white to-brand-info/5">
-                        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 bg-gradient-to-r from-brand-info to-brand-info/80 text-white">
+                      <div className="bg-gradient-to-br from-brand-primary/5 via-white to-brand-secondary/5">
+                        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white">
                           <DialogTitle className="text-lg sm:text-xl font-bold flex items-center">
                             <Calendar className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                             Select Your Rental Dates
@@ -683,11 +708,11 @@ const CarsPage = () => {
                             <motion.div
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="bg-gradient-to-r from-brand-success/10 to-brand-info/10 rounded-xl p-4 sm:p-5 border border-brand-success/20"
+                              className="bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 rounded-xl p-4 sm:p-5 border border-brand-primary/20"
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                                 <div className="flex items-center space-x-3 sm:space-x-4">
-                                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-brand-success rounded-full flex items-center justify-center shadow-lg">
+                                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full flex items-center justify-center shadow-lg">
                                     <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                                   </div>
                                   <div>
@@ -697,7 +722,7 @@ const CarsPage = () => {
                                 </div>
                                 <div className="text-left sm:text-right">
                                   <p className="text-xs sm:text-sm text-gray-600 mb-1">Duration</p>
-                                  <p className="font-bold text-brand-success text-lg sm:text-xl">
+                                  <p className="font-bold text-brand-primary text-lg sm:text-xl">
                                     {(() => {
                                       const pickup = new Date(pickupDate);
                                       const returnDateObj = new Date(returnDate);
@@ -721,7 +746,8 @@ const CarsPage = () => {
                             <Button
                               onClick={handleDateSelection}
                               disabled={!pickupDate || !returnDate}
-                              className="flex-1 bg-gradient-to-r from-brand-success to-brand-info hover:from-brand-success/90 hover:to-brand-info/90 text-white py-3 sm:py-4 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg touch-manipulation"
+                              variant="default"
+                              className="flex-1 py-3 sm:py-4 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg touch-manipulation"
                             >
                               <Calendar className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
                               Apply Dates
@@ -731,8 +757,8 @@ const CarsPage = () => {
                                 setPickupDate("")
                                 setReturnDate("")
                               }}
-                              variant="outline"
-                              className="flex-1 py-3 sm:py-4 font-semibold border-2 hover:bg-gray-50 transition-all duration-300 text-base sm:text-lg touch-manipulation"
+                              variant="secondary"
+                              className="flex-1 py-3 sm:py-4 font-semibold transition-all duration-300 text-base sm:text-lg touch-manipulation"
                             >
                               <X className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
                               Clear All
@@ -744,15 +770,15 @@ const CarsPage = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.4 }}
-                            className="bg-brand-info/5 rounded-lg p-4 sm:p-5 border border-brand-info/20"
+                            className="bg-brand-primary/5 rounded-lg p-4 sm:p-5 border border-brand-primary/20"
                           >
                             <div className="flex items-start space-x-3 sm:space-x-4">
-                              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-brand-info rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <span className="text-white text-xs sm:text-sm font-bold">i</span>
                               </div>
                               <div>
-                                <p className="text-xs sm:text-sm font-medium text-brand-info mb-1 sm:mb-2">Pro Tips</p>
-                                <ul className="text-xs sm:text-sm text-brand-info/80 space-y-1">
+                                <p className="text-xs sm:text-sm font-medium text-brand-primary mb-1 sm:mb-2">Pro Tips</p>
+                                <ul className="text-xs sm:text-sm text-brand-primary/80 space-y-1">
                                   <li>• Select dates to see real-time availability</li>
                                   <li>• Unavailable dates are marked with an X</li>
                                   <li>• Minimum rental period is 1 day</li>
@@ -770,11 +796,11 @@ const CarsPage = () => {
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
-                    className="border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 px-6 py-3 bg-transparent transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
+                    size="lg"
+                    className="px-6 py-3 group"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <Filter className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform relative z-10" />
-                    <span className="relative z-10">
+                    <Filter className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+                    <span>
                       {showFilters ? "Hide Filters" : "Show Filters"}
                     </span>
                   </Button>
@@ -921,8 +947,7 @@ const CarsPage = () => {
                       <div className="flex justify-center mt-6">
                         <Button
                           onClick={clearAll}
-                          variant="outline"
-                          className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                          variant="secondary"
                         >
                           Clear All Filters
                         </Button>
@@ -1042,7 +1067,7 @@ const CarsPage = () => {
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <Button
                         onClick={clearAll}
-                        className="bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary-hover hover:to-brand-secondary-hover text-white"
+                        variant="secondary"
                       >
                         Clear All Filters
                       </Button>

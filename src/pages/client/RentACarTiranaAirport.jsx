@@ -10,7 +10,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import Seo from '../../components/Seo';
 import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../seo/structuredData';
 import localSeo from '../../seo/local_seo.json';
-import EnhancedCTA from '../../components/EnhancedCTA';
 
 const RentACarTiranaAirport = () => {
   const { t, language } = useLanguage();
@@ -180,6 +179,31 @@ const RentACarTiranaAirport = () => {
         ]}
         language={language}
       />
+
+      {/* Skip link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                {language === 'sq' ? 'Ballina' : 'Home'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              {language === 'sq' ? 'Qera Makinash në Aeroportin e Tiranës' : 'Rent a Car at Tirana Airport'}
+            </li>
+          </ol>
+        </div>
+      </nav>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
@@ -526,19 +550,6 @@ const RentACarTiranaAirport = () => {
             </div>
           </section>
 
-          {/* Enhanced CTA */}
-          <EnhancedCTA 
-            title={language === 'sq' ? 'Gati për të Filluar Aventurën Tuaj?' : 'Ready to Start Your Adventure?'}
-            subtitle={language === 'sq' 
-              ? 'Rezervoni makinën tuaj për marrje në Aeroportin e Tiranës dhe nisni udhëtimin tuaj shqiptar.'
-              : 'Book your car for pickup at Tirana Airport and start your Albanian journey.'
-            }
-            secondaryButton={{
-              text: language === 'sq' ? 'Rezervoni Tani' : 'Book Now',
-              link: "/cars",
-              icon: Calendar
-            }}
-          />
         </main>
       </div>
     </>

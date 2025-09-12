@@ -206,12 +206,12 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hover:bg-gray-100"
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
                 >
                   <Heart className="w-4 h-4" />
                 </Button>
                 <Link to={`/cars/${car.id}`}>
-                  <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700">
+                  <Button size="sm">
                     View Details
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -229,7 +229,7 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                 </span>
                 {car.available && (
                   <Link to={selectedDates ? `/booking/${car.id}?pickupDate=${selectedDates.pickupDate}&returnDate=${selectedDates.returnDate}` : `/booking/${car.id}`}>
-                    <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">
+                    <Button size="sm" variant="success">
                       Book Now
                     </Button>
                   </Link>

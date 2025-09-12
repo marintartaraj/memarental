@@ -421,7 +421,47 @@ const BookingPage = () => {
         />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Skip link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                {t('home') || 'Home'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li>
+              <Link to="/cars" className="hover:text-yellow-600 transition-colors">
+                {t('cars') || 'Cars'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              {t('booking') || 'Booking'}
+            </li>
+          </ol>
+        </div>
+      </nav>
+
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+        {/* Global light effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          {/* Ambient light rays */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-yellow-200/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-orange-200/15 to-transparent rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-br from-yellow-100/10 to-transparent rounded-full blur-3xl animate-pulse animation-delay-4000"></div>
+        </div>
+
+        <main className="relative z-10">
         {loading ? (
           <div className="text-center py-8 text-gray-500">{t('loading') || 'Loading...'}</div>
         ) : fetchError || !carData ? (
@@ -1020,11 +1060,18 @@ const BookingPage = () => {
           </div>
           )}
         </div>
+        </main>
       </div>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-brand-primary to-brand-secondary">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
+          <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

@@ -18,11 +18,11 @@ const WhatsAppButton = ({ phoneNumber = "+355-4-123-4567", message = "Hello! I'm
       onClick={handleWhatsAppClick}
       className={`
         fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60]
-        bg-green-500 hover:bg-green-600 
+        bg-gradient-to-r from-brand-success to-brand-success-hover hover:from-brand-success-hover hover:to-brand-success
         text-white rounded-full p-3 sm:p-4
         shadow-lg hover:shadow-xl
         transition-all duration-300 ease-in-out
-        transform hover:scale-110
+        transform hover:scale-110 active:scale-95
         group
         ${className}
       `}

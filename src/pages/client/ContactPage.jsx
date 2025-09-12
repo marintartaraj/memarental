@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import Seo from "@/components/Seo"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { motion, useReducedMotion } from "framer-motion"
@@ -11,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Navigation, MessageCircle, Sparkles, ArrowRight } from "lucide-react"
 import HeroHeader from "@/components/HeroHeader"
-import EnhancedCTA from "@/components/EnhancedCTA"
 
 const ContactPage = () => {
   const { t } = useLanguage()
@@ -176,6 +176,31 @@ const ContactPage = () => {
         keywords="contact MEMA rental, car rental contact Tirana, car rental service contact Albania, MEMA rental contact, car rental phone Tirana, car rental email Albania, car rental support Tirana, car rental customer service Albania, Tirana car rental contact, Albania car rental support"
         schema={structuredData}
       />
+
+      {/* Skip link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                {t('home') || 'Home'}
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              {t('contact') || 'Contact'}
+            </li>
+          </ol>
+        </div>
+      </nav>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
@@ -532,16 +557,6 @@ const ContactPage = () => {
             </div>
           </section>
 
-          {/* Enhanced CTA */}
-          <EnhancedCTA 
-            title="Ready to Get Started?"
-            subtitle="Don't wait! Contact us today and let us help you plan your perfect Albanian adventure."
-            secondaryButton={{
-              text: "Call Us Now",
-              link: "tel:+355-4-123-4567",
-              icon: Phone
-            }}
-          />
         </main>
       </div>
     </>

@@ -90,9 +90,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Car className="h-8 w-8 text-yellow-600" />
+            <Car className="h-8 w-8 text-brand-primary" />
             <span className="text-xl font-semibold text-gray-800">
-              MEMA <span className="text-yellow-600">Rental</span>
+              MEMA <span className="text-brand-primary">Rental</span>
             </span>
           </Link>
 

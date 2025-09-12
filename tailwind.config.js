@@ -129,6 +129,7 @@ module.exports = {
 				success: {
 					DEFAULT: 'var(--brand-success)',
 					light: 'var(--brand-success-light)',
+					hover: 'var(--brand-success-hover)',
 				},
 				warning: {
 					DEFAULT: 'var(--brand-warning)',
@@ -137,10 +138,27 @@ module.exports = {
 				error: {
 					DEFAULT: 'var(--brand-error)',
 					light: 'var(--brand-error-light)',
+					hover: 'var(--brand-error-hover)',
 				},
 				info: {
 					DEFAULT: 'var(--brand-info)',
 					light: 'var(--brand-info-light)',
+					hover: 'var(--brand-info-hover)',
+				},
+				purple: {
+					DEFAULT: 'var(--brand-purple)',
+					light: 'var(--brand-purple-light)',
+					hover: 'var(--brand-purple-hover)',
+				},
+				pink: {
+					DEFAULT: 'var(--brand-pink)',
+					light: 'var(--brand-pink-light)',
+					hover: 'var(--brand-pink-hover)',
+				},
+				teal: {
+					DEFAULT: 'var(--brand-teal)',
+					light: 'var(--brand-teal-light)',
+					hover: 'var(--brand-teal-hover)',
 				},
 			},
 			},

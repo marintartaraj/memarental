@@ -154,6 +154,31 @@ const MakinaMeQiraTirane = () => {
         hreflang={false}
       />
 
+      {/* Skip link for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
+      {/* Breadcrumb Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 py-2" aria-label="Breadcrumb">
+        <div className="container-mobile">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+            <li>
+              <Link to="/" className="hover:text-yellow-600 transition-colors">
+                Ballina
+              </Link>
+            </li>
+            <li className="text-gray-400">/</li>
+            <li className="text-gray-900 font-medium">
+              Makina me Qira në Tiranë
+            </li>
+          </ol>
+        </div>
+      </nav>
+
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
         {/* Global light effects */}
         <div className="fixed inset-0 pointer-events-none">
@@ -503,58 +528,6 @@ const MakinaMeQiraTirane = () => {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="py-16 lg:py-24 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20"></div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-            
-            {/* Light rays for CTA */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
-              <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/25 via-white/15 to-transparent animate-pulse animation-delay-1000"></div>
-            </div>
-            
-            <div className="container-mobile relative z-10">
-              <motion.div {...fadeUp} className="text-center space-y-8">
-                <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-balance">
-                  Gati për të Eksploruar Shqipërinë?
-                </h2>
-                <p className="text-lg sm:text-xl text-white/90 max-w-3xl mx-auto text-pretty">
-                  Rezervoni sot makinën tuaj me qera në Tiranë dhe nisni aventurën shqiptare me çmimet dhe shërbimin më të mirë.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button asChild
-                    size="lg"
-                    className="bg-white text-yellow-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group relative overflow-hidden"
-                  >
-                    <Link to="/cars">
-                      <span className="flex items-center relative z-10">
-                        Rezervoni Tani
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </Link>
-                  </Button>
-                  <div className="flex items-center gap-4 text-white/80">
-                    <button 
-                      onClick={() => handleContactClick('phone')}
-                      className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group"
-                    >
-                      <Phone className="h-4 w-4 group-hover:animate-pulse" />
-                      <span>+355-4-123-4567</span>
-                    </button>
-                    <button 
-                      onClick={() => handleContactClick('email')}
-                      className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group"
-                    >
-                      <Mail className="h-4 w-4 group-hover:animate-pulse" />
-                      <span>info@memarental.com</span>
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </section>
         </main>
       </div>
     </>

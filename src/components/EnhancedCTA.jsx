@@ -12,7 +12,7 @@ const EnhancedCTA = ({
   className = "" 
 }) => {
   return (
-    <section className={`py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-yellow-500 to-orange-600 relative overflow-hidden ${className}`}>
+    <section className={`py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden ${className}`}>
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/3 w-px h-full bg-gradient-to-b from-white/30 via-white/20 to-transparent animate-pulse"></div>
@@ -43,12 +43,12 @@ const EnhancedCTA = ({
               <Button 
                 asChild 
                 size="lg" 
-                className="bg-white text-yellow-600 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300 group"
+                className="bg-white text-slate-900 hover:bg-slate-100 text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300 group font-medium"
               >
                 <Link to={primaryButton.link || "/cars"}>
-                  {primaryButton.icon && <primaryButton.icon className="mr-2 h-5 w-5" />}
+                  {primaryButton.icon && <primaryButton.icon className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />}
                   {primaryButton.text}
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>
             )}
@@ -58,10 +58,10 @@ const EnhancedCTA = ({
                 asChild 
                 variant="outline" 
                 size="lg" 
-                className="border-white text-white hover:bg-white hover:text-yellow-600 text-lg px-8 py-4 group"
+                className="border-white text-white hover:bg-white hover:text-slate-900 text-lg px-8 py-4 group transition-all duration-300 font-medium"
               >
                 <Link to={secondaryButton.link || "/contact"}>
-                  {secondaryButton.icon && <secondaryButton.icon className="mr-2 h-5 w-5" />}
+                  {secondaryButton.icon && <secondaryButton.icon className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />}
                   {secondaryButton.text}
                 </Link>
               </Button>
