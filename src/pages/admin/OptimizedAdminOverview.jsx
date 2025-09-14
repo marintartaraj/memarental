@@ -200,18 +200,18 @@ const OptimizedAdminOverview = () => {
       </Helmet>
 
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        {/* Header - Mobile first */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-              <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your rental business.</p>
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Dashboard Overview</h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">Welcome back! Here's what's happening with your rental business.</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-500">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
+              <div className="text-xs text-gray-500 sm:text-sm">
                 Cache: {performanceMetrics.cacheSize}/{performanceMetrics.maxCacheSize} items
               </div>
-              <Button onClick={handleRefresh} disabled={refreshing}>
+              <Button onClick={handleRefresh} disabled={refreshing} size="sm" className="w-full sm:w-auto justify-center">
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -224,55 +224,55 @@ const OptimizedAdminOverview = () => {
           <PerformanceMonitor />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards - Mobile first grid */}
+        <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 md:gap-6 lg:grid-cols-4 md:mb-8">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <Car className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Cars</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalCars}</p>
-                  <p className="text-xs text-green-600">{stats.availableCars} available</p>
+                <Car className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Cars</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.totalCars}</p>
+                  <p className="text-xs text-green-600 truncate">{stats.availableCars} available</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
-                  <p className="text-xs text-blue-600">{stats.confirmedBookings} confirmed</p>
+                <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Bookings</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
+                  <p className="text-xs text-blue-600 truncate">{stats.confirmedBookings} confirmed</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <Users className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
-                  <p className="text-xs text-gray-500">Registered customers</p>
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <p className="text-xs text-gray-500 truncate">Registered customers</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
-                  <p className="text-xs text-green-600">All time</p>
+                <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Revenue</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-xs text-green-600 truncate">All time</p>
                 </div>
               </div>
             </CardContent>

@@ -86,66 +86,107 @@ const OptimizedAdminLayout = () => {
       <Helmet>
         <title>Admin Panel - MEMA Rental</title>
         <meta name="description" content="Admin panel for MEMA Rental management" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </Helmet>
 
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4">
-            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+      {/* Mobile sidebar - Mobile first approach */}
+      <div className={`fixed inset-0 z-50 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-xl">
+          <div className="flex h-14 items-center justify-between px-4 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">MEMA Admin</h1>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(false)}
+              className="h-8 w-8 p-0"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          
+          {/* Mobile navigation */}
+          <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-blue-100 text-blue-900'
+                      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className="mr-3 h-5 w-5" />
+                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-yellow-600' : 'text-gray-400'}`} />
                   {item.name}
                 </Link>
               );
             })}
           </nav>
+
+          {/* Mobile user section */}
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-semibold">
+                    {user?.email?.charAt(0).toUpperCase() || 'A'}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 truncate max-w-[150px]">
+                    {user?.email || 'Admin'}
+                  </p>
+                  <p className="text-xs text-gray-500">Administrator</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-gray-500 hover:text-gray-700 h-8 w-8 p-0"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+      {/* Desktop sidebar - Hidden on mobile, visible on md+ */}
+      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-4">
-            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+          <div className="flex h-16 items-center px-4 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">MEMA Admin</h1>
+            </div>
           </div>
           
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          <nav className="flex-1 space-y-1 px-3 py-4">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-blue-100 text-blue-900'
+                      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <item.icon className="mr-3 h-5 w-5" />
+                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-yellow-600' : 'text-gray-400'}`} />
                   {item.name}
                 </Link>
               );
@@ -196,14 +237,16 @@ const OptimizedAdminLayout = () => {
 
 
           {/* User info and logout */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Users className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-semibold">
+                    {user?.email?.charAt(0).toUpperCase() || 'A'}
+                  </span>
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 truncate max-w-[150px]">
                     {user?.email || 'Admin'}
                   </p>
                   <p className="text-xs text-gray-500">Administrator</p>
@@ -213,7 +256,7 @@ const OptimizedAdminLayout = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 h-8 w-8 p-0"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -222,36 +265,37 @@ const OptimizedAdminLayout = () => {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+      {/* Main content - Mobile first */}
+      <div className="md:pl-64">
+        {/* Top bar - Mobile optimized */}
+        <div className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-x-3 border-b border-gray-200 bg-white px-3 shadow-sm md:h-16 md:gap-x-4 md:px-6 lg:px-8">
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="md:hidden h-10 w-10 p-0"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </Button>
 
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1 items-center justify-end gap-x-4">
-              {/* Performance indicator */}
-              <div className="flex items-center gap-x-2 text-sm text-gray-500">
-                <div className={`w-2 h-2 rounded-full ${
+          <div className="flex flex-1 gap-x-3 self-stretch md:gap-x-6">
+            <div className="flex flex-1 items-center justify-end gap-x-2 md:gap-x-4">
+              {/* Performance indicator - Responsive */}
+              <div className="flex items-center gap-x-1 text-xs text-gray-500 md:text-sm md:gap-x-2">
+                <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
                   (performanceStats.cacheHitRate || 0) >= 80 ? 'bg-green-500' :
                   (performanceStats.cacheHitRate || 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                 }`} />
-                <span>Performance: {(performanceStats.cacheHitRate || 0).toFixed(1)}%</span>
+                <span className="hidden sm:inline">Performance: {(performanceStats.cacheHitRate || 0).toFixed(1)}%</span>
+                <span className="sm:hidden">{(performanceStats.cacheHitRate || 0).toFixed(1)}%</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Page content */}
-        <main className="py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Page content - Mobile optimized */}
+        <main className="py-4 md:py-6">
+          <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8">
             <Outlet />
           </div>
         </main>
