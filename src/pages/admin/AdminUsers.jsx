@@ -20,8 +20,7 @@ const AdminUsers = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [userFormData, setUserFormData] = useState({
-    full_name: '',
-    is_active: true
+    full_name: ''
   });
 
   const loadData = useCallback(async (showRefreshing = false) => {
@@ -80,8 +79,7 @@ const AdminUsers = () => {
   const handleEditUser = (user) => {
     setEditingUser(user);
     setUserFormData({
-      full_name: user.full_name || '',
-      is_active: user.is_active !== false
+      full_name: user.full_name || ''
     });
     setIsUserDialogOpen(true);
   };
@@ -89,8 +87,7 @@ const AdminUsers = () => {
   const resetUserForm = () => {
     setEditingUser(null);
     setUserFormData({
-      full_name: '',
-      is_active: true
+      full_name: ''
     });
   };
 
@@ -116,7 +113,7 @@ const AdminUsers = () => {
       ID: user.id,
       Full_Name: user.full_name || 'Unknown',
       Email: user.email || 'No email',
-      Is_Active: user.is_active ? 'Yes' : 'No',
+      Status: 'Active', // is_active column doesn't exist in database
       Created_At: user.created_at,
       Updated_At: user.updated_at
     }));
@@ -134,14 +131,12 @@ const AdminUsers = () => {
       user.email?.toLowerCase().includes(userSearchTerm.toLowerCase());
   });
 
-  const getStatusColor = (isActive) => {
-    return isActive 
-      ? 'bg-green-100 text-green-800 border-green-200' 
-      : 'bg-red-100 text-red-800 border-red-200';
+  const getStatusColor = () => {
+    return 'bg-green-100 text-green-800 border-green-200'; // All users are active since is_active column doesn't exist
   };
 
-  const getStatusIcon = (isActive) => {
-    return isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />;
+  const getStatusIcon = () => {
+    return <UserCheck className="h-4 w-4" />; // All users show as active
   };
 
   const formatDate = (dateString) => {
@@ -257,9 +252,9 @@ const AdminUsers = () => {
                       </span>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border flex items-center gap-1 ${getStatusColor(user.is_active)}`}>
-                    {getStatusIcon(user.is_active)}
-                    <span>{user.is_active ? 'Active' : 'Inactive'}</span>
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border flex items-center gap-1 ${getStatusColor()}`}>
+                    {getStatusIcon()}
+                    <span>Active</span>
                   </span>
                 </div>
                 <div className="flex justify-end pt-4 border-t border-gray-100">
@@ -326,9 +321,9 @@ const AdminUsers = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full border ${getStatusColor(user.is_active)}`}>
-                            {getStatusIcon(user.is_active)}
-                            <span className="ml-1">{user.is_active ? 'Active' : 'Inactive'}</span>
+                          <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full border ${getStatusColor()}`}>
+                            {getStatusIcon()}
+                            <span className="ml-1">Active</span>
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -374,18 +369,6 @@ const AdminUsers = () => {
                   required 
                   placeholder="Enter full name"
                 />
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select value={userFormData.is_active ? 'active' : 'inactive'} onValueChange={value => setUserFormData({...userFormData, is_active: value === 'active'})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <Button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 h-12">
                 Update User

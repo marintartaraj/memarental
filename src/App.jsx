@@ -24,8 +24,7 @@ import MakinaMeQiraTirane from '@/pages/client/MakinaMeQiraTirane';
 import QiraMakineRinas from '@/pages/client/QiraMakineRinas';
 import FAQPage from '@/pages/client/FAQPage';
 // Admin pages
-import AdminLayout from '@/pages/admin/AdminLayout';
-import AdminLoginPage from '@/pages/admin/AdminLoginPage';
+import OptimizedAdminRouter from '@/pages/admin/OptimizedAdminRouter';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -61,12 +60,11 @@ const AppContent = () => {
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           
           {/* Admin routes */}
-          <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route 
             path="/admin/*" 
             element={
               <ProtectedRoute adminOnly>
-                <AdminLayout />
+                <OptimizedAdminRouter />
               </ProtectedRoute>
             } 
           />

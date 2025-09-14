@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import CSRFProtectedForm from '@/components/CSRFProtectedForm';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -33,8 +34,7 @@ const AdminLoginPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, formDataWithCSRF, csrfToken) => {
     setIsSubmitting(true);
 
     try {
@@ -126,7 +126,7 @@ const AdminLoginPage = () => {
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <CSRFProtectedForm onSubmit={handleSubmit} sessionId="admin-login" showCSRFInfo={false}>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-gray-700 font-medium">
                     Email Address
@@ -189,7 +189,7 @@ const AdminLoginPage = () => {
                     </div>
                   )}
                 </Button>
-              </form>
+              </CSRFProtectedForm>
 
               <div className="mt-6 text-center">
                 <Button

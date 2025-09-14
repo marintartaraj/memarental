@@ -390,10 +390,30 @@ const AdminBookings = () => {
 
   const handleEditBooking = (booking) => {
     setEditingBooking(booking);
+    
+    // Format dates for HTML date inputs (YYYY-MM-DD format)
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return '';
+      
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // Otherwise, parse and format the date
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date format:', dateString);
+        return '';
+      }
+      
+      return date.toISOString().split('T')[0];
+    };
+    
     setBookingFormData({
       status: booking.status,
-      pickup_date: booking.pickup_date,
-      return_date: booking.return_date,
+      pickup_date: formatDateForInput(booking.pickup_date),
+      return_date: formatDateForInput(booking.return_date),
       total_price: booking.total_price,
       notes: booking.notes || ''
     });
