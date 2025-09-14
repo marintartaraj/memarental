@@ -25,6 +25,7 @@ import QiraMakineRinas from '@/pages/client/QiraMakineRinas';
 import FAQPage from '@/pages/client/FAQPage';
 // Admin pages
 import OptimizedAdminRouter from '@/pages/admin/OptimizedAdminRouter';
+import AdminLoginPage from '@/pages/admin/AdminLoginPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -59,7 +60,10 @@ const AppContent = () => {
           <Route path="/booking/:carId" element={<BookingPage />} />
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           
-          {/* Admin routes */}
+          {/* Admin login - NOT protected */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          
+          {/* Admin routes - protected */}
           <Route 
             path="/admin/*" 
             element={

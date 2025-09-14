@@ -174,8 +174,13 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const isAdmin = useMemo(() => {
-    // Super simple - if they're logged in with mateomema1@gmail.com, they're admin
-    return user?.email === 'mateomema1@gmail.com';
+    // Admin emails that have access to admin panel
+    const adminEmails = [
+      'mateomema1@gmail.com',
+      'admin@memarental.com',
+      'prov@gmail.com'
+    ];
+    return user?.email && adminEmails.includes(user.email.toLowerCase());
   }, [user]);
 
   const hasRole = useCallback((role) => {
