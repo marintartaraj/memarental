@@ -5,13 +5,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import csrfService from '@/lib/csrfService';
-import { useSecurity } from '@/stores/securityStore';
+import useSecurityStore from '@/stores/securityStore';
 
 export const useCSRF = (sessionId = 'default') => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const securityStore = useSecurity();
+  const securityStore = useSecurityStore();
 
   // Generate a new token
   const generateToken = useCallback(() => {
