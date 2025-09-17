@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { motion, useReducedMotion } from "framer-motion"
-import { Star, Users, Award, Shield, Clock, Zap, Heart, Navigation, CreditCard, Mail, Calendar, CheckCircle, ArrowRight, Sparkles } from "lucide-react"
+import { Shield, Clock, Zap, Heart, Navigation, CreditCard, Mail, Calendar, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -23,7 +23,6 @@ const HomePage = () => {
     const fetchFeaturedCar = async () => {
       try {
         setLoadingCar(true)
-        console.log('Fetching featured Mercedes-Benz car...')
         
         // Try to find any Mercedes-Benz E-Class first (most likely to exist)
         let { data, error } = await supabase
@@ -35,7 +34,6 @@ const HomePage = () => {
 
         // If still not found, get any Mercedes-Benz car
         if (error || !data) {
-          console.log('E-Class not found, trying any Mercedes-Benz...')
           const { data: mercedesData, error: mercedesError } = await supabase
             .from('cars')
             .select('*')
@@ -52,7 +50,6 @@ const HomePage = () => {
 
         // If still not found, get any premium car
         if (error || !data) {
-          console.log('Mercedes-Benz not found, trying any premium car...')
           const { data: premiumData, error: premiumError } = await supabase
             .from('cars')
             .select('*')
@@ -68,22 +65,18 @@ const HomePage = () => {
         }
 
         if (error) {
-          console.error('Error fetching featured car:', error)
           // Don't set a fallback car - let the buttons redirect to /cars
           setFeaturedCar(null)
           return
         }
 
         if (data) {
-          console.log('Featured car found:', data)
           setFeaturedCar(data)
         } else {
-          console.log('No Mercedes-Benz car found in database')
           // Don't set a fallback car - let the buttons redirect to /cars
           setFeaturedCar(null)
         }
       } catch (err) {
-        console.error('Error fetching featured car:', err)
         // Don't set a fallback car - let the buttons redirect to /cars
         setFeaturedCar(null)
       } finally {
@@ -170,8 +163,8 @@ const HomePage = () => {
     }
   ]
 
-  // FAQ schema for rich results
-  const faqSchema = {
+  // Memoize expensive schema generation
+  const faqSchema = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": faqItems.map(({question, answer}) => ({
@@ -182,10 +175,10 @@ const HomePage = () => {
         "text": answer
       }
     }))
-  }
+  }), [faqItems]);
 
   // Reviews schema for rich results
-  const reviewsSchema = {
+  const reviewsSchema = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "MEMA Rental",
@@ -240,13 +233,13 @@ const HomePage = () => {
         "datePublished": "2024-01-05"
       }
     ]
-  }
+  }), []);
 
   // Breadcrumb schema
-  const breadcrumbSchema = generateBreadcrumbSchema([
+  const breadcrumbSchema = useMemo(() => generateBreadcrumbSchema([
     { name: language === 'sq' ? 'Ballina' : 'Home', url: '/' },
     { name: language === 'sq' ? 'Qira Makine Tiranë' : 'Car Rental Tirana', url: '/' }
-  ])
+  ]), [language]);
 
   const fadeUp = {
     initial: prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
@@ -408,7 +401,7 @@ const HomePage = () => {
                 {language === 'sq' ? 'Ballina' : 'Home'}
               </Link>
             </li>
-            <li className="text-gray-400">/</li>
+            <li className="text-gray-500">/</li>
             <li className="text-gray-900 font-medium">
               {language === 'sq' ? 'Qira Makine Tiranë' : 'Car Rental Tirana'}
             </li>

@@ -50,7 +50,6 @@ const CarDetailPage = () => {
           .single();
 
         if (error) {
-          console.error('Error fetching car:', error);
           setError('Car not found');
           return;
         }
@@ -107,7 +106,6 @@ const CarDetailPage = () => {
 
         setCarData(car);
       } catch (err) {
-        console.error('Error:', err);
         setError('Failed to load car details');
       } finally {
         setLoading(false);

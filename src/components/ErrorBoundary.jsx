@@ -2,7 +2,7 @@ import React, { Component, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, Home, Bug, X } from 'lucide-react';
-import { errorService, ERROR_TYPES } from '@/lib/errorService';
+import { globalErrorHandler, ERROR_TYPES } from '@/lib/errorHandling.jsx';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -25,7 +25,7 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    const errorId = errorService.logError(error, {
+    const errorId = globalErrorHandler.handleError(error, {
       component: this.props.componentName || 'Unknown',
       errorBoundary: true,
       errorInfo
@@ -66,6 +66,21 @@ class ErrorBoundary extends Component {
     }
   };
 
+  getUserFriendlyMessage = (error, context = {}) => {
+    const messages = {
+      [ERROR_TYPES.NETWORK]: 'Please check your internet connection and try again.',
+      [ERROR_TYPES.VALIDATION]: 'Please check your input and try again.',
+      [ERROR_TYPES.AUTHENTICATION]: 'Please log in again to continue.',
+      [ERROR_TYPES.AUTHORIZATION]: 'You do not have permission to perform this action.',
+      [ERROR_TYPES.NOT_FOUND]: 'The requested resource was not found.',
+      [ERROR_TYPES.SERVER]: 'Our servers are experiencing issues. Please try again later.',
+      [ERROR_TYPES.CLIENT]: 'Something went wrong. Please try again.',
+      [ERROR_TYPES.UNKNOWN]: 'An unexpected error occurred. Please try again.'
+    };
+
+    return messages[error.type] || messages[ERROR_TYPES.UNKNOWN];
+  };
+
   handleGoHome = () => {
     window.location.href = '/';
   };
@@ -86,8 +101,8 @@ class ErrorBoundary extends Component {
         return fallback(error, errorInfo, this.handleRetry);
       }
 
-      const errorType = errorService.classifyError(error);
-      const userMessage = errorService.getUserFriendlyMessage(error, {
+      const errorType = error.type || ERROR_TYPES.UNKNOWN;
+      const userMessage = this.getUserFriendlyMessage(error, {
         component: componentName
       });
 

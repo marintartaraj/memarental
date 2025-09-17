@@ -41,7 +41,6 @@ const AdminUsers = () => {
       setProfiles(profilesData || []);
 
     } catch (error) {
-      console.error('Error loading users:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);

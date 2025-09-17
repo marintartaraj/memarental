@@ -227,3 +227,4 @@ export const useOptimizedPagination = (table, options = {}) => {
 
 export default useOptimizedPagination;
 
+

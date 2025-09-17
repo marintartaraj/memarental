@@ -10,7 +10,7 @@ import {
   XCircle,
   Loader
 } from 'lucide-react';
-import { errorService } from '@/lib/errorService';
+import { globalErrorHandler, ERROR_TYPES } from '@/lib/errorHandling.jsx';
 
 const ErrorRecovery = ({ 
   error, 
@@ -34,7 +34,7 @@ const ErrorRecovery = ({
       await onRetry();
     } catch (retryError) {
       // Log retry attempt
-      errorService.logError(retryError, {
+      globalErrorHandler.handleError(retryError, {
         recoveryAttempt: recoveryAttempts + 1,
         originalError: error?.message
       });
@@ -60,8 +60,8 @@ const ErrorRecovery = ({
   };
 
   const canRetry = retryCount < maxRetries;
-  const errorType = errorService.classifyError(error);
-  const isRetryable = errorService.isRetryable(error);
+  const errorType = error.type || ERROR_TYPES.UNKNOWN;
+  const isRetryable = errorType === ERROR_TYPES.NETWORK || errorType === ERROR_TYPES.SERVER;
 
   return (
     <Card className={`w-full max-w-md ${className}`}>
@@ -171,4 +171,5 @@ const ErrorRecovery = ({
 };
 
 export default ErrorRecovery;
+
 

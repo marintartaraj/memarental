@@ -116,7 +116,6 @@ const AdminOverview = () => {
       setProfiles(profilesData || []);
 
     } catch (error) {
-      console.error('Error loading data:', error);
       setError('Failed to load dashboard data. Please try again.');
     } finally {
       setLoading(false);

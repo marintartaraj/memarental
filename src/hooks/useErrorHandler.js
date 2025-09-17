@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { errorService, ERROR_TYPES } from '@/lib/errorService';
+import { globalErrorHandler, ERROR_TYPES, errorRecovery } from '@/lib/errorHandling.jsx';
 import { useToast } from '@/components/ui/use-toast';
 
 /**
@@ -22,14 +22,14 @@ export const useErrorHandler = (options = {}) => {
    * Handle error with user feedback
    */
   const handleError = useCallback((error, context = {}) => {
-    const errorInfo = errorService.handleError(error, {
+    const errorInfo = globalErrorHandler.handleError(error, {
       component: componentName,
       ...context
     });
 
     // Log error if enabled
     if (logErrors) {
-      errorService.logError(error, {
+      globalErrorHandler.handleError(error, {
         component: componentName,
         ...context
       });
@@ -61,7 +61,7 @@ export const useErrorHandler = (options = {}) => {
       const errorInfo = handleError(error, context);
       
       // Handle retry logic
-      if (retryable && errorService.isRetryable(error) && retryCount < 3) {
+      if (retryable && (error.type === ERROR_TYPES.NETWORK || error.type === ERROR_TYPES.SERVER) && retryCount < 3) {
         setIsRetrying(true);
         setRetryCount(prev => prev + 1);
         
@@ -89,10 +89,7 @@ export const useErrorHandler = (options = {}) => {
   const handleWithRetry = useCallback(async (operation, context = {}, retryConfig = {}) => {
     try {
       setIsRetrying(false);
-      const result = await errorService.handleWithRetry(operation, {
-        component: componentName,
-        ...context
-      }, retryConfig);
+      const result = await errorRecovery.retry(operation, retryConfig.maxRetries || 3, retryConfig.delay || 1000);
       
       setRetryCount(0);
       return result;
@@ -160,9 +157,9 @@ export const useErrorHandler = (options = {}) => {
    * Get error statistics for this component
    */
   const getComponentErrorStats = useCallback(() => {
-    const allErrors = errorService.getErrorStats();
-    return allErrors.recent.filter(error => 
-      error.context.component === componentName
+    const allErrors = globalErrorHandler.getErrorLog();
+    return allErrors.filter(error => 
+      error.context?.component === componentName
     );
   }, [componentName]);
 
@@ -182,4 +179,5 @@ export const useErrorHandler = (options = {}) => {
 };
 
 export default useErrorHandler;
+
 

@@ -588,3 +588,4 @@ export const mobileOptimizationService = new MobileOptimizationService();
 // Export for use in components
 export default mobileOptimizationService;
 
+

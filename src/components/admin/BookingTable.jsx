@@ -259,3 +259,4 @@ const BookingTable = ({
 
 export default BookingTable;
 
+

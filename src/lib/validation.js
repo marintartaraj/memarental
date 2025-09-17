@@ -59,6 +59,26 @@ class ValidationService {
   validateBookingData(data, step) {
     const errors = {};
 
+    // Step 0: Date Selection (only validate if both dates are provided)
+    if (step === 0) {
+      if (!data.pickupDate) errors.pickupDate = 'Pickup date is required';
+      if (!data.returnDate) errors.returnDate = 'Return date is required';
+      
+      if (data.pickupDate && data.returnDate) {
+        const pickup = new Date(data.pickupDate);
+        const returnDate = new Date(data.returnDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (pickup < today) {
+          errors.pickupDate = 'Pickup date cannot be in the past';
+        }
+        if (returnDate <= pickup) {
+          errors.returnDate = 'Return date must be after pickup date';
+        }
+      }
+    }
+
     // Step 1: Personal Information
     if (step >= 1) {
       if (!data.firstName) errors.firstName = 'First name is required';
@@ -77,22 +97,16 @@ class ValidationService {
       }
     }
 
-    // Step 2: Booking Details
+    // Step 2: Booking Details (times required for this step)
     if (step >= 2) {
-      if (!data.pickupDate) errors.pickupDate = 'Pickup date is required';
-      if (!data.returnDate) errors.returnDate = 'Return date is required';
-      if (data.pickupDate && data.returnDate) {
-        const pickup = new Date(data.pickupDate);
-        const returnDate = new Date(data.returnDate);
-        if (returnDate <= pickup) {
-          errors.returnDate = 'Return date must be after pickup date';
-        }
-      }
+      if (!data.pickupTime) errors.pickupTime = 'Pickup time is required';
+      if (!data.returnTime) errors.returnTime = 'Return time is required';
     }
 
     // Step 3: Additional Information
     if (step >= 3) {
-      // Add any additional validation rules here
+      if (!data.pickupLocation) errors.pickupLocation = 'Pickup location is required';
+      if (!data.acceptTerms) errors.acceptTerms = 'You must accept the terms and conditions';
     }
 
     return errors;

@@ -189,13 +189,6 @@ export default defineConfig({
 		react(),
 		addTransformIndexHtml
 	],
-	server: {
-		cors: true,
-		headers: {
-			'Cross-Origin-Embedder-Policy': 'credentialless',
-		},
-		allowedHosts: true,
-	},
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],
 		alias: {
@@ -209,7 +202,135 @@ export default defineConfig({
 				'@babel/traverse',
 				'@babel/generator',
 				'@babel/types'
-			]
+			],
+			output: {
+				manualChunks: (id) => {
+					// Advanced chunk splitting strategy
+					if (id.includes('node_modules')) {
+						// React ecosystem
+						if (id.includes('react') || id.includes('react-dom')) {
+							return 'react';
+						}
+						// Router
+						if (id.includes('react-router')) {
+							return 'router';
+						}
+						// UI libraries
+						if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('@radix-ui')) {
+							return 'ui';
+						}
+						// Supabase
+						if (id.includes('@supabase')) {
+							return 'supabase';
+						}
+						// Utilities
+						if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
+							return 'utils';
+						}
+						// State management
+						if (id.includes('zustand')) {
+							return 'state';
+						}
+						// Everything else
+						return 'vendor';
+					}
+					// App-specific chunks
+					if (id.includes('/pages/admin/')) {
+						return 'admin';
+					}
+					if (id.includes('/pages/client/')) {
+						return 'client';
+					}
+					if (id.includes('/components/')) {
+						return 'components';
+					}
+					if (id.includes('/lib/')) {
+						return 'lib';
+					}
+				},
+				// Optimize chunk names
+				chunkFileNames: (chunkInfo) => {
+					const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+					return `js/[name]-[hash].js`;
+				},
+				entryFileNames: 'js/[name]-[hash].js',
+				assetFileNames: (assetInfo) => {
+					const info = assetInfo.name.split('.');
+					const ext = info[info.length - 1];
+					if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+						return `images/[name]-[hash][extname]`;
+					}
+					if (/woff2?|eot|ttf|otf/i.test(ext)) {
+						return `fonts/[name]-[hash][extname]`;
+					}
+					return `assets/[name]-[hash][extname]`;
+				}
+			}
+		},
+		// Advanced minification
+		minify: 'terser',
+		terserOptions: {
+			compress: {
+				drop_console: true,
+				drop_debugger: true,
+				pure_funcs: ['console.log', 'console.info', 'console.debug'],
+				passes: 2,
+				unsafe: true,
+				unsafe_comps: true,
+				unsafe_math: true,
+				unsafe_proto: true,
+				unsafe_regexp: true,
+				unsafe_undefined: true
+			},
+			mangle: {
+				safari10: true,
+				properties: {
+					regex: /^_/
+				}
+			},
+			format: {
+				comments: false
+			}
+		},
+		// Performance optimizations
+		sourcemap: false,
+		chunkSizeWarningLimit: 1000,
+		target: 'esnext',
+		cssCodeSplit: true,
+		cssMinify: true,
+		reportCompressedSize: false, // Faster builds
+		// Tree shaking
+		treeshake: {
+			moduleSideEffects: false,
+			propertyReadSideEffects: false,
+			tryCatchDeoptimization: false
 		}
+	},
+	// Development optimizations
+	server: {
+		cors: true,
+		headers: {
+			'Cross-Origin-Embedder-Policy': 'credentialless',
+		},
+		allowedHosts: true,
+		// Enable HTTP/2 push
+		hmr: {
+			overlay: false // Disable error overlay for better performance
+		}
+	},
+	// Optimize dependencies
+	optimizeDeps: {
+		include: [
+			'react',
+			'react-dom',
+			'react-router-dom',
+			'@supabase/supabase-js',
+			'framer-motion',
+			'lucide-react',
+			'date-fns',
+			'clsx',
+			'tailwind-merge'
+		],
+		exclude: ['@babel/parser', '@babel/traverse', '@babel/generator', '@babel/types']
 	}
 });

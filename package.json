@@ -10,7 +10,15 @@
     "preview": "vite preview",
     "migrate": "node run_migrations.js",
     "verify": "node verify_migrations.js",
-    "test": "vitest"
+    "test": "vitest",
+    "analyze": "node scripts/analyze-bundle.js",
+    "build:analyze": "npm run build && npm run analyze",
+    "optimize-images": "node scripts/optimize-images.js",
+    "performance:monitor": "node scripts/performance-monitor.js",
+    "performance:budget": "node scripts/check-performance-budget.js",
+    "build:optimized": "npm run build && npm run performance:budget",
+    "preload:test": "node scripts/test-preloading.js",
+    "cache:clear": "node scripts/clear-cache.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.2.1",
@@ -24,6 +32,7 @@
     "@supabase/supabase-js": "2.30.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.292.0",

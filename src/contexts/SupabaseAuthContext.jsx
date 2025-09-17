@@ -178,7 +178,8 @@ export const AuthProvider = ({ children }) => {
     const adminEmails = [
       'mateomema1@gmail.com',
       'admin@memarental.com',
-      'prov@gmail.com'
+      'prov@gmail.com',
+      'your-email@domain.com' // Add your email here
     ];
     return user?.email && adminEmails.includes(user.email.toLowerCase());
   }, [user]);

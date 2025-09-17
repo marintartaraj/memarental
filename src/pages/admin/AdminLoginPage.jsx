@@ -40,7 +40,6 @@ const AdminLoginPage = () => {
       await signIn(formData.email, formData.password);
       // The useEffect will handle the redirect when auth state updates
     } catch (error) {
-      console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { metaTags, structuredData } from '@/lib/seoUtils';
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://memarental.com';
 const SITE_NAME = 'MEMA Rental';
@@ -24,10 +25,66 @@ export default function Seo({
   notranslate = false,
   language = 'en',
   hreflang = true, // Enable hreflang by default
+  keywords = [],
+  author = 'MEMA Rental',
+  type = 'website',
+  locale = 'en_US',
+  businessData = null,
+  carData = null,
+  faqData = null,
+  breadcrumbs = null
 }) {
   const url = canonical || toAbsoluteUrl(path || '/');
   const ogImage = toAbsoluteUrl(image || '/og-image.jpg');
-  const blocks = Array.isArray(schema) ? schema : schema ? [schema] : [];
+  
+  // Generate enhanced meta data
+  const metaData = metaTags.generateMetaTags({
+    title,
+    description,
+    keywords,
+    image: ogImage,
+    url,
+    type,
+    locale,
+    author
+  });
+
+  // Generate Open Graph and Twitter Card tags
+  const ogTags = metaTags.generateOpenGraphTags(metaData);
+  const twitterTags = metaTags.generateTwitterCardTags(metaData);
+
+  // Generate structured data
+  const structuredDataBlocks = [];
+  
+  // Add business schema if provided
+  if (businessData) {
+    structuredDataBlocks.push(structuredData.generateLocalBusinessSchema(businessData));
+  }
+  
+  // Add car schema if provided
+  if (carData) {
+    structuredDataBlocks.push(structuredData.generateCarSchema(carData));
+  }
+  
+  // Add FAQ schema if provided
+  if (faqData) {
+    structuredDataBlocks.push(structuredData.generateFAQSchema(faqData));
+  }
+  
+  // Add breadcrumb schema if provided
+  if (breadcrumbs) {
+    structuredDataBlocks.push(structuredData.generateBreadcrumbSchema(breadcrumbs));
+  }
+  
+  // Add website schema
+  structuredDataBlocks.push(structuredData.generateWebSiteSchema({
+    name: SITE_NAME,
+    url: SITE_URL,
+    description: metaData.description
+  }));
+
+  // Combine with custom schema
+  const blocks = [...structuredDataBlocks, ...(Array.isArray(schema) ? schema : schema ? [schema] : [])];
   
   // Generate hreflang tags for Albanian and English
   const defaultAlternates = hreflang ? [
@@ -40,9 +97,11 @@ export default function Seo({
 
   return (
     <Helmet prioritizeSeoTags>
-      {/* Title */}
-      <title>{title ? `${title} | ${SITE_NAME}` : SITE_NAME}</title>
-      <meta name="description" content={description} />
+      {/* Title and Description */}
+      <title>{metaData.title}</title>
+      <meta name="description" content={metaData.description} />
+      <meta name="keywords" content={metaData.keywords} />
+      <meta name="author" content={metaData.author} />
 
       {/* Canonical + hreflang */}
       <link rel="canonical" href={url} />
@@ -70,19 +129,14 @@ export default function Seo({
       {notranslate && <meta name="google" content="notranslate" />}
 
       {/* Open Graph */}
-      <meta property="og:type" content="website" />
-      <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:title" content={title || SITE_NAME} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={url} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:locale" content="en_US" />
+      {Object.entries(ogTags).map(([key, value]) => (
+        <meta key={key} property={key} content={value} />
+      ))}
 
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title || SITE_NAME} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
+      {/* Twitter Card */}
+      {Object.entries(twitterTags).map(([key, value]) => (
+        <meta key={key} name={key} content={value} />
+      ))}
 
       {/* JSON-LD blocks */}
       {blocks.map((b, i) => (

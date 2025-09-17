@@ -79,8 +79,6 @@ const AdminBookings = () => {
     setError(null);
     
     try {
-      console.log('🔍 Starting to load bookings data...');
-      console.log('👤 Current user:', user?.email || 'Not authenticated');
       
       // Check if user is authenticated
       if (!user) {
@@ -88,21 +86,17 @@ const AdminBookings = () => {
       }
       
       // Test 1: Check if we can access the bookings table at all
-      console.log('Test 1: Checking basic table access...');
       const { data: basicTest, error: basicError } = await supabase
         .from('bookings')
         .select('id')
         .limit(1);
       
       if (basicError) {
-        console.error('Basic table access failed:', basicError);
         throw new Error(`Basic table access failed: ${basicError.message}`);
       }
       
-      console.log('Basic table access successful');
       
       // Test 2: Check if we can access with relationships
-      console.log('Test 2: Checking relationships access...');
       const { data: relationshipTest, error: relationshipError } = await supabase
         .from('bookings')
         .select(`
@@ -114,35 +108,28 @@ const AdminBookings = () => {
         .limit(1);
       
       if (relationshipError) {
-        console.error('Relationship access failed:', relationshipError);
         throw new Error(`Relationship access failed: ${relationshipError.message}`);
       }
       
-      console.log('Relationship access successful');
       
       // Test 3: Check if we can access cars table
-      console.log('Test 3: Checking cars table access...');
       const { data: carsTest, error: carsError } = await supabase
         .from('cars')
         .select('id, brand, model')
         .limit(1);
       
       if (carsError) {
-        console.error('Cars table access failed:', carsError);
         throw new Error(`Cars table access failed: ${carsError.message}`);
       }
       
-      console.log('Cars table access successful');
       
       // Now load the full data
-      console.log('Loading full bookings data...');
       const { data: fullBookingsData, error: fullError } = await supabase
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (fullError) {
-        console.error('Full data loading error:', fullError);
         throw new Error(`Full data loading error: ${fullError.message}`);
       }
       
@@ -187,16 +174,13 @@ const AdminBookings = () => {
         })
       );
       
-      console.log('Successfully loaded bookings:', bookingsWithProfiles?.length || 0);
       setBookings(bookingsWithProfiles || []);
       
       // If no bookings found, that's okay - just log it
       if (!bookingsWithProfiles || bookingsWithProfiles.length === 0) {
-        console.log('Info: No bookings found in database - this is normal for a new system');
       }
 
     } catch (error) {
-      console.error('Error loading bookings:', error);
       
       // Provide more specific error messages
       let errorMessage = 'Failed to load bookings';
@@ -403,7 +387,6 @@ const AdminBookings = () => {
       // Otherwise, parse and format the date
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date format:', dateString);
         return '';
       }
       
@@ -456,7 +439,6 @@ const AdminBookings = () => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error loading booked dates:', error);
         return;
       }
 
@@ -475,7 +457,6 @@ const AdminBookings = () => {
       
       setBookedDates(dates);
     } catch (error) {
-      console.error('Error loading booked dates:', error);
     } finally {
       setLoadingBookedDates(false);
     }

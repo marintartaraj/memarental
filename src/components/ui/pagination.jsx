@@ -175,3 +175,4 @@ export const PaginationControls = ({
 
 export default Pagination;
 
+

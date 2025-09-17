@@ -3,7 +3,7 @@ import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Calendar, MapPin, Car, Phone, Mail, Download, Printer } from 'lucide-react';
-import { BookingService } from '@/lib/bookingService';
+import { bookingService } from '@/lib/bookingService';
 import { toast } from '@/components/ui/use-toast';
 
 function BookingConfirmation() {
@@ -18,7 +18,7 @@ function BookingConfirmation() {
         const { bookingId } = location.state || {};
         
         if (bookingId) {
-          const result = await BookingService.getBookingById(bookingId);
+          const result = await bookingService.getBookingById(bookingId);
           if (result.success) {
             setBooking(result.booking);
           } else {
@@ -29,7 +29,6 @@ function BookingConfirmation() {
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }

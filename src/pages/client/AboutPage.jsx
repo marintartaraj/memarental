@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Link } from "react-router-dom"
 import { Users, Award, Shield, Clock, MapPin, Phone, Mail, Star, Car, Globe, Target } from "lucide-react"
-import { generateLocalBusinessSchema } from "@/seo/structuredData"
+import { structuredData } from "@/lib/seoUtils"
 
 const AboutPage = () => {
   const { t, language } = useLanguage()
@@ -76,7 +76,7 @@ const AboutPage = () => {
         description={seoData[language]?.description || seoData.en.description}
         path="/about"
         image="https://memarental.com/about-image.jpg"
-        schema={[generateLocalBusinessSchema(), aboutSchema, breadcrumbSchema]}
+        schema={[structuredData.generateLocalBusinessSchema(), aboutSchema, breadcrumbSchema]}
       />
 
       {/* Breadcrumb Navigation */}

@@ -1,15 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Star, Users, Fuel, Calendar, Heart, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import InstagramPhotoSlider from './InstagramPhotoSlider';
+import { keyboardNavigation, ariaUtils } from '@/lib/accessibility';
 import { getAvailableCarImages } from '@/lib/addCarsToDatabase';
 
-const CarCardWithSlider = ({ car, index, selectedDates }) => {
+const CarCardWithSlider = ({ car, index, selectedDates, isLoading = false }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const cardRef = useRef(null);
+  const sliderId = useMemo(() => ariaUtils.generateId('car-slider'), []);
 
   // Get all available images for this car
   const carImages = useMemo(() => {
@@ -18,26 +22,90 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
     return brandImages.length > 0 ? brandImages : [car.image_url];
   }, [car.brand, car.image_url]);
 
-  const goToNextImage = () => {
+  const goToNextImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev + 1) % carImages.length);
-  };
+  }, [carImages.length]);
 
-  const goToPreviousImage = () => {
+  const goToPreviousImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev - 1 + carImages.length) % carImages.length);
-  };
+  }, [carImages.length]);
 
-  const openSlider = () => {
+  const openSlider = useCallback(() => {
     setIsSliderOpen(true);
-  };
+  }, []);
 
-  const closeSlider = () => {
+  const closeSlider = useCallback(() => {
     setIsSliderOpen(false);
-  };
+  }, []);
 
-  const openSliderAtIndex = (index) => {
+  const openSliderAtIndex = useCallback((index) => {
     setCurrentImageIndex(index);
     setIsSliderOpen(true);
-  };
+  }, []);
+
+  // Keyboard navigation handlers
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goToPreviousImage();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goToNextImage();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openSlider();
+    }
+  }, [goToPreviousImage, goToNextImage, openSlider]);
+
+  // Announce image changes to screen readers
+  const announceImageChange = useCallback((newIndex) => {
+    ariaUtils.announce(`Image ${newIndex + 1} of ${carImages.length} for ${car.brand} ${car.model}`);
+  }, [carImages.length, car.brand, car.model]);
+
+  // Loading skeleton component
+  if (isLoading) {
+    return (
+      <div className="group">
+        <Card className="overflow-hidden border-0 bg-white/80 backdrop-blur-sm">
+          <div className="relative h-64 bg-gray-200 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+          </div>
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3"></div>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-8 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-2">
+                  <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1"></div>
+                <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="flex space-x-2">
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -51,13 +119,21 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
           {/* Image Section with Slider Controls */}
           <div className="relative overflow-hidden">
             {/* Main Image */}
-            <div className="relative h-64 bg-gradient-to-br from-gray-100 to-gray-200">
+            <div 
+              className="relative h-64 bg-gradient-to-br from-gray-100 to-gray-200"
+              role="img"
+              aria-label={`${car.brand} ${car.model} car image ${currentImageIndex + 1} of ${carImages.length}`}
+              tabIndex={0}
+              onKeyDown={handleKeyDown}
+              ref={cardRef}
+            >
               <img
                 src={carImages[currentImageIndex]}
-                alt={`${car.brand} ${car.model}`}
+                alt={`${car.brand} ${car.model} - Premium car rental in Tirana, Albania`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 onClick={openSlider}
                 style={{ cursor: 'pointer' }}
+                aria-hidden="true"
               />
               
               {/* Image Overlay */}
@@ -77,19 +153,27 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       goToPreviousImage();
+                      announceImageChange(currentImageIndex === 0 ? carImages.length - 1 : currentImageIndex - 1);
                     }}
                     className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                    aria-label={`Previous image of ${car.brand} ${car.model}`}
+                    aria-describedby={`car-${car.id}-images`}
+                    disabled={carImages.length <= 1}
                   >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft size={16} aria-hidden="true" />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       goToNextImage();
+                      announceImageChange(currentImageIndex === carImages.length - 1 ? 0 : currentImageIndex + 1);
                     }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                    aria-label={`Next image of ${car.brand} ${car.model}`}
+                    aria-describedby={`car-${car.id}-images`}
+                    disabled={carImages.length <= 1}
                   >
-                    <ChevronRight size={16} />
+                    <ChevronRight size={16} aria-hidden="true" />
                   </button>
                 </>
               )}
@@ -100,6 +184,19 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                   {currentImageIndex + 1} / {carImages.length}
                 </div>
               )}
+
+              {/* Hidden description for screen readers */}
+              <div 
+                id={`car-${car.id}-images`}
+                className="sr-only"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {carImages.length > 1 
+                  ? `${carImages.length} images available for ${car.brand} ${car.model}. Use arrow keys to navigate.`
+                  : `Single image of ${car.brand} ${car.model}.`
+                }
+              </div>
 
               {/* Dots for Multiple Images */}
               {carImages.length > 1 && (
@@ -116,6 +213,8 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                           ? 'bg-white scale-125'
                           : 'bg-white/50 hover:bg-white/75'
                       }`}
+                      aria-label={`Go to image ${idx + 1} of ${carImages.length}`}
+                      aria-current={idx === currentImageIndex ? 'true' : 'false'}
                     />
                   ))}
                 </div>
@@ -207,13 +306,14 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
                   variant="outline"
                   size="sm"
                   className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
+                  aria-label={`Add ${car.brand} ${car.model} to favorites`}
                 >
-                  <Heart className="w-4 h-4" />
+                  <Heart className="w-4 h-4" aria-hidden="true" />
                 </Button>
                 <Link to={`/cars/${car.id}`}>
-                  <Button size="sm">
+                  <Button size="sm" aria-label={`View details for ${car.brand} ${car.model}`}>
                     View Details
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
                   </Button>
                 </Link>
               </div>
@@ -255,4 +355,8 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
   );
 };
 
-export default CarCardWithSlider;
+// Memoize the component to prevent unnecessary re-renders
+const MemoizedCarCardWithSlider = memo(CarCardWithSlider);
+MemoizedCarCardWithSlider.displayName = 'CarCardWithSlider';
+
+export default MemoizedCarCardWithSlider;

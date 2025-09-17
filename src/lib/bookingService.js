@@ -50,33 +50,40 @@ class BookingService {
    */
   async getBookingById(id) {
     try {
-      const { data, error } = await supabase
+      // First get the booking data
+      const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          profiles!inner(
-            id,
-            first_name,
-            last_name,
-            email,
-            phone
-          ),
-          cars!inner(
-            id,
-            make,
-            model,
-            year,
-            price_per_day
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (bookingError) throw bookingError;
+
+      // Then get the car data separately
+      const { data: carData, error: carError } = await supabase
+        .from('cars')
+        .select('id, brand, model, year, daily_rate')
+        .eq('id', bookingData.car_id)
+        .single();
+
+      if (carError) throw carError;
+
+      // Combine the data
+      const result = {
+        ...bookingData,
+        cars: carData
+      };
+
+      return {
+        success: true,
+        booking: result
+      };
     } catch (error) {
       console.error('Error fetching booking:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
 
@@ -92,10 +99,20 @@ class BookingService {
         .single();
 
       if (error) throw error;
-      return data;
+      
+      return {
+        success: true,
+        booking: data
+      };
     } catch (error) {
       console.error('Error creating booking:', error);
-      throw error;
+      console.error('Booking data that failed:', bookingData);
+      return {
+        success: false,
+        error: error.message,
+        details: error.details || null,
+        hint: error.hint || null
+      };
     }
   }
 
@@ -170,6 +187,61 @@ class BookingService {
       return data;
     } catch (error) {
       console.error('Error fetching car:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check availability for multiple cars
+   */
+  async getAvailabilityForCars(carIds, pickupDate, returnDate) {
+    try {
+      if (!carIds || carIds.length === 0) {
+        return {};
+      }
+
+      // Check for overlapping bookings
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('car_id')
+        .in('car_id', carIds)
+        .or(`and(pickup_date.lte.${returnDate},return_date.gte.${pickupDate})`)
+        .eq('status', 'confirmed');
+
+      if (error) throw error;
+
+      // Create availability map
+      const availabilityMap = {};
+      const unavailableCarIds = new Set(data?.map(booking => booking.car_id) || []);
+
+      carIds.forEach(carId => {
+        availabilityMap[carId] = !unavailableCarIds.has(carId);
+      });
+
+      return availabilityMap;
+    } catch (error) {
+      console.error('Error checking car availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check availability for a single car
+   */
+  async getAvailabilityForCar(carId, pickupDate, returnDate) {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('car_id', carId)
+        .or(`and(pickup_date.lte.${returnDate},return_date.gte.${pickupDate})`)
+        .eq('status', 'confirmed')
+        .limit(1);
+
+      if (error) throw error;
+      return data?.length === 0; // Available if no conflicting bookings
+    } catch (error) {
+      console.error('Error checking car availability:', error);
       throw error;
     }
   }

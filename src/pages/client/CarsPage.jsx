@@ -18,10 +18,12 @@ import {
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
-import { BookingService } from "@/lib/bookingService"
+import { bookingService } from "@/lib/bookingService"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import CarCardWithSlider from "@/components/CarCardWithSlider"
+import VirtualizedCarList from "@/components/VirtualizedCarList"
+import OptimizedImage from "@/components/OptimizedImage"
 
 // Normalize car records for consistent UI
 const normalizeCarRecord = (record) => {
@@ -150,7 +152,6 @@ const CarsPage = () => {
       const pickup = new Date(pickupDate);
       const dropoff = new Date(returnDate);
       if (isNaN(pickup.getTime()) || isNaN(dropoff.getTime()) || pickup >= dropoff) {
-        console.warn("Invalid date range provided:", { pickupDate, returnDate });
         setCarAvailability({});
         return;
       }
@@ -160,16 +161,13 @@ const CarsPage = () => {
       const handle = setTimeout(async () => {
         try {
           const ids = cars.map((c) => c.id);
-          console.log("🔎 Batch checking availability for", ids.length, "cars:", { pickupDate, returnDate });
-          const map = await BookingService.getAvailabilityForCars(ids, pickupDate, returnDate);
+          const map = await bookingService.getAvailabilityForCars(ids, pickupDate, returnDate);
           if (!cancelled) {
             setCarAvailability(map);
             const available = Object.entries(map).filter(([, v]) => v === true).length;
             const unavailable = Object.entries(map).filter(([, v]) => v === false).length;
-            console.log("🎯 Availability:", { available, unavailable, total: ids.length });
           }
         } catch (e) {
-          console.error("Batch availability error:", e);
           if (!cancelled) setCarAvailability({});
         } finally {
           if (!cancelled) setCheckingAvailability(false);
@@ -199,7 +197,6 @@ const CarsPage = () => {
 
         // If created_at is missing (undefined column), fall back to ordering by id
         if (error && (error.code === "42703" || /column .*created_at.* does not exist/i.test(error.message))) {
-          console.warn('created_at column not found, falling back to id ordering')
           const retry = await supabase
             .from("cars")
             .select("*")
@@ -211,21 +208,17 @@ const CarsPage = () => {
         if (!isMounted) return
         
         if (error) {
-          console.error("Database error loading cars:", error)
           throw new Error(`Failed to load cars: ${error.message}`)
         }
         
         if (!data || data.length === 0) {
-          console.warn("No cars found in database")
           if (isMounted) setCars([])
           return
         }
         
         const normalizedCars = data.map(normalizeCarRecord)
-        console.log('Loaded cars:', normalizedCars.length, 'vehicles')
         if (isMounted) setCars(normalizedCars)
       } catch (err) {
-        console.error("Failed to load cars:", err)
         if (isMounted) {
           setCars([])
         }
@@ -434,7 +427,7 @@ const CarsPage = () => {
   }
 
   const formatDateRange = () => {
-    if (!pickupDate || !returnDate) return "📅 Select Dates"
+    if (!pickupDate || !returnDate) return "Select Dates"
     
     try {
       // Parse dates safely
@@ -443,7 +436,7 @@ const CarsPage = () => {
       
       // Validate dates
       if (isNaN(pickupDateObj.getTime()) || isNaN(returnDateObj.getTime())) {
-        return "📅 Invalid Dates"
+        return "Invalid Dates"
       }
       
       // Format dates in European timezone
@@ -464,8 +457,7 @@ const CarsPage = () => {
       
       return `${pickup} → ${returnDateFormatted} (${diffDays} day${diffDays !== 1 ? 's' : ''})`
     } catch (error) {
-      console.error('Error formatting date range:', error)
-      return "📅 Select Dates"
+      return "Select Dates"
     }
   }
 
@@ -1026,23 +1018,36 @@ const CarsPage = () => {
                 </motion.div>
               )}
 
-              {/* Cars Grid */}
+              {/* Cars Grid - Use virtual scrolling for large lists */}
               {!isLoading && !(pickupDate && returnDate && checkingAvailability) && (
-                <motion.div
-                  variants={staggerContainer}
-                  initial="initial"
-                  animate="animate"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8"
-                >
-                  {visibleCars.map((car, index) => (
-                    <CarCardWithSlider
-                      key={car.id}
-                      car={car}
-                      index={index}
+                <>
+                  {visibleCars.length > 20 ? (
+                    // Use virtual scrolling for large lists
+                    <VirtualizedCarList
+                      cars={visibleCars}
                       selectedDates={pickupDate && returnDate ? { pickupDate, returnDate } : null}
+                      isLoading={isLoading}
+                      className="mt-8"
                     />
-                  ))}
-                </motion.div>
+                  ) : (
+                    // Use regular grid for smaller lists
+                    <motion.div
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8"
+                    >
+                      {visibleCars.map((car, index) => (
+                        <CarCardWithSlider
+                          key={car.id}
+                          car={car}
+                          index={index}
+                          selectedDates={pickupDate && returnDate ? { pickupDate, returnDate } : null}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </>
               )}
 
               {/* No Results */}

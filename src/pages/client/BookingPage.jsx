@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
 import { supabase } from '@/lib/customSupabaseClient';
 import { toast } from '@/components/ui/use-toast';
-import { BookingService } from '@/lib/bookingService';
+import { bookingService } from '@/lib/bookingService';
 import { getValidationErrors, canProceedToNextStep } from '@/lib/validation';
 import { 
   Calendar, 
@@ -115,7 +115,6 @@ const BookingPage = () => {
         .single();
       if (!isMounted) return;
       if (error) {
-        console.error('Failed to load car:', error);
         setFetchError(error.message || 'Failed to load car');
       }
       setCar(data || null);
@@ -139,7 +138,6 @@ const BookingPage = () => {
           .in('status', ['confirmed', 'active']);
         
         if (error) {
-          console.error('Failed to load booked dates:', error);
           return;
         }
         
@@ -159,7 +157,6 @@ const BookingPage = () => {
         
         setBookedDates(dates);
       } catch (error) {
-        console.error('Error loading booked dates:', error);
       } finally {
         setLoadingBookedDates(false);
       }
@@ -232,11 +229,20 @@ const BookingPage = () => {
       [field]: value
     }));
     
-    // Clear validation error for this field when user starts typing
+    // Clear validation error for this field when user starts typing/selecting
     if (validationErrors[field]) {
       setValidationErrors(prev => ({
         ...prev,
         [field]: null
+      }));
+    }
+    
+    // Clear date-related validation errors when dates are selected
+    if (field === 'pickupDate' || field === 'returnDate') {
+      setValidationErrors(prev => ({
+        ...prev,
+        pickupDate: null,
+        returnDate: null
       }));
     }
   };
@@ -271,7 +277,9 @@ const BookingPage = () => {
 
   const handleNext = () => {
     // Validate current step before proceeding
-    const errors = getValidationErrors(formData, currentStep);
+    // Adjust step number: currentStep 1 = validation step 0 (dates), currentStep 2 = validation step 1 (personal), etc.
+    const validationStep = currentStep - 1;
+    const errors = getValidationErrors(formData, validationStep);
     
     // Check for booked dates
     if (currentStep === 1) {
@@ -304,11 +312,53 @@ const BookingPage = () => {
     }
   };
 
+  const calculateTotalPrice = () => {
+    if (!carData) {
+      console.warn('No car data available for price calculation');
+      return 0;
+    }
+    
+    // Calculate rental days
+    const pickupDate = new Date(formData.pickupDate);
+    const returnDate = new Date(formData.returnDate);
+    const rentalDays = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+    
+    // Ensure rental days is at least 1
+    const validRentalDays = Math.max(1, rentalDays);
+    
+    // Base price (car daily rate * rental days)
+    const dailyRate = carData.price || 0;  // Fixed: use 'price' field from carData
+    let totalPrice = dailyRate * validRentalDays;
+    
+    // Add extras
+    if (formData.extras && formData.extras.length > 0) {
+      formData.extras.forEach(extraId => {
+        const extra = extras.find(e => e.id === extraId);
+        if (extra && extra.price) {
+          totalPrice += extra.price;
+        }
+      });
+    }
+    
+    // Ensure total price is never null or undefined
+    const finalPrice = totalPrice || 0;
+    
+    console.log('Price calculation:', {
+      carData: carData,
+      dailyRate: dailyRate,
+      rentalDays: validRentalDays,
+      extras: formData.extras,
+      totalPrice: finalPrice
+    });
+    
+    return finalPrice;
+  };
+
   const handleSubmit = async () => {
     if (!carData) return;
     
-    // Final validation
-    const errors = getValidationErrors(formData, currentStep);
+    // Final validation - validate all steps
+    const errors = getValidationErrors(formData, 3); // Validate all steps
     
     // Check for booked dates
     if (formData.pickupDate && isDateBooked(formData.pickupDate)) {
@@ -332,30 +382,74 @@ const BookingPage = () => {
     setSubmitting(true);
     
     try {
+      // Validate required fields
+      if (!formData.pickupDate || !formData.returnDate) {
+        toast({
+          title: 'Booking Failed',
+          description: 'Pickup and return dates are required.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+        toast({
+          title: 'Booking Failed',
+          description: 'Please fill in all required personal information fields.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Format dates properly for database
+      const pickupDate = new Date(formData.pickupDate).toISOString().split('T')[0];
+      const returnDate = new Date(formData.returnDate).toISOString().split('T')[0];
+
+      // Calculate total price
+      const totalPrice = calculateTotalPrice();
+      
+      // Validate total price
+      if (totalPrice <= 0) {
+        toast({
+          title: 'Booking Failed',
+          description: 'Unable to calculate total price. Please check your booking details.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       // Prepare booking data
       const bookingData = {
-        carId: carData.id,
-        pickupDate: formData.pickupDate,
-        returnDate: formData.returnDate,
-        pickupTime: formData.pickupTime,
-        returnTime: formData.returnTime,
-        pickupLocation: formData.pickupLocation,
-        returnLocation: formData.returnLocation,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        licenseNumber: formData.licenseNumber,
-        licenseExpiry: formData.licenseExpiry,
+        car_id: carData.id,  // Fixed: use car_id instead of carId
+        pickup_date: pickupDate,  // Properly formatted date
+        return_date: returnDate,  // Properly formatted date
+        pickup_time: formData.pickupTime || '10:00',  // Default time if not provided
+        return_time: formData.returnTime || '10:00',  // Default time if not provided
+        pickup_location: formData.pickupLocation || 'Main Office',  // Default location if not provided
+        return_location: formData.returnLocation || 'Main Office',  // Default location if not provided
+        customer_name: `${formData.firstName} ${formData.lastName}`,  // Already validated above
+        customer_email: formData.email || '',  // Ensure not undefined
+        customer_phone: formData.phone || '',  // Ensure not undefined
+        license_number: formData.licenseNumber || '',  // Ensure not undefined
+        license_expiry: formData.licenseExpiry ? new Date(formData.licenseExpiry).toISOString().split('T')[0] : null,  // Format date properly
         extras: formData.extras.map(extraId => {
           const extra = extras.find(e => e.id === extraId);
           return extra ? { id: extra.id, name: extra.name, price: extra.price } : null;
         }).filter(Boolean),
-        specialRequests: formData.specialRequests
+        special_requests: formData.specialRequests,  // Fixed: use special_requests instead of specialRequests
+        status: 'pending',  // Add status field
+        total_price: totalPrice,  // Use calculated total price
+        booking_reference: `MEM-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`  // Add booking reference
       };
 
+      // Debug: Log booking data
+      console.log('Booking data being sent:', bookingData);
+      
       // Create booking
-      const result = await BookingService.createBooking(bookingData);
+      const result = await bookingService.createBooking(bookingData);
+      
+      // Debug: Log result
+      console.log('Booking result:', result);
       
       if (result.success) {
         toast({
@@ -367,19 +461,22 @@ const BookingPage = () => {
         // Navigate to confirmation page with booking details
         navigate('/booking-confirmation', { 
           state: { 
-            bookingId: result.bookingId,
+            bookingId: result.booking.id,
             bookingReference: result.booking.booking_reference 
           } 
         });
       } else {
+        const errorMessage = result.error || 'Failed to create booking. Please try again.';
+        const errorDetails = result.details ? ` Details: ${result.details}` : '';
+        const errorHint = result.hint ? ` Hint: ${result.hint}` : '';
+        
         toast({
           title: 'Booking Failed',
-          description: result.error || 'Failed to create booking. Please try again.',
+          description: `${errorMessage}${errorDetails}${errorHint}`,
           variant: 'destructive'
         });
       }
     } catch (error) {
-      console.error('Booking submission error:', error);
       toast({
         title: 'Booking Failed',
         description: 'An unexpected error occurred. Please try again.',
