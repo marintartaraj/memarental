@@ -7,6 +7,22 @@ module.exports = {
 		'./app/**/*.{js,jsx}',
 		'./src/**/*.{js,jsx}',
 	],
+	// Performance optimizations
+	safelist: [
+		// Critical classes that might be dynamically generated
+		'animate-spin',
+		'animate-pulse',
+		'animate-bounce',
+		'hover:scale-105',
+		'transition-all',
+		'duration-300',
+		'ease-in-out'
+	],
+	corePlugins: {
+		// Disable unused features for smaller CSS
+		preflight: true,
+		container: true, // Keep container enabled
+	},
 	theme: {
 		container: {
 			center: true,

@@ -1,14 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/customSupabaseClient';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast.jsx';
 import { authService } from '@/lib/authService';
-import useSecurityStore from '@/stores/securityStore';
+// import useSecurityStore from '@/stores/securityStore';
 
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
-  const securityStore = useSecurityStore();
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -43,19 +42,31 @@ export const AuthProvider = ({ children }) => {
       setCsrfToken('hardcoded-token');
       
       // Update activity when session is established
-      securityStore.updateActivity();
+      // securityStore.updateActivity();
     } else {
       setProfile(null);
       setUserRoles([]);
       setCsrfToken(null);
     }
     setLoading(false);
-  }, [fetchProfile, securityStore]);
+  }, [fetchProfile]);
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      await handleSession(session);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.warn('Session error:', error);
+          // Clear invalid session
+          await supabase.auth.signOut();
+        } else {
+          await handleSession(session);
+        }
+      } catch (error) {
+        console.warn('Failed to get session:', error);
+        // Clear invalid session
+        await supabase.auth.signOut();
+      }
     };
 
     getSession();
@@ -68,20 +79,22 @@ export const AuthProvider = ({ children }) => {
 
     // Set up session timeout checking
     const sessionCheckInterval = setInterval(() => {
-      if (securityStore.checkSessionExpiry()) {
-        toast({
-          variant: "destructive",
-          title: "Session Expired",
-          description: "Your session has expired due to inactivity. Please log in again.",
-        });
-        // Optionally sign out user
-        // supabase.auth.signOut();
-      }
+      // if (securityStore.checkSessionExpiry()) {
+      //   toast({
+      //     variant: "destructive",
+      //     title: "Session Expired",
+      //     description: "Your session has expired due to inactivity. Please log in again.",
+      //   });
+      //   // Optionally sign out user
+      //   // supabase.auth.signOut();
+      // }
     }, 60000); // Check every minute
 
     // Track user activity
     const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    const updateActivity = () => securityStore.updateActivity();
+    const updateActivity = () => {
+      // securityStore.updateActivity();
+    };
     
     activityEvents.forEach(event => {
       document.addEventListener(event, updateActivity, true);
@@ -95,41 +108,41 @@ export const AuthProvider = ({ children }) => {
         document.removeEventListener(event, updateActivity, true);
       });
     };
-  }, [handleSession, securityStore, toast]);
+  }, [handleSession, toast]);
 
   const signIn = useCallback(async (email, password) => {
     // Check rate limiting before attempting login
-    const rateLimitResult = securityStore.checkLoginRateLimit(email);
+    // const rateLimitResult = securityStore.checkLoginRateLimit(email);
     
-    if (!rateLimitResult.allowed) {
-      const remainingTime = Math.ceil(rateLimitResult.delay / 1000 / 60); // Convert to minutes
+    // if (!rateLimitResult.allowed) {
+    //   const remainingTime = Math.ceil(rateLimitResult.delay / 1000 / 60); // Convert to minutes
       
-      toast({
-        variant: "destructive",
-        title: "Account Temporarily Locked",
-        description: rateLimitResult.reason === 'LOCKED' 
-          ? `Too many failed attempts. Please try again in ${remainingTime} minutes.`
-          : `Rate limit exceeded. Please wait ${remainingTime} minutes before trying again.`,
-      });
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Account Temporarily Locked",
+    //     description: rateLimitResult.reason === 'LOCKED' 
+    //       ? `Too many failed attempts. Please try again in ${remainingTime} minutes.`
+    //       : `Rate limit exceeded. Please wait ${remainingTime} minutes before trying again.`,
+    //   });
       
-      throw new Error(`Rate limited: ${rateLimitResult.reason}`);
-    }
+    //   throw new Error(`Rate limited: ${rateLimitResult.reason}`);
+    // }
 
     // Apply progressive delay if needed
-    if (rateLimitResult.delay > 0) {
-      toast({
-        title: "Please Wait",
-        description: `Security delay: ${Math.ceil(rateLimitResult.delay / 1000)} seconds`,
-      });
-      await new Promise(resolve => setTimeout(resolve, rateLimitResult.delay));
-    }
+    // if (rateLimitResult.delay > 0) {
+    //   toast({
+    //     title: "Please Wait",
+    //     description: `Security delay: ${Math.ceil(rateLimitResult.delay / 1000)} seconds`,
+    //   });
+    //   await new Promise(resolve => setTimeout(resolve, rateLimitResult.delay));
+    // }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         // Record failed attempt
-        securityStore.recordFailedLogin(email, 'INVALID_CREDENTIALS');
+        // securityStore.recordFailedLogin(email, 'INVALID_CREDENTIALS');
         
         toast({
           variant: "destructive",
@@ -140,8 +153,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Record successful login
-      securityStore.recordSuccessfulLogin(email);
-      securityStore.updateActivity();
+      // securityStore.recordSuccessfulLogin(email);
+      // securityStore.updateActivity();
 
       // Let RLS policies handle access control - no email checking here
       toast({
@@ -150,12 +163,12 @@ export const AuthProvider = ({ children }) => {
       });
     } catch (error) {
       // Record failed attempt for any error
-      if (error.message && !error.message.includes('Rate limited')) {
-        securityStore.recordFailedLogin(email, 'LOGIN_ERROR');
-      }
+      // if (error.message && !error.message.includes('Rate limited')) {
+      //   securityStore.recordFailedLogin(email, 'LOGIN_ERROR');
+      // }
       throw error;
     }
-  }, [toast, securityStore]);
+  }, [toast]);
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();

@@ -13,10 +13,30 @@ const CarCardWithSlider = ({ car, index, selectedDates }) => {
 
   // Get all available images for this car
   const carImages = useMemo(() => {
-    const brandImages = getAvailableCarImages()[car.brand] || [];
+    let brandImages = getAvailableCarImages()[car.brand] || [];
+    
+    // For Mercedes-Benz and Volkswagen, filter images by model
+    if ((car.brand === 'Mercedes-Benz' || car.brand === 'Volkswagen') && brandImages.length > 0) {
+      const modelLower = car.model?.toLowerCase() || '';
+      
+      if (car.brand === 'Mercedes-Benz') {
+        if (modelLower.includes('c-class') || modelLower.includes('c class')) {
+          brandImages = brandImages.filter(img => img.includes('c-class'));
+        } else if (modelLower.includes('e-class') || modelLower.includes('e class')) {
+          brandImages = brandImages.filter(img => img.includes('e class'));
+        }
+      } else if (car.brand === 'Volkswagen') {
+        if (modelLower.includes('passat')) {
+          brandImages = brandImages.filter(img => img.includes('passat'));
+        } else if (modelLower.includes('jetta')) {
+          brandImages = brandImages.filter(img => img.includes('jetta'));
+        }
+      }
+    }
+    
     // If no brand-specific images, use the main image
     return brandImages.length > 0 ? brandImages : [car.image_url];
-  }, [car.brand, car.image_url]);
+  }, [car.brand, car.model, car.image_url]);
 
   const goToNextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % carImages.length);

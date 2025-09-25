@@ -59,8 +59,21 @@ class ValidationService {
   validateBookingData(data, step) {
     const errors = {};
 
-    // Step 1: Personal Information
+    // Step 1: Booking Details (Dates)
     if (step >= 1) {
+      if (!data.pickupDate) errors.pickupDate = 'Pickup date is required';
+      if (!data.returnDate) errors.returnDate = 'Return date is required';
+      if (data.pickupDate && data.returnDate) {
+        const pickup = new Date(data.pickupDate);
+        const returnDate = new Date(data.returnDate);
+        if (returnDate <= pickup) {
+          errors.returnDate = 'Return date must be after pickup date';
+        }
+      }
+    }
+
+    // Step 2: Personal Information
+    if (step >= 2) {
       if (!data.firstName) errors.firstName = 'First name is required';
       if (!data.lastName) errors.lastName = 'Last name is required';
       if (!data.email) errors.email = 'Email is required';
@@ -77,22 +90,10 @@ class ValidationService {
       }
     }
 
-    // Step 2: Booking Details
-    if (step >= 2) {
-      if (!data.pickupDate) errors.pickupDate = 'Pickup date is required';
-      if (!data.returnDate) errors.returnDate = 'Return date is required';
-      if (data.pickupDate && data.returnDate) {
-        const pickup = new Date(data.pickupDate);
-        const returnDate = new Date(data.returnDate);
-        if (returnDate <= pickup) {
-          errors.returnDate = 'Return date must be after pickup date';
-        }
-      }
-    }
-
     // Step 3: Additional Information
     if (step >= 3) {
-      // Add any additional validation rules here
+      if (!data.pickupLocation) errors.pickupLocation = 'Pickup location is required';
+      if (!data.returnLocation) errors.returnLocation = 'Return location is required';
     }
 
     return errors;

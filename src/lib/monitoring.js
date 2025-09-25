@@ -344,7 +344,6 @@ class MonitoringService {
     try {
       // In a real implementation, you would send to your monitoring service
       // For now, we'll just log it
-      console.log(`[Monitoring] ${type}:`, data);
       
       // Example: Send to external service
       // await fetch('/api/monitoring', {

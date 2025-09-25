@@ -61,7 +61,6 @@ const OptimizedAdminOverview = () => {
     setError(null);
     
     try {
-      console.log('🚀 Loading dashboard data with optimized service...');
       
       // Load all data in parallel using optimized services
       const [
@@ -97,7 +96,6 @@ const OptimizedAdminOverview = () => {
         confirmedBookings
       });
 
-      console.log('✅ Dashboard data loaded successfully');
 
     } catch (error) {
       console.error('❌ Error loading dashboard data:', error);

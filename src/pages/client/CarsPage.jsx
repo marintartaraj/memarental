@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { supabase } from "@/lib/customSupabaseClient"
 import { getAvailableCarImages } from "@/lib/addCarsToDatabase"
-import { BookingService } from "@/lib/bookingService"
+import { bookingService } from "@/lib/bookingService"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import CarCardWithSlider from "@/components/CarCardWithSlider"
@@ -32,13 +32,27 @@ const normalizeCarRecord = (record) => {
   const fuel = fuelType ? fuelType.charAt(0).toUpperCase() + fuelType.slice(1) : "Petrol"
   const isAvailable = (record?.status || "available") === "available"
   
-  // Generate fallback image based on brand using actual photos
-  const getFallbackImage = (brand) => {
+  // Generate fallback image based on brand and model using actual photos
+  const getFallbackImage = (brand, model) => {
     const brandLower = brand?.toLowerCase() || 'car'
+    const modelLower = model?.toLowerCase() || ''
+    
     if (brandLower.includes('mercedes')) {
-      return "/images/cars/c-class1.jpeg"
+      // Use specific model images for Mercedes-Benz
+      if (modelLower.includes('c-class') || modelLower.includes('c class')) {
+        return "/images/cars/c-class1.jpeg"
+      } else if (modelLower.includes('e-class') || modelLower.includes('e class')) {
+        return "/images/cars/e class1.jpeg"
+      }
+      return "/images/cars/c-class1.jpeg" // Default Mercedes fallback
     } else if (brandLower.includes('volkswagen')) {
-      return "/images/cars/jetta1.jpeg"
+      // Use specific model images for Volkswagen
+      if (modelLower.includes('passat')) {
+        return "/images/cars/passat1.jpeg"
+      } else if (modelLower.includes('jetta')) {
+        return "/images/cars/jetta1.jpeg"
+      }
+      return "/images/cars/jetta1.jpeg" // Default Volkswagen fallback
     } else if (brandLower.includes('toyota')) {
       return "/images/cars/yaris1.jpeg"
     } else if (brandLower.includes('hyundai')) {
@@ -52,7 +66,26 @@ const normalizeCarRecord = (record) => {
 
   // Prefer local images from public/images/cars for the Cars page
   const brandImages = getAvailableCarImages()[record?.brand] || []
-  const localBrandImage = brandImages[0]
+  let localBrandImage = brandImages[0]
+  
+  // For Mercedes-Benz and Volkswagen, select model-specific images
+  if ((record?.brand === 'Mercedes-Benz' || record?.brand === 'Volkswagen') && brandImages.length > 0) {
+    const modelLower = record?.model?.toLowerCase() || ''
+    
+    if (record?.brand === 'Mercedes-Benz') {
+      if (modelLower.includes('c-class') || modelLower.includes('c class')) {
+        localBrandImage = brandImages.find(img => img.includes('c-class')) || brandImages[0]
+      } else if (modelLower.includes('e-class') || modelLower.includes('e class')) {
+        localBrandImage = brandImages.find(img => img.includes('e class')) || brandImages[0]
+      }
+    } else if (record?.brand === 'Volkswagen') {
+      if (modelLower.includes('passat')) {
+        localBrandImage = brandImages.find(img => img.includes('passat')) || brandImages[0]
+      } else if (modelLower.includes('jetta')) {
+        localBrandImage = brandImages.find(img => img.includes('jetta')) || brandImages[0]
+      }
+    }
+  }
   
   return {
     id: record?.id,
@@ -77,7 +110,7 @@ const normalizeCarRecord = (record) => {
     engine: record?.engine || "",
     luggage: record?.luggage || 2,
     // Force usage of local images in the Cars page grid
-    image_url: localBrandImage || getFallbackImage(record?.brand),
+    image_url: localBrandImage || getFallbackImage(record?.brand, record?.model),
   }
 }
 
@@ -160,13 +193,11 @@ const CarsPage = () => {
       const handle = setTimeout(async () => {
         try {
           const ids = cars.map((c) => c.id);
-          console.log("🔎 Batch checking availability for", ids.length, "cars:", { pickupDate, returnDate });
-          const map = await BookingService.getAvailabilityForCars(ids, pickupDate, returnDate);
+          const map = await bookingService.getAvailabilityForCars(ids, pickupDate, returnDate);
           if (!cancelled) {
             setCarAvailability(map);
             const available = Object.entries(map).filter(([, v]) => v === true).length;
             const unavailable = Object.entries(map).filter(([, v]) => v === false).length;
-            console.log("🎯 Availability:", { available, unavailable, total: ids.length });
           }
         } catch (e) {
           console.error("Batch availability error:", e);
@@ -222,7 +253,6 @@ const CarsPage = () => {
         }
         
         const normalizedCars = data.map(normalizeCarRecord)
-        console.log('Loaded cars:', normalizedCars.length, 'vehicles')
         if (isMounted) setCars(normalizedCars)
       } catch (err) {
         console.error("Failed to load cars:", err)
@@ -299,7 +329,6 @@ const CarsPage = () => {
         matchesDates = carAvailability[car.id] === true;
         if (!matchesDates) {
           // Optional debug (keep it if helpful)
-          // console.log(`🚫 Filtering out car ${car.id} (${car.brand} ${car.model}) for ${pickupDate}→${returnDate}`);
         }
       }
       
@@ -434,7 +463,7 @@ const CarsPage = () => {
   }
 
   const formatDateRange = () => {
-    if (!pickupDate || !returnDate) return "📅 Select Dates"
+    if (!pickupDate || !returnDate) return "Select Dates"
     
     try {
       // Parse dates safely
@@ -443,7 +472,7 @@ const CarsPage = () => {
       
       // Validate dates
       if (isNaN(pickupDateObj.getTime()) || isNaN(returnDateObj.getTime())) {
-        return "📅 Invalid Dates"
+        return "Invalid Dates"
       }
       
       // Format dates in European timezone
@@ -465,7 +494,7 @@ const CarsPage = () => {
       return `${pickup} → ${returnDateFormatted} (${diffDays} day${diffDays !== 1 ? 's' : ''})`
     } catch (error) {
       console.error('Error formatting date range:', error)
-      return "📅 Select Dates"
+      return "Select Dates"
     }
   }
 

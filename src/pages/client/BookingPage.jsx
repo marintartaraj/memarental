@@ -12,8 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/date-picker';
 import { supabase } from '@/lib/customSupabaseClient';
-import { toast } from '@/components/ui/use-toast';
-import { BookingService } from '@/lib/bookingService';
+import { toast } from '@/components/ui/use-toast.jsx';
+import { bookingService } from '@/lib/bookingService';
 import { getValidationErrors, canProceedToNextStep } from '@/lib/validation';
 import { 
   Calendar, 
@@ -181,7 +181,7 @@ const BookingPage = () => {
       model: car.model || '',
       year: car.year || new Date().getFullYear(),
       price: dailyRate,
-      image: 'https://images.unsplash.com/photo-1612935459247-3f90353c6c50',
+      image: '/images/cars/placeholder-car.jpg',
       rating: 4.8,
       reviews: 0,
       seats: car.seats ?? 5,
@@ -304,6 +304,18 @@ const BookingPage = () => {
     }
   };
 
+  const calculateTotalPrice = () => {
+    if (!carData) return 0;
+    
+    const basePrice = carData.price || 0;
+    const extrasPrice = formData.extras.reduce((total, extraId) => {
+      const extra = extras.find(e => e.id === extraId);
+      return total + (extra ? extra.price : 0);
+    }, 0);
+    
+    return basePrice + extrasPrice;
+  };
+
   const handleSubmit = async () => {
     if (!carData) return;
     
@@ -334,28 +346,30 @@ const BookingPage = () => {
     try {
       // Prepare booking data
       const bookingData = {
-        carId: carData.id,
-        pickupDate: formData.pickupDate,
-        returnDate: formData.returnDate,
-        pickupTime: formData.pickupTime,
-        returnTime: formData.returnTime,
-        pickupLocation: formData.pickupLocation,
-        returnLocation: formData.returnLocation,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        licenseNumber: formData.licenseNumber,
-        licenseExpiry: formData.licenseExpiry,
+        car_id: carData.id,
+        pickup_date: formData.pickupDate,
+        return_date: formData.returnDate,
+        pickup_time: formData.pickupTime,
+        return_time: formData.returnTime,
+        pickup_location: formData.pickupLocation,
+        return_location: formData.returnLocation,
+        customer_name: `${formData.firstName} ${formData.lastName}`,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        license_number: formData.licenseNumber,
+        license_expiry: formData.licenseExpiry,
         extras: formData.extras.map(extraId => {
           const extra = extras.find(e => e.id === extraId);
           return extra ? { id: extra.id, name: extra.name, price: extra.price } : null;
         }).filter(Boolean),
-        specialRequests: formData.specialRequests
+        special_requests: formData.specialRequests,
+        status: 'confirmed',
+        total_price: calculateTotalPrice(),
+        created_at: new Date().toISOString()
       };
 
       // Create booking
-      const result = await BookingService.createBooking(bookingData);
+      const result = await bookingService.createBooking(bookingData);
       
       if (result.success) {
         toast({
@@ -368,7 +382,8 @@ const BookingPage = () => {
         navigate('/booking-confirmation', { 
           state: { 
             bookingId: result.bookingId,
-            bookingReference: result.booking.booking_reference 
+            bookingReference: result.booking.booking_reference,
+            bookingData: result.booking // Pass booking data as fallback
           } 
         });
       } else {

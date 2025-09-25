@@ -152,7 +152,6 @@ const useAppStore = create(
           set({ globalLoading: true });
           try {
             // Initialize app state
-            console.log('🚀 Initializing app...');
             
             // Set initial loading states
             set({
@@ -172,7 +171,6 @@ const useAppStore = create(
               loadingStates: {}
             });
 
-            console.log('✅ App initialized successfully');
           } catch (error) {
             console.error('❌ Error initializing app:', error);
             set({
@@ -217,7 +215,6 @@ const useAppStore = create(
 
         // Debug helpers
         logState: () => {
-          console.log('App Store State:', get());
         },
 
         exportState: () => {

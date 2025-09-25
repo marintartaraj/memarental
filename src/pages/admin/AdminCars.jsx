@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast.jsx';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
@@ -72,13 +72,11 @@ const AdminCars = () => {
 
   // Debug log for form data changes
   useEffect(() => {
-    console.log('Form data changed:', carFormData);
   }, [carFormData]);
 
   // Effect to handle form data when editing car changes
   useEffect(() => {
     if (editingCar && isCarDialogOpen) {
-      console.log('Setting form data for editing:', editingCar);
       const formData = {
         id: editingCar.id,
         brand: editingCar.brand || '',
@@ -122,7 +120,6 @@ const AdminCars = () => {
   const validateForm = useCallback(() => {
     const errors = {};
     
-    console.log('Validating form data:', carFormData); // Debug log
     
     if (!carFormData.brand?.trim()) errors.brand = 'Brand is required';
     if (!carFormData.model?.trim()) errors.model = 'Model is required';
@@ -133,7 +130,6 @@ const AdminCars = () => {
     if (!carFormData.seats || carFormData.seats < 1 || carFormData.seats > 10) errors.seats = 'Invalid seat count';
     if (!carFormData.luggage || carFormData.luggage < 0 || carFormData.luggage > 10) errors.luggage = 'Invalid luggage capacity';
     
-    console.log('Validation errors:', errors); // Debug log
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [carFormData]);
@@ -147,7 +143,6 @@ const AdminCars = () => {
     setError(null);
     
     try {
-      console.log('Loading cars data...'); // Debug log
       
       // Get total count
       const { count, error: countError } = await supabase
@@ -159,7 +154,6 @@ const AdminCars = () => {
         throw countError;
       }
       
-      console.log('Total cars count:', count); // Debug log
       setTotalCount(count);
       setTotalPages(Math.ceil(count / itemsPerPage));
       
@@ -175,7 +169,6 @@ const AdminCars = () => {
         throw carsError;
       }
       
-      console.log('Cars data loaded:', carsData); // Debug log
       setCars(carsData || []);
 
     } catch (error) {
@@ -218,7 +211,6 @@ const AdminCars = () => {
   useEffect(() => {
     const testDatabaseConnection = async () => {
       try {
-        console.log('Testing database connection...'); // Debug log
         
         // Test read access
         const { data: testRead, error: readError } = await supabase
@@ -237,7 +229,6 @@ const AdminCars = () => {
             });
           }
         } else {
-          console.log('Database read test successful:', testRead);
           setNetworkStatus('online');
         }
         
@@ -250,7 +241,6 @@ const AdminCars = () => {
         if (tableError) {
           console.error('Table structure test failed:', tableError);
         } else {
-          console.log('Table structure test successful - columns accessible');
         }
         
       } catch (error) {
@@ -414,8 +404,6 @@ const AdminCars = () => {
   const handleCarSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('Submitting form data:', carFormData); // Debug log
-    console.log('Editing car:', editingCar); // Debug log
     
     if (!validateForm()) {
       toast({
@@ -449,11 +437,6 @@ const AdminCars = () => {
           image_url: updateData.image_url?.trim() || ''
         };
         
-        console.log('Updating car with data:', cleanedUpdateData); // Debug log
-        console.log('Car ID to update:', editingCar.id); // Debug log
-        console.log('Current user:', user); // Debug log
-        console.log('Current session:', session); // Debug log
-        console.log('Is admin:', isAdmin); // Debug log
         
         // Check if we have a valid session
         if (!session) {
@@ -466,9 +449,6 @@ const AdminCars = () => {
           if (userError) {
             console.error('Error getting current user:', userError);
           } else {
-            console.log('Current user from auth:', currentUser);
-            console.log('User metadata:', currentUser?.user_metadata);
-            console.log('User email:', currentUser?.email);
           }
         } catch (authError) {
           console.error('Auth check error:', authError);
@@ -481,7 +461,6 @@ const AdminCars = () => {
           throw new Error('Session refresh failed. Please log in again.');
         }
         
-        console.log('Refreshed session:', refreshedSession); // Debug log
         
         // First, let's check if the car exists
         const { data: existingCar, error: checkError } = await supabase
@@ -495,7 +474,6 @@ const AdminCars = () => {
           throw new Error(`Car not found: ${checkError.message}`);
         }
         
-        console.log('Existing car found:', existingCar); // Debug log
         
         result = await supabase
           .from('cars')
@@ -508,7 +486,6 @@ const AdminCars = () => {
           throw result.error;
         }
         
-        console.log('Update result:', result); // Debug log
         
         // Update the local state immediately for better UX
         setCars(prevCars => {
@@ -540,7 +517,6 @@ const AdminCars = () => {
           image_url: carFormData.image_url?.trim() || ''
         };
         
-        console.log('Inserting new car with data:', cleanedInsertData); // Debug log
         
         result = await supabase
           .from('cars')
@@ -635,7 +611,6 @@ const AdminCars = () => {
   };
 
   const handleEditCar = (car) => {
-    console.log('Editing car:', car); // Debug log
     
     // Set the editing car and open dialog
     setEditingCar(car);
@@ -644,7 +619,6 @@ const AdminCars = () => {
   };
 
   const resetCarForm = () => {
-    console.log('Resetting form'); // Debug log
     setEditingCar(null);
     setCarFormData({
       brand: '', 
@@ -1096,7 +1070,6 @@ const AdminCars = () => {
           <Button 
             onClick={async () => {
               try {
-                console.log('Testing database read access...');
                 const { data, error } = await supabase
                   .from('cars')
                   .select('id, brand, model')
@@ -1110,7 +1083,6 @@ const AdminCars = () => {
                     variant: "destructive"
                   });
                 } else {
-                  console.log('Database read test successful:', data);
                   toast({
                     title: "Database Read Test Successful",
                     description: "Can read from cars table"
@@ -1134,7 +1106,6 @@ const AdminCars = () => {
           <Button 
             onClick={async () => {
               try {
-                console.log('Testing database update access...');
                 if (!cars.length) {
                   toast({
                     title: "No Cars Available",
@@ -1145,7 +1116,6 @@ const AdminCars = () => {
                 }
                 
                 const testCar = cars[0];
-                console.log('Testing update on car:', testCar);
                 
                 // Test with a simple field update
                 const { data, error } = await supabase
@@ -1180,7 +1150,6 @@ const AdminCars = () => {
                     });
                   }
                 } else {
-                  console.log('Database update test successful:', data);
                   toast({
                     title: "Database Update Test Successful",
                     description: "Can update cars table - RLS policies are working"

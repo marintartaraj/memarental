@@ -21,7 +21,7 @@ import BookingTable from '@/components/admin/BookingTable';
 import BookingMobileCards from '@/components/admin/BookingMobileCards';
 import BookingEditDialog from '@/components/admin/BookingEditDialog';
 import { errorHandler } from '@/lib/errorHandler';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast.jsx';
 
 const AdminBookingsRefactored = () => {
   const { t } = useLanguage();

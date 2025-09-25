@@ -2,27 +2,42 @@ import React, { useEffect, useState } from 'react';
 import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle, Calendar, MapPin, Car, Phone, Mail, Download, Printer } from 'lucide-react';
-import { BookingService } from '@/lib/bookingService';
-import { toast } from '@/components/ui/use-toast';
+import { CheckCircle, Calendar, MapPin, Car, Phone, Mail, Download, Printer, Wifi, WifiOff } from 'lucide-react';
+import { bookingService } from '@/lib/bookingService';
+import { toast } from '@/components/ui/use-toast.jsx';
+import { offlineService } from '@/lib/offlineService';
 
 function BookingConfirmation() {
   const location = useLocation();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     const loadBooking = async () => {
       try {
-        const { bookingId } = location.state || {};
+        const { bookingId, bookingData } = location.state || {};
+        
+        // Check if we have booking data passed from the previous page
+        if (bookingData) {
+          setBooking(bookingData);
+          setLoading(false);
+          return;
+        }
         
         if (bookingId) {
-          const result = await BookingService.getBookingById(bookingId);
+          const result = await bookingService.getBookingById(bookingId);
           if (result.success) {
             setBooking(result.booking);
           } else {
-            setError(result.error);
+            // Check if it's a service unavailable error
+            if (result.error?.includes('temporarily unavailable')) {
+              setError('Service temporarily unavailable. Please try again later.');
+              setIsOffline(true);
+            } else {
+              setError(result.error);
+            }
           }
         } else {
           setError('No booking information found');
@@ -37,6 +52,23 @@ function BookingConfirmation() {
 
     loadBooking();
   }, [location.state]);
+
+  // Monitor offline status
+  useEffect(() => {
+    const handleStatusChange = (event) => {
+      const { isOnline, serviceStatus } = event.detail;
+      setIsOffline(!isOnline || !serviceStatus.supabase);
+    };
+
+    window.addEventListener('serviceStatusChange', handleStatusChange);
+    
+    // Check initial status
+    setIsOffline(offlineService.isAnyServiceOffline());
+
+    return () => {
+      window.removeEventListener('serviceStatusChange', handleStatusChange);
+    };
+  }, []);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -136,11 +168,25 @@ Thank you for choosing MEMA Rental!
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Booking Not Found</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {isOffline ? 'Service Unavailable' : 'Booking Not Found'}
+          </h1>
           <p className="text-gray-600 mb-6">
-            {error || 'We couldn\'t find your booking details. Please contact us for assistance.'}
+            {isOffline 
+              ? 'This data is not available offline. Please check your connection and try again.'
+              : (error || 'We couldn\'t find your booking details. Please contact us for assistance.')
+            }
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {isOffline && (
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-green-500 hover:bg-green-600 flex items-center space-x-2"
+              >
+                <Wifi className="h-4 w-4" />
+                <span>Retry</span>
+              </Button>
+            )}
             <Button asChild className="bg-yellow-500 hover:bg-yellow-600">
               <Link to="/cars">Back to Cars</Link>
             </Button>

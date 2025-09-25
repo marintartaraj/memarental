@@ -61,7 +61,26 @@ const CarDetailPage = () => {
         }
 
         // Get available images for this car's brand
-        const availableImages = getAvailableCarImages()[data.brand] || [];
+        let availableImages = getAvailableCarImages()[data.brand] || [];
+        
+        // For Mercedes-Benz and Volkswagen, filter images by model
+        if ((data.brand === 'Mercedes-Benz' || data.brand === 'Volkswagen') && availableImages.length > 0) {
+          const modelLower = data.model?.toLowerCase() || '';
+          
+          if (data.brand === 'Mercedes-Benz') {
+            if (modelLower.includes('c-class') || modelLower.includes('c class')) {
+              availableImages = availableImages.filter(img => img.includes('c-class'));
+            } else if (modelLower.includes('e-class') || modelLower.includes('e class')) {
+              availableImages = availableImages.filter(img => img.includes('e class'));
+            }
+          } else if (data.brand === 'Volkswagen') {
+            if (modelLower.includes('passat')) {
+              availableImages = availableImages.filter(img => img.includes('passat'));
+            } else if (modelLower.includes('jetta')) {
+              availableImages = availableImages.filter(img => img.includes('jetta'));
+            }
+          }
+        }
         
         // Create car data object with real data and available images
         const car = {

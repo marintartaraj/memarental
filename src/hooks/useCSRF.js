@@ -3,7 +3,7 @@
  * Provides CSRF token management for forms and API calls
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import csrfService from '@/lib/csrfService';
 import useSecurityStore from '@/stores/securityStore';
 

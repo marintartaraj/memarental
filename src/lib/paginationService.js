@@ -19,7 +19,6 @@ class PaginationService {
 
     // Apply filters - temporarily disabled search to fix compatibility issues
     if (filters.search) {
-      console.log(`🔍 Search filter disabled temporarily for ${table}:`, filters.search);
       // TODO: Fix search functionality with proper Supabase v2.30.0 syntax
     }
 
@@ -121,11 +120,9 @@ class PaginationService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log(`🎯 Cache HIT: ${table} pagination`);
       return cached;
     }
 
-    console.log(`🔄 Cache MISS: ${table} pagination`);
 
     try {
       const from = (page - 1) * limit;

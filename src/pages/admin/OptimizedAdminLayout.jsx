@@ -13,7 +13,8 @@ import {
   Zap,
   Activity,
   Database,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

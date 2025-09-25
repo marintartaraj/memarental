@@ -37,7 +37,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast.jsx';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { optimizedBookingService } from '@/lib/optimizedBookingService';
@@ -85,7 +85,6 @@ const OptimizedAdminBookings = () => {
     setError(null);
     
     try {
-      console.log('🚀 Loading bookings with optimized service...');
       
       // Use optimized service with pagination
       const result = await optimizedBookingService.getBookingsPaginated(
@@ -103,7 +102,6 @@ const OptimizedAdminBookings = () => {
       setTotalPages(result.totalPages);
       setCurrentPage(result.currentPage);
       
-      console.log(`✅ Loaded ${result.data.length} bookings (page ${page}/${result.totalPages})`);
       
     } catch (error) {
       console.error('❌ Error loading bookings:', error);

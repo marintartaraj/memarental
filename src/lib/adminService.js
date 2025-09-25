@@ -20,11 +20,9 @@ class AdminService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getDashboardStats');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getDashboardStats');
 
     try {
       // Get all stats in parallel
@@ -77,11 +75,9 @@ class AdminService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getRecentBookings');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getRecentBookings');
 
     try {
       const { data, error } = await supabase
@@ -131,11 +127,9 @@ class AdminService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getAllCars');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getAllCars');
 
     try {
       const { data, error } = await supabase
@@ -164,11 +158,9 @@ class AdminService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getAllUsers');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getAllUsers');
 
     try {
       const { data, error } = await supabase
@@ -312,11 +304,9 @@ class AdminService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getBookingById');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getBookingById');
 
     try {
       const { data, error } = await supabase

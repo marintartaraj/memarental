@@ -133,7 +133,6 @@ class RateLimitingService {
     attemptRecord.lastAttempt = now;
     this.attempts.set(key, attemptRecord);
 
-    console.log(`Rate limiting: Failed attempt recorded for ${key}. Attempts: ${attemptRecord.attempts}/${finalConfig.maxAttempts}`);
   }
 
   /**
@@ -143,7 +142,6 @@ class RateLimitingService {
   recordSuccessfulAttempt(key) {
     this.attempts.delete(key);
     this.locks.delete(key);
-    console.log(`Rate limiting: Successful attempt for ${key}. Counter reset.`);
   }
 
   /**
@@ -204,7 +202,6 @@ class RateLimitingService {
       duration,
       reason
     });
-    console.log(`Rate limiting: Manual lock applied to ${key} for ${duration}ms. Reason: ${reason}`);
   }
 
   /**
@@ -214,7 +211,6 @@ class RateLimitingService {
   unlockKey(key) {
     this.locks.delete(key);
     this.attempts.delete(key);
-    console.log(`Rate limiting: Manual unlock applied to ${key}`);
   }
 
   /**
@@ -223,7 +219,6 @@ class RateLimitingService {
   clearAll() {
     this.attempts.clear();
     this.locks.clear();
-    console.log('Rate limiting: All data cleared');
   }
 
   /**
@@ -291,7 +286,6 @@ class RateLimitingService {
       }
     }
     
-    console.log('Rate limiting: Cleanup completed');
   }
 
   /**
@@ -307,7 +301,6 @@ class RateLimitingService {
       this.cleanup();
     }, intervalMs);
     
-    console.log(`Rate limiting: Periodic cleanup started (interval: ${intervalMs}ms)`);
   }
 
   /**
@@ -317,7 +310,6 @@ class RateLimitingService {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
-      console.log('Rate limiting: Periodic cleanup stopped');
     }
   }
 }

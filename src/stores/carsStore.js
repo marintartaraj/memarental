@@ -165,7 +165,6 @@ const useCarsStore = create(
           set({ error: null });
 
           try {
-            console.log('🚀 Loading cars with Zustand store...');
             
             // Build query
             let query = supabase.from('cars').select('*');
@@ -234,7 +233,6 @@ const useCarsStore = create(
               currentPage: page
             });
 
-            console.log(`✅ Loaded ${filteredData.length} cars (page ${page})`);
 
           } catch (error) {
             console.error('❌ Error loading cars:', error);

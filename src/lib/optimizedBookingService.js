@@ -20,11 +20,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getAllBookingsWithDetails');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getAllBookingsWithDetails');
 
     try {
       // Single query with car joins to get all data at once (customer data is stored directly in bookings)
@@ -75,11 +73,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getBookingsPaginated');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getBookingsPaginated');
 
     try {
       const from = (page - 1) * limit;
@@ -149,11 +145,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getAllCars');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getAllCars');
 
     try {
       const { data, error } = await supabase
@@ -182,11 +176,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getCarById');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getCarById');
 
     try {
       const { data, error } = await supabase
@@ -216,11 +208,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getBookingById');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getBookingById');
 
     try {
       const { data, error } = await supabase
@@ -281,7 +271,6 @@ class OptimizedBookingService {
         }
       });
       
-      console.log('Creating booking with:', filteredData);
       
       const { data, error } = await supabase
         .from('bookings')
@@ -321,7 +310,6 @@ class OptimizedBookingService {
         }
       });
       
-      console.log('Updating booking with:', filteredUpdates);
       
       const { data, error } = await supabase
         .from('bookings')
@@ -373,11 +361,9 @@ class OptimizedBookingService {
     // Try cache first
     const cached = this.cache.get(cacheKey);
     if (cached) {
-      console.log('🎯 Cache HIT: getDashboardStats');
       return cached;
     }
 
-    console.log('🔄 Cache MISS: getDashboardStats');
 
     try {
       // Get all stats in parallel

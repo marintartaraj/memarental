@@ -9,6 +9,41 @@ class BookingService {
   constructor() {
     this.cache = new Map();
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+    this.isOnline = true;
+  }
+
+  /**
+   * Check if Supabase is available
+   */
+  async checkHealth() {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('id')
+        .limit(1);
+      
+      this.isOnline = !error;
+      return !error;
+    } catch (error) {
+      this.isOnline = false;
+      return false;
+    }
+  }
+
+  /**
+   * Retry mechanism for failed requests
+   */
+  async retryRequest(requestFn, maxRetries = 3, delay = 1000) {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await requestFn();
+      } catch (error) {
+        if (i === maxRetries - 1) throw error;
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+      }
+    }
   }
 
   /**
@@ -20,14 +55,14 @@ class BookingService {
         .from('bookings')
         .select(`
           *,
-          profiles!inner(
+          profiles(
             id,
             first_name,
             last_name,
             email,
             phone
           ),
-          cars!inner(
+          cars(
             id,
             make,
             model,
@@ -50,18 +85,29 @@ class BookingService {
    */
   async getBookingById(id) {
     try {
+      // Check if we're online first
+      if (!this.isOnline) {
+        const isHealthy = await this.checkHealth();
+        if (!isHealthy) {
+          return {
+            success: false,
+            error: 'Service temporarily unavailable. Please try again later.'
+          };
+        }
+      }
+
       const { data, error } = await supabase
         .from('bookings')
         .select(`
           *,
-          profiles!inner(
+          profiles(
             id,
             first_name,
             last_name,
             email,
             phone
           ),
-          cars!inner(
+          cars(
             id,
             make,
             model,
@@ -72,11 +118,32 @@ class BookingService {
         .eq('id', id)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Supabase error:', error);
+        this.isOnline = false;
+        throw error;
+      }
+      
+      return {
+        success: true,
+        booking: data
+      };
     } catch (error) {
       console.error('Error fetching booking:', error);
-      throw error;
+      
+      // Check if it's a network/service error
+      if (error.message?.includes('503') || error.message?.includes('Service Unavailable')) {
+        this.isOnline = false;
+        return {
+          success: false,
+          error: 'Service temporarily unavailable. Please try again later.'
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch booking'
+      };
     }
   }
 
@@ -85,17 +152,50 @@ class BookingService {
    */
   async createBooking(bookingData) {
     try {
+      // Check if we're online first
+      if (!this.isOnline) {
+        const isHealthy = await this.checkHealth();
+        if (!isHealthy) {
+          return {
+            success: false,
+            error: 'Service temporarily unavailable. Please try again later.'
+          };
+        }
+      }
+
       const { data, error } = await supabase
         .from('bookings')
         .insert(bookingData)
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Supabase error:', error);
+        this.isOnline = false;
+        throw error;
+      }
+      
+      return {
+        success: true,
+        booking: data,
+        bookingId: data.id
+      };
     } catch (error) {
       console.error('Error creating booking:', error);
-      throw error;
+      
+      // Check if it's a network/service error
+      if (error.message?.includes('503') || error.message?.includes('Service Unavailable')) {
+        this.isOnline = false;
+        return {
+          success: false,
+          error: 'Service temporarily unavailable. Please try again later.'
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.message || 'Failed to create booking'
+      };
     }
   }
 
@@ -171,6 +271,46 @@ class BookingService {
     } catch (error) {
       console.error('Error fetching car:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get availability for multiple cars
+   */
+  async getAvailabilityForCars(carIds, pickupDate, returnDate) {
+    try {
+      if (!carIds || carIds.length === 0) {
+        return {};
+      }
+
+      if (!pickupDate || !returnDate) {
+        // If no dates provided, assume all cars are available
+        return carIds.reduce((acc, id) => ({ ...acc, [id]: true }), {});
+      }
+
+      // Check for conflicting bookings
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('car_id')
+        .in('car_id', carIds)
+        .or(`and(pickup_date.lte.${returnDate},return_date.gte.${pickupDate})`)
+        .in('status', ['confirmed', 'pending']);
+
+      if (error) throw error;
+
+      // Create availability map
+      const availability = {};
+      const bookedCarIds = new Set(bookings?.map(b => b.car_id) || []);
+
+      carIds.forEach(carId => {
+        availability[carId] = !bookedCarIds.has(carId);
+      });
+
+      return availability;
+    } catch (error) {
+      console.error('Error checking car availability:', error);
+      // Return all cars as available in case of error
+      return carIds.reduce((acc, id) => ({ ...acc, [id]: true }), {});
     }
   }
 }

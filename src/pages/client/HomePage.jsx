@@ -23,7 +23,6 @@ const HomePage = () => {
     const fetchFeaturedCar = async () => {
       try {
         setLoadingCar(true)
-        console.log('Fetching featured Mercedes-Benz car...')
         
         // Try to find any Mercedes-Benz E-Class first (most likely to exist)
         let { data, error } = await supabase
@@ -35,7 +34,6 @@ const HomePage = () => {
 
         // If still not found, get any Mercedes-Benz car
         if (error || !data) {
-          console.log('E-Class not found, trying any Mercedes-Benz...')
           const { data: mercedesData, error: mercedesError } = await supabase
             .from('cars')
             .select('*')
@@ -52,7 +50,6 @@ const HomePage = () => {
 
         // If still not found, get any premium car
         if (error || !data) {
-          console.log('Mercedes-Benz not found, trying any premium car...')
           const { data: premiumData, error: premiumError } = await supabase
             .from('cars')
             .select('*')
@@ -75,10 +72,8 @@ const HomePage = () => {
         }
 
         if (data) {
-          console.log('Featured car found:', data)
           setFeaturedCar(data)
         } else {
-          console.log('No Mercedes-Benz car found in database')
           // Don't set a fallback car - let the buttons redirect to /cars
           setFeaturedCar(null)
         }

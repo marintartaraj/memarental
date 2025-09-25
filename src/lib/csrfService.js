@@ -35,7 +35,6 @@ class CSRFService {
       used: false
     });
 
-    console.log(`CSRF: Generated token for session ${sessionId}`);
     return token;
   }
 
@@ -143,7 +142,6 @@ class CSRFService {
     expiredTokens.forEach(token => this.tokens.delete(token));
     
     if (expiredTokens.length > 0) {
-      console.log(`CSRF: Cleaned up ${expiredTokens.length} expired tokens`);
     }
   }
 
@@ -159,7 +157,6 @@ class CSRFService {
       this.cleanup();
     }, this.config.cleanupInterval);
     
-    console.log(`CSRF: Periodic cleanup started (interval: ${this.config.cleanupInterval}ms)`);
   }
 
   /**
@@ -169,7 +166,6 @@ class CSRFService {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
-      console.log('CSRF: Periodic cleanup stopped');
     }
   }
 
@@ -210,7 +206,6 @@ class CSRFService {
    */
   clearAll() {
     this.tokens.clear();
-    console.log('CSRF: All tokens cleared');
   }
 
   /**
@@ -229,7 +224,6 @@ class CSRFService {
     tokensToRemove.forEach(token => this.tokens.delete(token));
     
     if (tokensToRemove.length > 0) {
-      console.log(`CSRF: Cleared ${tokensToRemove.length} tokens for session ${sessionId}`);
     }
   }
 

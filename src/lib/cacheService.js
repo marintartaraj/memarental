@@ -159,11 +159,9 @@ export function withCache(ttl = null) {
       // Try to get from cache first
       const cached = cacheService.get(cacheKey);
       if (cached) {
-        console.log(`🎯 Cache HIT: ${cacheKey}`);
         return cached;
       }
       
-      console.log(`🔄 Cache MISS: ${cacheKey}`);
       
       // Execute original method
       const result = await method.apply(this, args);
@@ -193,11 +191,9 @@ export class CachedSupabaseClient {
     // Try cache first
     const cached = cacheService.get(cacheKey);
     if (cached) {
-      console.log(`🎯 Cache HIT: ${cacheKey}`);
       return { data: cached, error: null };
     }
     
-    console.log(`🔄 Cache MISS: ${cacheKey}`);
     
     // Execute query
     const result = await this.supabase
@@ -225,11 +221,9 @@ export class CachedSupabaseClient {
     // Try cache first
     const cached = cacheService.get(cacheKey);
     if (cached) {
-      console.log(`🎯 Cache HIT: ${cacheKey}`);
       return { data: cached, error: null };
     }
     
-    console.log(`🔄 Cache MISS: ${cacheKey}`);
     
     // Build select string with joins
     let selectString = '*';

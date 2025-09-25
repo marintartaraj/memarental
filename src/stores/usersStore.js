@@ -127,7 +127,6 @@ const useUsersStore = create(
           set({ error: null });
 
           try {
-            console.log('🚀 Loading users with Zustand store...');
             
             // Build query
             let query = supabase.from('profiles').select('*');
@@ -207,7 +206,6 @@ const useUsersStore = create(
               userStats
             });
 
-            console.log(`✅ Loaded ${filteredData.length} users (page ${page})`);
 
           } catch (error) {
             console.error('❌ Error loading users:', error);

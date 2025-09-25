@@ -32,7 +32,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast.jsx';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { paginationService } from '@/lib/paginationService';
@@ -134,9 +134,6 @@ const OptimizedAdminCars = () => {
     setError(null);
 
     try {
-      console.log('🚀 Loading cars with simple approach...');
-      console.log('🔍 Search term:', debouncedSearchTerm);
-      console.log('📋 Filters:', filters);
 
       // Simple query without complex pagination service
       let query = supabase.from('cars').select('*');
@@ -199,7 +196,6 @@ const OptimizedAdminCars = () => {
       setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
       setCurrentPage(page);
 
-      console.log(`✅ Loaded ${filteredData.length} cars (page ${page})`);
 
     } catch (error) {
       console.error('❌ Error loading cars:', error);
@@ -239,7 +235,6 @@ const OptimizedAdminCars = () => {
 
   // Handle search
   const handleSearch = useCallback((value) => {
-    console.log('🔍 Search term changed:', value);
     setSearchTerm(value);
     setCurrentPage(1);
   }, []);
